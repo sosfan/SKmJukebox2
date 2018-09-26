@@ -1,0 +1,104 @@
+' Gambas class file
+
+' Manejador de cola de reproducción Playlist.class
+' Autor:
+'   José Francisco Facundo <sos.sempai@gmail.com>
+' Licencia:
+'   This program Is Free software; you can redistribute it And / Or modify it under
+'   the terms Of the GNU General Public License As Published by the Free Software
+'   Foundation; version 3.
+' 
+'  This program Is Distributed In the hope that it will be useful, but WITHOUT
+'  ANY WARRANTY; without even the implied warranty Of MERCHANTABILITY Or FITNESS
+'  For A PARTICULAR PURPOSE.See the GNU General Public License For more
+'   details.
+' 
+'  You should have received a Copy Of the GNU General Public License along With
+'  this program; If Not, Write To the Free Software Foundation, Inc.,
+'  51 Franklin Street, Fifth Floor, Boston, MA 02110 - 1301 USA
+Private MatrizLed As PanelLed
+Private DataControl As New CData
+Private $bState As Boolean 
+Private PlayListSongs As Integer
+Private mPlayer As CPlayer
+ 
+Public Sub _new()
+
+  Dim MessageText As String
+  
+  MatrizLed = New PanelLed(FMain)
+  MatrizLed.H = 43
+  MatrizLed.W = MatrizLed.H * 14
+  MatrizLed.X = 61
+  MatrizLed.Y = 32
+  MatrizLed.LedSpeed = 70
+  ' addMatrizLed("SKm Jukebox Version " & Application.Version)
+  MessageText = "Bienvenidos a su lugar preferido"
+  addMatrizLed(MessageText)
+  mPlayer = New CPlayer As "mPlayer"
+  $bState = False
+  PlayListSongs = DataControl.getAllPlaylist()
+  If PlayListSongs > 0 Then
+    mPlayer_ProcessEnd
+    $bState = True
+  Endif
+  
+End
+
+Public Sub mPlayer_ProcessEnd()
+  
+  Dim sSong As Song
+  
+  If PlayListSongs > 0 Then
+    sSong = DataControl.DBPlayList
+    DataControl.Skm_Modo = sSong.type
+    mPlayer.Play(DataControl.getWorkDir() &/ sSong.genere &/ sSong.album &/ sSong.name, sSong.type)
+    addMatrizLed("** Ahora sonando - " & sSong.album & " - " & Left$(sSong.name, -4) & " **")
+    Dec PlayListSongs
+  Else
+    $bState = False
+    HideMovie
+    mPlayer.mpControl = False
+    addMatrizLed("Rockola digital - inserte una moneda")
+  Endif
+  
+End
+
+Public Function HideMovie()
+  
+  If mPlayer.VisibleMovieBox = True Then mPlayer.VisibleMovieBox = False
+  
+End
+
+Public Function ResMovie()
+  
+  If mPlayer.VisibleMovieBox = False Then mPlayer.VisibleMovieBox = True
+  
+End
+
+Public Function CancelSong()
+  
+  mPlayer.PKill
+  
+End
+
+Public Function addPlay(sSong As Song)
+  
+  If PlayListSongs = 0 And $bState = False Then
+    DataControl.Skm_Modo = sSong.type
+    mPlayer.Play(DataControl.getWorkDir() &/ sSong.genere &/ sSong.album &/ sSong.name, sSong.type)
+    addMatrizLed("** Ahora sonando - " & Left$(sSong.name, -4) & " - " & sSong.album & " **")
+    $bState = True
+  Else If $bState = True Then
+    Inc PlayListSongs
+    DataControl.DBPlayList = sSong
+  Endif
+  
+End
+
+Private Sub addMatrizLed(sText As String)
+  
+  MatrizLed.Text = sText
+  
+End
+

@@ -1,0 +1,433 @@
+' Gambas module file
+
+'
+' Authors:
+'  J. Francisco Facundo <sos.sempai@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; version 3.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+' details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc.,
+' 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+
+Public Sub ConfigCreateDatabaseTables(hConn As Connection)
+  
+  Dim hTable As Table, hResult As Result
+  
+  hTable = hConn.Tables.Add("config_data")
+  
+  With hTable
+    
+    .Fields.Add("id", db.Integer)
+    .Fields.Add("MoneyValue", db.Integer, 2)
+    .Fields.Add("CreditValue", db.Integer, 1)
+    .Fields.Add("MasterVol", db.Integer, 3)
+    .Fields.Add("FullScreen", db.Boolean)
+    .Fields.Add("ShowCursor", db.Boolean)
+    .Fields.Add("ScreenSaver", db.Boolean)
+    .Fields.Add("VideoOut", db.Boolean)
+    .Fields.Add("AutoPlay", db.Boolean)
+    .Fields.Add("MaxCreditKey", db.String, 1)
+    .Fields.Add("MinCreditKey", db.String, 1)
+    .Fields.Add("ConfigKey", db.String, 1)
+    .Fields.Add("CancelKey", db.String, 1)
+    .Fields.Add("MaxVolKey", db.String, 1)
+    .Fields.Add("MinVolKey", db.String, 1)
+    .Fields.Add("MusicDir", db.String)
+    .Fields.Add("VideoDir", db.String)
+    .Fields.Add("KaraokeDir", db.String)
+    
+    
+    .PrimaryKey = ["id"]
+    
+    .Update
+    
+  End With
+  
+  hResult = hConn.Create("config_data")
+  hResult["id"] = 1
+  hResult["MoneyValue"] = 10
+  hResult["CreditValue"] = 3
+  hResult["MasterVol"] = 100
+  hResult["FullScreen"] = True
+  hResult["ShowCursor"] = False
+  hResult["ScreenSaver"] = True
+  hResult["VideoOut"] = False
+  hResult["AutoPlay"] = True
+  hResult["MaxCreditKey"] = "z"
+  hResult["MinCreditKey"] = "<"
+  hResult["ConfigKey"] = "o"
+  hResult["CancelKey"] = "c"
+  hResult["MaxVolKey"] = "*"
+  hResult["MinVolKey"] = "/"
+  hResult["MusicDir"] = User.Home &/ "Música"
+  hResult["VideoDir"] = User.Home &/ "Vídeos"
+  hResult["KaraokeDir"] = User.Home &/ "Karaokes"
+  hResult.Update
+  hConn.Commit
+  
+End
+
+Public Sub EQCreateDatabaseTables(hConn As Connection)
+  
+  Dim hTable As Table
+  
+  hTable = hConn.Tables.Add("EQ_data")
+  
+  With hTable
+    
+    .Fields.Add("id", db.Integer)
+    .Fields.Add("1ch", db.Integer, 2)
+    .Fields.Add("2ch", db.Integer, 2)
+    .Fields.Add("3ch", db.Integer, 2)
+    .Fields.Add("4ch", db.Integer, 2)
+    .Fields.Add("5ch", db.Integer, 2)
+    .Fields.Add("6ch", db.Integer, 2)
+    .Fields.Add("7ch", db.Integer, 2)
+    .Fields.Add("8ch", db.Integer, 2)
+    .Fields.Add("9ch", db.Integer, 2)
+    .Fields.Add("10ch", db.Integer, 2)
+    
+    .PrimaryKey = ["id"]
+    
+    .Update
+    
+  End With
+  
+  hConn.Exec("insert into EQ_data values (&1,&2,&3,&4,&5,&6,&7,&8,&9,&{10},&{11})", 1, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50)
+  
+End
+
+Public Sub MusicaCreateDatabaseTables(hConn As Connection)
+
+  Dim hTable As Table
+
+  hTable = hConn.Tables.Add("abc_data")
+
+  With hTable
+
+    .Fields.Add("Char", db.String, 1)
+    .Fields.Add("Rango1", db.Integer)
+    .PrimaryKey = ["Char"]
+
+    .Update
+
+  End With
+
+  hTable = hConn.Tables.Add("album_id")
+
+  With hTable
+
+    .Fields.Add("id", db.Integer)
+    .Fields.Add("Album", db.String, 50)
+    .Fields.Add("Cover_name", db.String, 50)
+    .Fields.Add("Total_songs", db.Integer)
+    .Fields.Add("Genero", db.String, 50)
+    .Fields.Add("Songsid1", db.Integer)
+    .Fields.Add("Songsid2", db.Integer)
+    .Fields.Add("Songsid3", db.Integer)
+    .Fields.Add("Songsid4", db.Integer)
+    .PrimaryKey = ["id"]
+
+    .Update
+
+  End With
+
+  hTable = hConn.Tables.Add("mp3")
+
+  With hTable
+
+    .Fields.Add("id", db.Integer)
+    .Fields.Add("N1", db.String, 50)
+    .Fields.Add("N2", db.String, 50)
+    .Fields.Add("N3", db.String, 50)
+    .Fields.Add("N4", db.String, 50)
+    .Fields.Add("N5", db.String, 50)
+    .Fields.Add("N6", db.String, 50)
+    .Fields.Add("N7", db.String, 50)
+    .Fields.Add("N8", db.String, 50)
+    .Fields.Add("N9", db.String, 50)
+    .Fields.Add("N10", db.String, 50)
+    .Fields.Add("N11", db.String, 50)
+    .Fields.Add("N12", db.String, 50)
+    .Fields.Add("N13", db.String, 50)
+    .Fields.Add("N14", db.String, 50)
+    .Fields.Add("N15", db.String, 50)
+    .Fields.Add("N16", db.String, 50)
+    .Fields.Add("N17", db.String, 50)
+    .Fields.Add("N18", db.String, 50)
+    .Fields.Add("N19", db.String, 50)
+    .Fields.Add("N20", db.String, 50)
+    .Fields.Add("N21", db.String, 50)
+    .Fields.Add("N22", db.String, 50)
+    .Fields.Add("N23", db.String, 50)
+    .Fields.Add("N24", db.String, 50)
+    .Fields.Add("N25", db.String, 50)
+
+    .PrimaryKey = ["id"]
+
+    .Update
+
+  End With
+  
+  hTable = hConn.Tables.Add("mp3playhistory")
+  
+  With hTable
+    
+      .Fields.Add("id", db.Integer)
+      .Fields.Add("Contador", db.Integer)
+      .PrimaryKey = ["id"]
+      .Update
+    
+  End With
+  
+End
+
+Public Sub VideoCreateDatabaseTables(hConn As Connection)
+
+  Dim hTable As Table
+  
+  hTable = hConn.Tables.Add("video_abc_data")
+  
+  With hTable
+
+    .Fields.Add("Char", db.String, 1)
+    .Fields.Add("Rango1", db.Integer)
+    .PrimaryKey = ["Char"]
+    .Update
+
+  End With
+  
+  hTable = hConn.Tables.Add("video_album_id")
+  
+  With hTable
+  
+    .Fields.Add("id", db.Integer)
+    .Fields.Add("Album", db.String, 100)
+    .Fields.Add("Cover_name", db.String, 100)
+    .Fields.Add("Total_songs", db.Integer)
+    .Fields.Add("Genero", db.String, 50)
+    .Fields.Add("Songsid1", db.Integer)
+    .Fields.Add("Songsid2", db.Integer)
+    .Fields.Add("Songsid3", db.Integer)
+    .Fields.Add("Songsid4", db.Integer)
+    .PrimaryKey = ["id"]
+    .Update
+
+  End With
+  
+  hTable = hConn.Tables.Add("video")
+  
+  With hTable
+
+    .Fields.Add("id", db.Integer)
+    .Fields.Add("N1", db.String, 50)
+    .Fields.Add("N2", db.String, 50)
+    .Fields.Add("N3", db.String, 50)
+    .Fields.Add("N4", db.String, 50)
+    .Fields.Add("N5", db.String, 50)
+    .Fields.Add("N6", db.String, 50)
+    .Fields.Add("N7", db.String, 50)
+    .Fields.Add("N8", db.String, 50)
+    .Fields.Add("N9", db.String, 50)
+    .Fields.Add("N10", db.String, 50)
+    .Fields.Add("N11", db.String, 50)
+    .Fields.Add("N12", db.String, 50)
+    .Fields.Add("N13", db.String, 50)
+    .Fields.Add("N14", db.String, 50)
+    .Fields.Add("N15", db.String, 50)
+    .Fields.Add("N16", db.String, 50)
+    .Fields.Add("N17", db.String, 50)
+    .Fields.Add("N18", db.String, 50)
+    .Fields.Add("N19", db.String, 50)
+    .Fields.Add("N20", db.String, 50)
+    .Fields.Add("N21", db.String, 50)
+    .Fields.Add("N22", db.String, 50)
+    .Fields.Add("N23", db.String, 50)
+    .Fields.Add("N24", db.String, 50)
+    .Fields.Add("N25", db.String, 50)
+
+    .PrimaryKey = ["id"]
+
+    .Update
+
+  End With
+  
+  hTable = hConn.Tables.Add("videoplayhistory")
+  
+  With hTable
+    
+      .Fields.Add("id", db.Integer)
+      .Fields.Add("Contador", db.Integer)
+      .PrimaryKey = ["id"]
+      .Update
+    
+  End With
+  
+End
+
+Public Sub KaraokeCreateDatabaseTables(hConn As Connection)
+
+  Dim hTable As Table
+  
+  hTable = hConn.Tables.Add("karaoke_abc_data")
+  
+  With hTable
+
+    .Fields.Add("Char", db.String, 1)
+    .Fields.Add("Rango1", db.Integer)
+    .PrimaryKey = ["Char"]
+    .Update
+
+  End With
+  
+  hTable = hConn.Tables.Add("karaoke_album_id")
+  
+  With hTable
+  
+    .Fields.Add("id", db.Integer)
+    .Fields.Add("Album", db.String, 100)
+    .Fields.Add("Cover_name", db.String, 100)
+    .Fields.Add("Total_songs", db.Integer)
+    .Fields.Add("Genero", db.String, 50)
+    .Fields.Add("Songsid1", db.Integer)
+    .Fields.Add("Songsid2", db.Integer)
+    .Fields.Add("Songsid3", db.Integer)
+    .Fields.Add("Songsid4", db.Integer)
+    .PrimaryKey = ["id"]
+    .Update
+
+  End With
+  
+  hTable = hConn.Tables.Add("karaoke")
+  
+  With hTable
+
+    .Fields.Add("id", db.Integer)
+    .Fields.Add("N1", db.String, 50)
+    .Fields.Add("N2", db.String, 50)
+    .Fields.Add("N3", db.String, 50)
+    .Fields.Add("N4", db.String, 50)
+    .Fields.Add("N5", db.String, 50)
+    .Fields.Add("N6", db.String, 50)
+    .Fields.Add("N7", db.String, 50)
+    .Fields.Add("N8", db.String, 50)
+    .Fields.Add("N9", db.String, 50)
+    .Fields.Add("N10", db.String, 50)
+    .Fields.Add("N11", db.String, 50)
+    .Fields.Add("N12", db.String, 50)
+    .Fields.Add("N13", db.String, 50)
+    .Fields.Add("N14", db.String, 50)
+    .Fields.Add("N15", db.String, 50)
+    .Fields.Add("N16", db.String, 50)
+    .Fields.Add("N17", db.String, 50)
+    .Fields.Add("N18", db.String, 50)
+    .Fields.Add("N19", db.String, 50)
+    .Fields.Add("N20", db.String, 50)
+    .Fields.Add("N21", db.String, 50)
+    .Fields.Add("N22", db.String, 50)
+    .Fields.Add("N23", db.String, 50)
+    .Fields.Add("N24", db.String, 50)
+    .Fields.Add("N25", db.String, 50)
+
+    .PrimaryKey = ["id"]
+
+    .Update
+
+  End With
+  
+  hTable = hConn.Tables.Add("karaokeplayhistory")
+  
+  With hTable
+    
+      .Fields.Add("id", db.Integer)
+      .Fields.Add("Contador", db.Integer)
+      .PrimaryKey = ["id"]
+      .Update
+    
+  End With
+  
+End
+
+Public Sub PlayListCreateDatabaseTables(hConn As Connection)
+  
+  Dim hTable As Table
+  
+  hTable = hConn.Tables.Add("playlist")
+  
+  With hTable
+    
+    .Fields.Add("id", db.Integer)
+    .Fields.Add("Key", db.Integer)
+    .Fields.Add("Album", db.String, 50)
+    .Fields.Add("Nombre", db.String, 50)
+    .Fields.Add("Genero", db.String, 50)
+    .Fields.Add("Tipo", db.String, 10)
+    .PrimaryKey = ["id"]
+    .Update
+    
+  End With
+  
+End
+
+Public Sub MonederoCreateDatabaseTables(hConn As Connection)
+  
+    Dim hTable As Table
+  
+    hTable = hConn.Tables.Add("monedero")
+  
+  With hTable
+  
+    .Fields.Add("id", db.Integer)
+    .Fields.Add("Total_credito", db.Integer)
+    .Fields.Add("Credito", db.Integer)
+    .PrimaryKey = ["id"]
+    .Update
+    
+  End With
+  hConn.Exec("insert into monedero values (&1,&2,&3)", "1", "0", "0")
+  
+End
+
+Public Sub CreateDatabase() As Boolean
+
+  Dim hcon As New Connection
+  Dim dbName As String
+
+  DBName = "music_db.sqlite"
+  hcon.Type = "sqlite3"
+  hcon.Host = User.Home
+  hcon.Name = ""
+  hcon.Login = ""
+  hcon.Password = ""
+  hcon.Port = ""
+
+  Try hcon.Open()
+  
+  If Not hcon.Databases.Exist(DBName) Then
+    hcon.Databases.Add(DBName)
+    Wait 0.5
+  End If
+  
+  hcon.Close()
+  hcon.Host = User.Home
+  hcon.Name = DBName
+  
+  Try hcon.Open()
+  If Error Then
+    Message.Error("No se pudo abrir la base de datos")
+    Return False
+  End If
+
+  hcon.Close
+Catch
+    Message.Error(Error.Text)
+    Return False
+End

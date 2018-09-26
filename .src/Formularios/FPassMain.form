@@ -1,0 +1,19 @@
+# Gambas Form File 3.0
+
+{ Form Form
+  MoveScaled(0,0,63,22)
+  Visible = False
+  { LabelMess Label
+    MoveScaled(3,2,58,6)
+    Font = Font["Droid Sans,9"]
+    Text = ("Introduzca la contraseña de activacion para continuar con la\ninstalación del programa.")
+  }
+  { TextPass TextBox
+    MoveScaled(3,9,56,5)
+    Password = True
+  }
+  { ButtonOk Button
+    MoveScaled(20,16,22,4)
+    Text = ("Aceptar")
+  }
+}

@@ -1,0 +1,562 @@
+' Gambas class file
+
+Property getConfigData As Result
+Property MoneyValue As Integer
+Property CreditValue As Integer
+Property MasterVol As Integer
+Property FullScreen As Boolean
+Property ShowCursor As Boolean
+Property ScreenSaver As Boolean
+Property VideoOut As Boolean
+Property AutoPlay As Boolean
+Property MaxCreditKey As String
+Property MinCreditKey As String
+Property ConfigKey As String
+Property CancelKey As String
+Property MaxVolKey As String
+Property MinVolKey As String
+Property MusicDir As String
+Property VideoDir As String
+Property KaraokeDir As String
+Property Total_credito As Integer
+Property Credito As Integer
+Property channels As Integer[]
+Property Skm_Modo As String ''Establece o retorna el modo de busqueda.
+Property DBPlayList As Song ''Establece o retorna un elemento a la PlayList en la base de datos.
+Private Modo As String
+Private Total_Album As Integer
+Private hConn As Connection
+
+Private Function ConectarBase() As Boolean
+  
+  If hConn Then Return False
+  hConn = New Connection
+  hConn.Host = User.Home
+  hConn.Name = "music_db.sqlite"
+  hConn.Type = "sqlite3"
+  Try hConn.Open
+  If Error Then
+    hConn = Null
+    Message.Error("Error al conectar con la bd.")
+    Return True
+  Endif
+  Catch
+    Message.Error("Error desconocido al conectar con la bd.")
+  Return False
+  
+End
+
+Private Function CerrarConexion()
+  
+  If hConn = Null Then Return
+  hConn.Close
+  hConn = Null
+  
+End
+
+Public Sub _new()
+  
+  If Not Exist(User.Home &/ "music_db.sqlite") Then
+    MDatabase.CreateDatabase
+    ConectarBase
+    MDatabase.ConfigCreateDatabaseTables(hConn)
+    MDatabase.EQCreateDatabaseTables(hConn)
+    MDatabase.MusicaCreateDatabaseTables(hConn)
+    MDatabase.VideoCreateDatabaseTables(hConn)
+    MDatabase.KaraokeCreateDatabaseTables(hConn)
+    MDatabase.MonederoCreateDatabaseTables(hConn)
+    MDatabase.PlayListCreateDatabaseTables(hConn)
+    CerrarConexion
+  Endif
+  ConectarBase
+  Catch
+    Debug "Database error."
+  
+End
+
+Private Function getConfigData_Read() As Result
+
+  Dim hResult As Result
+  
+  hResult = hConn.Exec("select * from config_data where id=1")
+  
+  Return hResult
+
+End
+
+Private Sub getConfigData_Write(Value As Result)
+
+  Debug "Read Only " & Value
+
+End
+
+Private Function MoneyValue_Read() As Integer
+
+  Dim hResult As Result
+  
+  hResult = hConn.Exec("select MoneyValue from config_data where id=1")
+  Return hResult["MoneyValue"]
+
+End
+
+Private Sub MoneyValue_Write(Value As Integer)
+
+  hConn.Exec("update config_data set MoneyValue=" & Value & " where id=1")
+
+End
+
+Private Function CreditValue_Read() As Integer
+
+  Dim hResult As Result
+  
+  hResult = hConn.Exec("select CreditValue from config_data where id=1")
+  Return hResult["CreditValue"]
+
+End
+
+Private Sub CreditValue_Write(Value As Integer)
+
+  hConn.Exec("update config_data set CreditValue=" & Value & " where id=1")
+
+End
+
+Private Function MasterVol_Read() As Integer
+
+  Dim hResult As Result
+  
+  hResult = hConn.Exec("select MasterVol from config_data where id=1")
+  Return hResult["MasterVol"]
+
+End
+
+Private Sub MasterVol_Write(Value As Integer)
+
+  hConn.Exec("update config_data set MasterVol=" & Value & " where id=1")
+
+End
+
+Private Function FullScreen_Read() As Boolean
+
+  Dim hResult As Result
+  
+  hResult = hConn.Exec("select FullScreen from config_data where id=1")
+  Return hResult["FullScreen"]
+
+End
+
+Private Sub FullScreen_Write(Value As Boolean)
+
+  hConn.Exec("update config_data set FullScreen=" & Value & " where id=1")
+
+End
+
+Private Function ShowCursor_Read() As Boolean
+
+  Dim hResult As Result
+  
+  hResult = hConn.Exec("select ShowCursor from config_data where id=1")
+  Return hResult["ShowCursor"]
+
+End
+
+Private Sub ShowCursor_Write(Value As Boolean)
+
+  hConn.Exec("update config_data set ShowCursor=" & Value & " where id=1")
+
+End
+
+Private Function ScreenSaver_Read() As Boolean
+
+  Dim hResult As Result
+  
+  hResult = hConn.Exec("select ScreenSaver from config_data where id=1")
+  Return hResult["ScreenSaver"]
+
+End
+
+Private Sub ScreenSaver_Write(Value As Boolean)
+
+  hConn.Exec("update config_data set ScreenSaver=" & Value & " where id=1")
+
+End
+
+Private Function VideoOut_Read() As Boolean
+
+  Dim hResult As Result
+  
+  hResult = hConn.Exec("select VideoOut from config_data where id=1")
+  Return hResult["VideoOut"]
+
+End
+
+Private Sub VideoOut_Write(Value As Boolean)
+
+  hConn.Exec("update config_data set VideoOut=" & Value & " where id=1")
+
+End
+
+Private Function AutoPlay_Read() As Boolean
+
+  Dim hResult As Result
+  
+  hResult = hConn.Exec("select AutoPlay from config_data where id=1")
+  Return hResult["AutoPlay"]
+
+End
+
+Private Sub AutoPlay_Write(Value As Boolean)
+
+  hConn.Exec("update config_data set AutoPlay=" & Value & " where id=1")
+
+End
+
+Private Function MaxCreditKey_Read() As String
+
+  Dim hResult As Result
+  
+  hResult = hConn.Exec("select MaxCreditKey from config_data where id=1")
+  Return hResult["MaxCreditKey"]
+
+End
+
+Private Sub MaxCreditKey_Write(Value As String)
+
+  hConn.Exec("update config_data set MaxCreditKey=" & Value & " where id=1")
+
+End
+
+Private Function MinCreditKey_Read() As String
+
+  Dim hResult As Result
+  
+  hResult = hConn.Exec("select MinCreditKey from config_data where id=1")
+  Return hResult["MinCreditKey"]
+
+End
+
+Private Sub MinCreditKey_Write(Value As String)
+
+  hConn.Exec("update config_data set MinCreditKey=" & Value & " where id=1")
+
+End
+
+Private Function ConfigKey_Read() As String
+
+  Dim hResult As Result
+  
+  hResult = hConn.Exec("select ConfigKey from config_data where id=1")
+  Return hResult["ConfigKey"]
+
+End
+
+Private Sub ConfigKey_Write(Value As String)
+
+  hConn.Exec("update config_data set ConfigKey=" & Value & " where id=1")
+
+End
+
+Private Function CancelKey_Read() As String
+
+  Dim hResult As Result
+  
+  hResult = hConn.Exec("select CancelKey from config_data where id=1")
+  Return hResult["CancelKey"]
+
+End
+
+Private Sub CancelKey_Write(Value As String)
+
+  hConn.Exec("update config_data set CancelKey=" & Value & " where id=1")
+
+End
+
+Private Function MaxVolKey_Read() As String
+
+  Dim hResult As Result
+  
+  hResult = hConn.Exec("select MaxVolKey from config_data where id=1")
+  Return hResult["MaxVolKey"]
+
+End
+
+Private Sub MaxVolKey_Write(Value As String)
+
+  hConn.Exec("update config_data set MaxVolKey=" & Value & " where id=1")
+
+End
+
+Private Function MinVolKey_Read() As String
+
+  Dim hResult As Result
+  
+  hResult = hConn.Exec("select MinVolKey from config_data where id=1")
+  Return hResult["MinVolKey"]
+
+End
+
+Private Sub MinVolKey_Write(Value As String)
+
+  hConn.Exec("update config_data set MinVolKey=" & Value & " where id=1")
+
+End
+
+Private Function MusicDir_Read() As String
+
+  Dim hResult As Result
+  
+  hResult = hConn.Exec("select MusicDir from config_data where id=1")
+  Return hResult["MusicDir"]
+
+End
+
+Private Sub MusicDir_Write(Value As String)
+
+  hConn.Exec("update config_data set MusicDir=" & Value & " where id=1")
+
+End
+
+Private Function VideoDir_Read() As String
+
+  Dim hResult As Result
+  
+  hResult = hConn.Exec("select VideoDir from config_data where id=1")
+  Return hResult["VideoDir"]
+
+End
+
+Private Sub VideoDir_Write(Value As String)
+
+  hConn.Exec("update config_data set VideoDir=" & Value & " where id=1")
+
+End
+
+Private Function KaraokeDir_Read() As String
+
+  Dim hResult As Result
+  
+  hResult = hConn.Exec("select KaraokeDir from config_data where id=1")
+  Return hResult["KaraokeDir"]
+
+End
+
+Private Sub KaraokeDir_Write(Value As String)
+
+  hConn.Exec("update config_data set KaraokeDir=" & Value & " where id=1")
+
+End
+
+Private Function Total_credito_Read() As Integer
+
+  Dim hResult As Result
+  
+  hResult = hConn.Exec("select Total_credito from monedero where id=1")
+  Return hResult["Total_credito"]
+
+End
+
+Private Sub Total_credito_Write(Value As Integer)
+
+  hConn.Exec("update monedero set Total_credito=" & Value & " where id=1")
+
+End
+
+Private Function Credito_Read() As Integer
+
+  Dim hResult As Result
+  
+  hResult = hConn.Exec("select Credito from monedero where id=1")
+  Return hResult["Credito"]
+
+End
+
+Private Sub Credito_Write(Value As Integer)
+
+  hConn.Exec("update monedero set Credito=" & Value & " where id=1")
+
+End
+
+Private Function channels_Read() As Integer[]
+
+  Dim hResult As Result, ch As New Integer[], i As Integer
+  hResult = hConn.Exec("select * from EQ_data where id=1")
+  For i = 1 To 10
+    ch.Push(hResult[i & "ch"])
+  Next
+  Return ch
+
+End
+
+Private Sub channels_Write(Value As Integer[])
+
+  Dim i As Integer
+  
+  For i = 1 To 10
+    hConn.Exec("update EQ_data set " & i & "ch=" & Value[i - 1] & " where id=1")
+  Next
+
+End
+
+Public Sub getDataAlbums(Contador As Short) As Result 'Devuelve 10 busquedas
+
+  Dim hResult As Result
+  
+  Select Modo
+    Case "Musica"
+      hResult = hConn.Exec("select * from album_id where id=" & contador & " limit 10")
+    Case "Video"
+      hResult = hConn.EXEC("select * from video_album_id where id=" & contador & " limit 10")
+    Case "Karaoke"
+      hResult = hConn.EXEC("select * from karaoke_album_id where id=" & contador & " limit 10")
+    'Case "MasTocado"
+    'Case "Nuevos"
+  End Select
+  Return hResult
+
+End
+
+Public Sub getDataAlbum(Contador As Short) As Result 'Devueve 1 busqueda
+  
+  Dim hResult As Result
+  Select Modo
+    Case "Musica"
+      hResult = hConn.Exec("select * from album_id where id=" & contador)
+    Case "Video"
+      hResult = hConn.EXEC("select * from video_album_id where id=" & contador)
+    Case "Karaoke"
+      hResult = hConn.EXEC("select * from karaoke_album_id where id=" & contador)
+    'Case "MasTocado"
+    'Case "Nuevos"
+  End Select
+  Return hResult
+  
+End
+
+Public Sub getDataSongs(Contador As Short) As Result
+  
+  Dim hResult As Result
+  Select Modo
+    Case "Musica"
+      hResult = hConn.Exec("select * from mp3 where id=" & contador)
+    Case "Video"
+      hResult = hConn.EXEC("select * from video where id=" & contador)
+    Case "Karaoke"
+      hResult = hConn.EXEC("select * from karaoke where id=" & contador)
+    'Case "MasTocado"
+    'Case "Nuevos"
+  End Select
+  Return hResult
+  
+End
+
+Public Sub getAllPlaylist() As Integer ' Retorna la longitud de la cola de reproducción.
+  
+  Dim hResult As Result
+  
+  hResult = hConn.Exec("select * from playlist")
+  Return hResult.Length
+  
+End
+
+Private Function DBPlayList_Read() As Song
+
+  Dim hResult As Result, sData As New Song
+'   
+  hResult = hConn.Exec("select * from playlist")
+  hResult.MoveFirst
+  hConn.Exec("delete from playlist where id=" & hResult["id"])
+  sData.album = hResult["Album"]
+  sData.name = hResult["Nombre"]
+  sData.genere = hResult["Genero"]
+  sData.type = hResult["Tipo"]
+  
+  Return sData
+
+End
+
+Private Sub DBPlayList_Write(sData As Song)
+
+  Dim hResult As Result
+  
+  hResult = hConn.Exec("select max(id) from playlist")
+  If hResult["max(id)"] = Null Then
+    hConn.Exec("insert into playlist values (&1,&2,&3,&4,&5,&6)", 1, Null, sData.album, sData.name, sData.genere, sData.type)
+  Else
+    hConn.Exec("insert into playlist values (&1,&2,&3,&4,&5,&6)", hResult["max(id)"] + 1, Null, sData.album, sData.name, sData.genere, sData.type)
+  Endif
+
+End
+
+Public Sub getWorkDir() As String
+  
+  Dim WorkDir As String
+  Select Modo
+    Case "Musica"
+      WorkDir = MusicDir_Read()
+    Case "Video"
+      WorkDir = VideoDir_Read()
+    Case "Karaoke"
+      WorkDir = KaraokeDir_Read()
+  End Select
+  Return WorkDir
+  
+End
+
+Private Function Skm_Modo_Read() As String
+
+  Return Modo
+
+End
+
+Private Sub Skm_Modo_Write(Value As String)
+
+  Modo = Value
+
+End
+
+Private Sub LoadTotalAlbum()
+  
+  Dim hResult As Result
+  
+  Select Case Modo
+    Case "Musica"
+      hResult = hConn.Exec("select id from album_id")
+    Case "Video"
+      hResult = hConn.Exec("select id from video_album_id")
+    Case "Karaoke"
+      hResult = hConn.Exec("select id from karaoke_album_id")
+  End Select
+  Total_Album = hResult.Count + 1
+  
+End
+
+Public Sub getTotalAlbums() As Integer
+
+  LoadTotalAlbum
+  Return Total_Album
+  
+End
+
+Public Sub setPlayHistory(Value As Integer)
+
+  Dim hResult As Result, i As Integer, nModo As String
+  
+  Select Modo
+    Case "Musica"
+      nModo = "mp3"
+    Case "Video"
+      nModo = "video"
+    Case "Karaoke"
+      nModo = "karaoke"
+  End Select
+
+  hResult = hConn.Exec("select * from " & nModo & "playhistory where id=" & Value)
+  If hResult.Available = False Then
+    hConn.Exec("insert into " & nModo & "playhistory values (&1,&2)", Value, 1)
+  Else
+    i = hResult["Contador"]
+    Inc i
+    hConn.Exec("update " & nModo & "playhistory set Contador=" & i & " where id=" & Value)
+  Endif
+
+
+End

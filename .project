@@ -1,0 +1,15 @@
+# Gambas Project File 3.0
+Title=SKm Jukebox
+Startup=FMain
+Version=2.0.17
+Component=gb.image
+Component=gb.qt4
+Component=gb.form
+Component=gb.db
+Component=gb.db.sqlite3
+Component=gb.easyencrypt
+Component=gb.settings
+Component=gb.panel_led
+TabSize=2
+Language=es
+Packager=1

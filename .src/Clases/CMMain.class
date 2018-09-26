@@ -1,0 +1,330 @@
+' Gambas class file
+
+Inherits Panel
+
+Private DataControl As New CData
+Private CoverAlbum As New Object[]
+Private Cover As CAlbum
+Private CoverList As CAlbum
+Private Playlist As New CPlaylist
+Private CSongList As Panel
+Private ExitButton As Button
+Private Song As TextLabel
+Private SongList As New Object[]
+Private BackImage As PictureBox
+Private NumAlbum As Integer
+Private TotalAlbums As Integer
+Private $hResult As Result
+
+Private hSkinTheme As Settings
+Private SelectAlbum As String
+Private SelectGenero As String
+Property Skm_Modo As String ''Establece la cadena para identificar el modo de visualización del objeto. (Musica, Video, Karaoke)
+Property NumberPos As Integer ''Establece o retorna el número del album que se usará como índice.
+
+
+Public Sub _new()
+  
+  Dim i As Short
+  'load theme configuration
+  hSkinTheme = New Settings(User.Home &/ "Skins/default/theme.conf")
+
+  BackImage = New PictureBox(Me)
+  BackImage.X = 0
+  BackImage.Y = 0
+  BackImage.W = hSkinTheme["Window/W", 1024]
+  BackImage.H = hSkinTheme["Window/H", 768]
+  
+  'Matriz de controles CoverAlbum
+  For i = 1 To 10
+    Cover = New CAlbum(Me) As "Cover"
+    Cover.Cover = hSkinTheme["Images/CoverDefault", "null.png"]
+    CoverAlbum.Add(Cover)
+  Next
+  'Vista de lista
+  CoverList = New CAlbum(Me)
+  CoverList.Visible = False
+
+  CSongList = New Panel(Me)
+  CSongList.Visible = False
+  ExitButton = New Button(Me) As "ExitButton"
+  ExitButton.Visible = False
+  
+  For i = 1 To 30
+    Song = New TextLabel(CSongList) As "Song"
+    Song.Visible = False
+    Song.Font.Name = "Ubuntu"
+    Song.Font.Size = 12
+    Song.Font.Bold = True
+    Song.Foreground = &00FFFFFF&
+    Song.Wrap = True
+    Song.Alignment = 0
+    Song.Padding = 3
+    SongList.Add(Song)
+  Next
+
+  LoadThemeConfiguration()
+  
+End
+
+Public Sub Cover_Click()
+  
+  Dim i, TotalSongs, ViewList As Short
+  Dim SongID As Integer
+  If Last.Number = "" Then Return
+  NumAlbum = Last.Number
+  Debug CInt(Last.number)
+  ShowBackground("BGSelect")
+  'Ocultar las portadas de los albumnes.
+  For i = 0 To 9
+    CoverAlbum[i].Visible = False
+  Next
+  'Rellena la lista
+  $hResult = DataControl.getDataAlbum(NumAlbum)
+  TotalSongs = $hResult["Total_songs"]
+  SelectAlbum = $hResult["Album"]
+  SelectGenero = $hResult["Genero"]
+  SongID = $hResult["Songsid1"]
+  If $hResult["Cover_name"] = "0" Then 
+    CoverList.Cover = hSkinTheme["Images/CoverDefault", "null.png"]
+  Else
+    CoverList.Cover = DataControl.getWorkDir() &/ SelectGenero &/ SelectAlbum &/ $hResult["Cover_name"]
+  Endif
+  $hResult = DataControl.getDataSongs(SongID)
+  
+  If TotalSongs > 30 Then
+    ViewList = 30
+  Else
+    ViewList = TotalSongs
+  Endif
+  
+  For i = 1 To ViewList
+    If i < 10 Then
+      SongList[i - 1].Text = "[0" & i & "] " & Left$($hResult["N" & i], -4)
+    Else If i < 26 Then
+      SongList[i - 1].Text = "[" & i & "] " & Left$($hResult["N" & i], -4)
+    Else If i > 25 Then
+      $hResult = DataControl.getDataSongs(SongID + 1)
+      SongList[i - 1].Text = "[" & i & "] " & Left$($hResult["N" & (i - 25)], -4)
+    Endif
+    SongList[i - 1].Visible = True
+  Next
+  
+  CoverList.Visible = True
+  CSongList.Show
+  ExitButton.Show
+  
+End
+
+Public Sub Song_MouseDown()
+  
+  Dim sSong As New Song, hResult As Result, SongID As Integer
+  
+  hResult = DataControl.getDataAlbum(NumAlbum)
+
+  If CInt(Right$(Left$(Last.Text, 3), 2)) > 0 And CInt(Right$(Left$(Last.Text, 3), 2)) < 26 Then
+    SongID = hResult["Songsid1"]
+    hResult = DataControl.getDataSongs(SongID)
+    sSong.id = hResult["id"]
+    sSong.idsong = CInt(Right$(Left$(Last.Text, 3), 2))
+    sSong.name = hResult["N" & sSong.idsong]
+  Else If CInt(Right$(Left$(Last.Text, 3), 2)) > 25 And CInt(Right$(Left$(Last.Text, 3), 2)) < 51 Then
+    SongID = hResult["Songsid2"]
+    hResult = DataControl.getDataSongs(SongID)
+    sSong.id = hResult["id"]
+    sSong.idsong = CInt(Right$(Left$(Last.Text, 3), 2)) - 25
+    sSong.name = hResult["N" & sSong.idsong]
+  Else If CInt(Right$(Left$(Last.Text, 3), 2)) > 50 And CInt(Right$(Left$(Last.Text, 3), 2)) < 76 Then
+    SongID = hResult["Songsid3"]
+    hResult = DataControl.getDataSongs(SongID)
+    sSong.id = hResult["id"]
+    sSong.idsong = CInt(Right$(Left$(Last.Text, 3), 2)) - 50
+    sSong.name = hResult["N" & sSong.idsong]
+  Else If CInt(Right$(Left$(Last.Text, 3), 2)) > 75 And CInt(Right$(Left$(Last.Text, 3), 2)) < 101 Then
+    SongID = hResult["Songsid4"]
+    hResult = DataControl.getDataSongs(SongID)
+    sSong.id = hResult["id"]
+    sSong.idsong = CInt(Right$(Left$(Last.Text, 3), 2)) - 75
+    sSong.name = hResult["N" & sSong.idsong]
+  Endif
+  hResult = DataControl.getDataAlbum(NumAlbum)
+  sSong.album = hResult["Album"]
+  sSong.genere = hResult["Genero"]
+  sSong.type = DataControl.Skm_Modo
+  Playlist.addPlay(sSong)
+  DataControl.setPlayHistory(NumAlbum)
+  
+End
+
+Public Sub CancelSong()
+  
+  Playlist.CancelSong
+  
+End
+
+Public Sub ExitButton_Click()
+  
+  Dim i As Short
+  
+  ShowBackground("Background")
+  'Mostrar los albumnes
+  For i = 0 To 9
+    CoverAlbum[i].Visible = True
+  Next
+  'Ocultar la lista
+  For i = 0 To 29
+    SongList[i].Visible = False
+  Next
+  CoverList.Visible = False
+  ' ScrollList.Visible = False
+  CSongList.Hide
+  ExitButton.Hide
+  
+End
+
+Private Sub ShowBackground(type As String)
+  
+  Dim bgimage As String
+  
+  bgimage = hSkinTheme["Images/" & type, "null.png"]
+  BackImage.Picture = Picture[User.Home &/ "Skins/default/" & bgimage]
+  
+End
+
+Private Sub LoadThemeConfiguration()
+  
+  Dim p, c, i As Short
+  
+  ShowBackground("Background")
+  For i = 0 To 9
+    CoverAlbum[i].SizeH = hSkinTheme["Album" & i & "/H", 180]
+    CoverAlbum[i].SizeW = hSkinTheme["Album" & i & "/W", 180]
+    CoverAlbum[i].XPos = hSkinTheme["Album" & i & "/X"]
+    CoverAlbum[i].YPos = hSkinTheme["Album" & i & "/Y"]
+  Next
+
+  CoverList.XPos = 57
+  CoverList.YPos = 139
+  CoverList.SizeH = 220
+  CoverList.SizeW = 220
+  
+  CSongList.X = 291
+  CSongList.Y = 107
+  CSongList.H = 514
+  CSongList.W = 675
+
+  ExitButton.H = 40
+  ExitButton.W = 40
+  'Ajustar lista de canciones
+  For p = 0 To 450 Step 225
+    For i = 0 To 9
+      SongList[c].H = 51
+      SongList[c].W = 225
+      SongList[c].X = p
+      SongList[c].Y = 51 * i
+      Inc c
+    Next
+  Next
+  
+End
+
+Private Function NumberPos_Read() As Integer
+
+  Return NumAlbum
+
+End
+
+Private Sub NumberPos_Write(Value As Integer)
+
+  Dim i As Integer
+  NumAlbum = Value
+  'Vaciar la caché de imagenes
+  For i = 0 To 9
+    CoverAlbum[i].ImgClear
+  Next
+  AlbumShow
+
+End
+
+Private Sub AlbumShow()
+  
+  Dim hResult As Result, i As Integer
+  'Si llega al final de los albumnes hace el calculo de cuanto mostrar.
+  For i = 0 To 9
+    hResult = DataControl.getDataAlbums(NumAlbum + i)
+    If hResult.Available = True Then
+      If hResult["Cover_name"] = "0" Then
+        'Muestra imagen por defecto
+        CoverAlbum[i].cover = hSkinTheme["Images/CoverDefault", "null.png"]
+      Else
+        CoverAlbum[i].Cover = DataControl.getWorkDir() &/ hResult["Genero"] &/ hResult["Album"] &/ hResult["Cover_name"]
+      Endif
+      CoverAlbum[i].Title = hResult["Album"]
+      CoverAlbum[i].Songs = hResult["Total_songs"]
+      CoverAlbum[i].Number = Draw_Zeros(NumAlbum + i)
+    Else
+      CoverAlbum[i].cover = "./resource/null.png"
+      CoverAlbum[i].Title = ""
+      CoverAlbum[i].Songs = "0"
+      CoverAlbum[i].Number = ""
+    Endif
+  Next
+  
+End
+
+Private Sub Draw_Zeros(AlbumPos As Integer) As String
+  
+  Dim sString As String, $TotalAlbum As Integer
+  '////////////// Acomodar ceros /////////////////
+  $TotalAlbum = Len(CStr(TotalAlbums))
+  '//////////Menos de 100 albumnes, Posicion es menor a 10 acomodo un 0 antes del digito.
+  If $TotalAlbum = 2 And AlbumPos < 10 And TotalAlbums < 100 Then
+    sString = "0" & AlbumPos
+  '//////////Menos de 1000 albumnes, Posicion es menor a 10 acomodo 00 antes del digito.
+  Else If $TotalAlbum = 3 And AlbumPos < 10 And TotalAlbums < 1000 Then
+    sString = "00" & AlbumPos
+  '//////////Menos de 1000 albumnes, Posicion es menor a 100 y mayor a 10 acomodo un 0 antes de los dos digitos.
+  Else If $TotalAlbum = 3 And AlbumPos < 100 And AlbumPos < 1000 Then
+    sString = "0" & AlbumPos
+  '//////////Menos de 10000 albumnes, Posicion es menor a 10 acomodo 000 antes del digito.
+  Else If $TotalAlbum = 4 And AlbumPos < 10 And AlbumPos < 10000 Then
+    sString = "000" & AlbumPos
+  '//////////Menos de 10000 albumnes, Posicion es menor a 100 acomodo 00 antes de los digitos.
+  Else If $TotalAlbum = 4 And AlbumPos < 100 And AlbumPos < 10000 Then
+    sString = "00" & AlbumPos
+  '//////////Menos de 10000 albumnes, Posicion es menor a 1000 acomodo 0 antes de los tres digitos.
+  Else If $TotalAlbum = 4 And AlbumPos < 1000 And AlbumPos < 10000 Then
+    sString = "0" & AlbumPos
+  '//////////Menos de 100000 albumnes, Posicion es menor a 10 acomodo 0000 antes del digito.
+  Else If $TotalAlbum = 5 And AlbumPos < 10 And AlbumPos < 100000 Then
+    sString = "0000" & AlbumPos
+  '//////////Menos de 100000 albumnes, Posicion es menor a 100 acomodo 000 antes de los digitos.
+  Else If $TotalAlbum = 5 And AlbumPos < 100 And AlbumPos < 100000 Then
+    sString = "000" & AlbumPos
+  '//////////Menos de 100000 albumnes, Posicion es menor a 1000 acomodo 00 antes de los tres digitos.
+  Else If $TotalAlbum = 5 And AlbumPos < 1000 And AlbumPos < 100000 Then
+    sString = "00" & AlbumPos
+  '//////////Menos de 100000 albumnes, Posicion es menor a 10000 acomodo 0 antes de los cuatro digitos.
+  Else If $TotalAlbum = 5 And AlbumPos < 10000 And AlbumPos < 100000 Then
+    sString = "0" & AlbumPos
+ '//////// De lo contrario, solo poner los digitos.
+  Else
+    sString = AlbumPos
+  Endif
+
+  Return sString
+  
+End
+
+Private Function Skm_Modo_Read() As String
+
+  Return DataControl.Skm_Modo
+
+End
+
+Private Sub Skm_Modo_Write(Value As String)
+
+  DataControl.Skm_Modo = Value
+  TotalAlbums = DataControl.getTotalAlbums()
+
+End

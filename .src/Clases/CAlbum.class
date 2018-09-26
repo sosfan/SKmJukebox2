@@ -1,0 +1,195 @@
+' Gambas class file
+
+Event Click
+Private CoverPicture As PictureBox
+Private TitleLabel As TextLabel
+Private SongsLabel As TextLabel
+Private NumberAlbum As TextLabel
+Private GeneroAlbum As String
+Property Cover As String ''Establece o retorna el nombre de portada del album
+Property Title As String ''Establece o retorna el nombre de album
+Property Songs As Integer ''Establece o retorna el numero de canciones en el album
+Property Number As String  ''Establece o retorna el numero de album
+Property SizeW As Integer ''Establece el ancho del control
+Property SizeH As Integer ''Establece la altura del control
+Property XPos As Integer ''Establece la posicion en coordenadas X del control
+Property YPos As Integer ''Establece la posicion en coordenadas Y del control
+Property Visible As Boolean ''Establece la visibilidad del objeto
+Property Genero As String ''Establece el Genero del album
+
+Public Sub _new(sContainer As Container)
+  
+  CoverPicture = New PictureBox(sContainer) As "CoverPicture"
+  CoverPicture.Stretch = True
+  CoverPicture.Visible = True
+  
+  TitleLabel = New TextLabel(sContainer)
+  TitleLabel.Visible = True
+  TitleLabel.Foreground = &00FFFFFF&
+  
+  SongsLabel = New TextLabel(sContainer)
+  SongsLabel.Font.Size = 8
+  SongsLabel.Visible = True
+  SongsLabel.Foreground = &00FFFFFF&
+  
+  NumberAlbum = New TextLabel(sContainer)
+  NumberAlbum.Font.Bold = True
+  NumberAlbum.Visible = True
+  NumberAlbum.Foreground = &00FFFF00&
+  
+End
+
+Public Sub CoverPicture_MouseDown()
+  
+  Raise Click
+  
+End
+
+Private Function Cover_Read() As String
+
+  Return CoverPicture.Picture
+
+End
+
+Private Sub Cover_Write(Value As String)
+
+  CoverPicture.Picture = Picture[Value]
+
+End
+
+Private Function Title_Read() As String
+
+  Return TitleLabel.Caption
+
+End
+
+Private Sub Title_Write(Value As String)
+
+  TitleLabel.Caption = Value
+
+End
+
+Private Function Songs_Read() As Integer
+
+  Return SongsLabel.Caption
+
+End
+
+Private Sub Songs_Write(Value As Integer)
+
+  If Value > 1 Then
+    SongsLabel.Caption = Value & " pistas en el albúm."
+  Else If value = 1
+    SongsLabel.Caption = "1 pista en el albúm."
+  Else
+    SongsLabel.Caption = ""
+  Endif
+
+End
+
+Private Function Number_Read() As String
+
+  Return NumberAlbum.Text
+
+End
+
+Private Sub Number_Write(Value As String)
+
+  NumberAlbum.Text = Value
+
+End
+
+Private Function SizeW_Read() As Integer
+
+  Return CoverPicture.W + 5
+
+End
+
+Private Sub SizeW_Write(Value As Integer)
+
+  CoverPicture.W = Value - 5
+  TitleLabel.W = Value
+  SongsLabel.W = Value
+  NumberAlbum.W = Value / 2
+
+End
+
+Private Function SizeH_Read() As Integer
+
+  Return CoverPicture.H + 5
+
+End
+
+Private Sub SizeH_Write(Value As Integer)
+
+  CoverPicture.H = Value - 5
+  TitleLabel.H = Value / 10 - 2
+  SongsLabel.H = TitleLabel.H
+  NumberAlbum.H = TitleLabel.H
+
+End
+
+Private Function XPos_Read() As Integer
+
+  Return CoverPicture.X
+
+End
+
+Private Sub XPos_Write(Value As Integer)
+
+  CoverPicture.X = Value
+  TitleLabel.X = Value
+  SongsLabel.X = Value
+  NumberAlbum.X = Value + 5
+
+End
+
+Private Function YPos_Read() As Integer
+
+  Return CoverPicture.Y
+
+End
+
+Private Sub YPos_Write(Value As Integer)
+
+  CoverPicture.Y = Value
+  TitleLabel.Y = CoverPicture.H + Value
+  SongsLabel.Y = TitleLabel.Y + TitleLabel.H
+  NumberAlbum.Y = Value - 15
+
+End
+
+Public Sub ImgClear()
+  
+  Try CoverPicture.Picture.Flush
+  Catch
+    Debug "Error en ImgClear"
+  
+End
+
+Private Function Visible_Read() As Boolean
+
+  Return CoverPicture.Visible
+
+End
+
+Private Sub Visible_Write(Value As Boolean)
+
+  CoverPicture.Visible = Value
+  TitleLabel.Visible = Value
+  SongsLabel.Visible = Value
+  NumberAlbum.Visible = Value
+
+End
+
+Private Function Genero_Read() As String
+
+  Return GeneroAlbum
+
+End
+
+Private Sub Genero_Write(Value As String)
+
+  GeneroAlbum = Value
+
+End

@@ -1,0 +1,43 @@
+' Gambas class file 
+
+Private DataControl As New CData
+' Private ConfigData As Result
+
+Private Functions As CFunctions
+
+Public Sub _new()
+  
+  Me.H = 768
+  Me.W = 1024
+  Me.Border = False
+  
+  'Cargar configuración global
+  ' ConfigData = DataControl.getConfigData
+  
+  'Cargar Functions
+  Functions = New CFunctions
+  
+  'Ajustar volumen
+  Functions.Volumen = Functions.Volumen
+  ' Wait 3
+  'Cargar ecualización
+  ' Functions.Equalization
+
+End
+
+Public Sub Form_KeyPress()
+  
+  Select Key.Text
+    Case "+"
+      Functions.FwList
+    Case "-"
+      Functions.BkList
+    Case DataControl.CancelKey
+      Functions.CancelSong
+    Case DataControl.MaxVolKey
+      Functions.Volumen = Functions.Volumen + 10
+    Case DataControl.MinVolKey
+      Functions.Volumen = Functions.Volumen - 10
+  End Select
+  
+End

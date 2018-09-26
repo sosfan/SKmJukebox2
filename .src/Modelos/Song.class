@@ -1,0 +1,100 @@
+' Gambas class file
+
+' Modelo de datos
+
+Property id As Integer
+Property idsong As Integer
+Property name As String
+Property album As String
+Property genere As String
+Property type As String
+Private id_album As Integer
+Private id_song As Integer
+Private name_song As String
+Private album_song As String
+Private genere_song As String
+Private type_song As String
+
+
+Public Sub _new()
+  
+  id_album = 0
+  id_song = 0
+  name_song = Null
+  album_song = Null
+  genere_song = Null
+  type_song = Null
+  
+End
+
+Private Function id_Read() As Integer
+
+  Return id_album
+
+End
+
+Private Sub id_Write(Value As Integer)
+
+  id_album = Value
+
+End
+
+Private Function idsong_Read() As Integer
+
+  Return id_song
+
+End
+
+Private Sub idsong_Write(Value As Integer)
+
+  id_song = Value
+
+End
+
+Private Function name_Read() As String
+
+  Return name_song
+
+End
+
+Private Sub name_Write(Value As String)
+
+  name_song = Value
+
+End
+
+Private Function album_Read() As String
+
+  Return album_song
+
+End
+
+Private Sub album_Write(Value As String)
+
+  album_song = Value
+
+End
+
+Private Function type_Read() As String
+
+  Return type_song
+
+End
+
+Private Sub type_Write(Value As String)
+
+  type_song = Value
+
+End
+
+Private Function genere_Read() As String
+
+  Return genere_song
+
+End
+
+Private Sub genere_Write(Value As String)
+
+  genere_song = Value
+
+End

@@ -1,0 +1,97 @@
+' Gambas class file
+
+' Objeto CPlayer manejador de reproducción
+' Autor:
+'   José Francisco Facundo <sos.sempai@gmail.com>
+' Licencia:
+'   This program Is Free software; you can redistribute it And / Or modify it under
+'   the terms Of the GNU General Public License As Published by the Free Software
+'   Foundation; version 3.
+' 
+'  This program Is Distributed In the hope that it will be useful, but WITHOUT
+'  ANY WARRANTY; without even the implied warranty Of MERCHANTABILITY Or FITNESS
+'  For A PARTICULAR PURPOSE.See the GNU General Public License For more
+'   details.
+' 
+'  You should have received a Copy Of the GNU General Public License along With
+'  this program; If Not, Write To the Free Software Foundation, Inc.,
+'  51 Franklin Street, Fifth Floor, Boston, MA 02110 - 1301 USA
+
+Event ProcessEnd
+Property VisibleMovieBox As Boolean
+Property mpControl As Boolean
+Private $hProcess As Process
+Private $pMonitor As Timer
+Private $MovieBox As DrawingArea
+
+Public Sub _new()
+  
+  $pMonitor = New Timer As "$pMonitor"
+  $pMonitor.Delay = 500
+  $MovieBox = New DrawingArea(FMain) As "$MovieBox"
+  $MovieBox.X = 0
+  $MovieBox.Y = 0
+  $MovieBox.H = FMain.H
+  $MovieBox.W = FMain.W
+  $MovieBox.Background = 0
+  $MovieBox.Visible = False
+  
+End
+
+Public Sub Play(FilePath As String, tSong As String)
+  
+  FilePath = Conv(FilePath, Desktop.Charset, System.Charset)
+  
+  Select tSong
+    Case "Musica"
+      $hProcess = Exec ["mplayer", "-cache", "1024", "-ao", "alsa", "-vo", "null", "-really-quiet", FilePath] For Read Write As "Process"
+    Case "Video" Or "Karaoke"
+      If $MovieBox.Visible = False Then $MovieBox.Visible = True
+      $hProcess = Exec ["mplayer", "-cache", "2048", "-ao", "alsa", "-vo", "x11", "-zoom", "-x", "1280", "-y", "720", "-really-quiet", "-wid", $MovieBox.Handle, FilePath] For Read Write As "Process"
+  End Select
+  $pMonitor.Enabled = True
+  $MovieBox.Raise
+
+End
+
+Public Sub $pMonitor_Timer()
+  
+  If $hProcess.State = Process.Stopped Then
+    'Dispara el evento
+    Raise ProcessEnd
+  Endif
+  
+End
+
+Public Sub PKill()
+  
+  If Not $hProcess Then Return
+  Try Print #$hProcess, "q";
+  Catch
+    Debug "No existe el proceso."
+  
+End
+
+Private Function mpControl_Read() As Boolean
+
+  Return $pMonitor.Enabled
+
+End
+
+Private Sub mpControl_Write(Value As Boolean)
+
+  $pMonitor.Enabled = Value
+
+End
+
+Private Function VisibleMovieBox_Read() As Boolean
+
+  Return $MovieBox.Visible
+
+End
+
+Private Sub VisibleMovieBox_Write(Value As Boolean)
+
+  $MovieBox.Visible = Value
+
+End

@@ -1,0 +1,65 @@
+' Gambas module file
+
+'
+' Authors:
+'  J. Francisco Facundo <sos.sempai@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; version 3.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+' details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc.,
+' 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+Private sEncrypt As New EasyEncrypt
+Private sSettings As Settings
+Private Const MessageError As String = "iKrc+01|ttQa(O[=+t/J-7Rng5?gyVbjp2eZAM):$CBjntS L%U?-W=a+Cvc+aP8L{BMli_g"
+Public Sub main()
+  
+  CheckStart
+  
+End
+
+Private Sub CheckStart()
+  
+  Dim Result As String, FilePath As String, Passwrd As String
+  sEncrypt.Channel = 10
+  sEncrypt.Strong = 5
+  Passwrd = sEncrypt.TextOfuscate(".# {dn[NVC,F.[DH^[2D~s2Pu#*#q6[g[s)V]AMwn[MZVsah^YeZ[1&X,]B#~mz3[KhlY** /Z[A~{&q/Z*M^Z~6V{XTu?%{[13Qn[{.TA4Zq?,D^^2?p*d%u{d3p?T3,^*#.$J%u=[uq[BpTKT.V*))G=z]V{&g,^rla[TcTAauq:%h^[zZ+[&K^1*OV#p4.sGld{r%GZ]Zdnz+pAG?d6fKcv%H.^Tp+nGlgC36dZ unm3DpA)#a[fgT1XAaMzd", False, "")
+  FilePath = User.Home & sEncrypt.TextOfuscate("ji. +Nc_5$LZ*og.C.[#tuDt", False, Passwrd)
+  '//-------------Auto start--------------------//
+  If Not Exist(User.Home &/ ".config/autostart/SKm Jukebox.desktop") Then
+    If Not Exist(User.home &/ ".config/autostart") Then
+      Mkdir User.Home &/ ".config/autostart"
+    Endif
+    Try Copy "/usr/share/applications/SKm Jukebox.desktop" To User.Home &/ ".config/autostart/SKm Jukebox.desktop"
+  Endif
+  
+  '//-------------Check Handler----------------//
+  If Exist("/tmp/skmjukebox.0") Then Quit
+  
+  If Not Exist(FilePath) Then
+    FPassMain.show
+  Else
+    sSettings = New Settings(FilePath)
+    Shell sEncrypt.TextOfuscate("j<Je)6e]5$MzFOE4d%4&$)|Flix,{|*3}Wce?d>7.]BLn30P+q:w@1^ahF#c_<I&|G,F&uEV)#*3MIw4=nO5=> 2aPm1", False, Passwrd) To Result
+    If sEncrypt.TextOfuscate(Left(Result, -1), True, Passwrd) = "" Then Shell sEncrypt.TextOfuscate("j<Je)6e]5$MzFOE4d%4&LWGMh<8VCtEuS5cB?H:V.]B5wcl))?jYtb>3F_Xe6tR&L{DTXBiVqMfuMDy}aY:V=> jzi0I7(h_++]O", False, Passwrd) To Result
+    If sSettings[sEncrypt.TextOfuscate("1NfA@gK]v32l", False, Passwrd)] = sEncrypt.TextOfuscate(Left(Result, -1), True, Passwrd) Then
+      If Left(Result, -1) = "" Then
+        Message.Error(sEncrypt.TextOfuscate(MessageError, False, Passwrd), "Aceptar")
+        FPassMain.Show
+      Else
+        FMain.Show
+      Endif
+    Else
+      Message.Error(sEncrypt.TextOfuscate(MessageError, False, Passwrd), "Aceptar")
+      FPassMain.Show
+    Endif
+  Endif
+  
+End
