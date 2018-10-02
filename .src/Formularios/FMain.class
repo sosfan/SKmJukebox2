@@ -7,8 +7,6 @@ Private Functions As CFunctions
 
 Public Sub _new()
   
-  Me.H = 768
-  Me.W = 1024
   Me.Border = False
   
   'Cargar configuración global

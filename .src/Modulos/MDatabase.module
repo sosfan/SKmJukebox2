@@ -40,6 +40,7 @@ Public Sub ConfigCreateDatabaseTables(hConn As Connection)
     .Fields.Add("CancelKey", db.String, 1)
     .Fields.Add("MaxVolKey", db.String, 1)
     .Fields.Add("MinVolKey", db.String, 1)
+    .Fields.Add("Theme", db.String)
     .Fields.Add("MusicDir", db.String)
     .Fields.Add("VideoDir", db.String)
     .Fields.Add("KaraokeDir", db.String)
@@ -67,6 +68,7 @@ Public Sub ConfigCreateDatabaseTables(hConn As Connection)
   hResult["CancelKey"] = "c"
   hResult["MaxVolKey"] = "*"
   hResult["MinVolKey"] = "/"
+  hResult["Theme"] = "default"
   hResult["MusicDir"] = User.Home &/ "Música"
   hResult["VideoDir"] = User.Home &/ "Vídeos"
   hResult["KaraokeDir"] = User.Home &/ "Karaokes"

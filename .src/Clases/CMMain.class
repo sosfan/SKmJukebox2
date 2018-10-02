@@ -5,6 +5,7 @@ Inherits Panel
 Private DataControl As New CData
 Private CoverAlbum As New Object[]
 Private Cover As CAlbum
+Private CoverDefault As String
 Private CoverList As CAlbum
 Private Playlist As New CPlaylist
 Private CSongList As Panel
@@ -27,18 +28,23 @@ Public Sub _new()
   
   Dim i As Short
   'load theme configuration
-  hSkinTheme = New Settings(User.Home &/ "Skins/default/theme.conf")
+  hSkinTheme = New Settings(DataControl.SkinPath & DataControl.SkinTheme &/ "theme.conf")
 
   BackImage = New PictureBox(Me)
   BackImage.X = 0
   BackImage.Y = 0
-  BackImage.W = hSkinTheme["Window/W", 1024]
-  BackImage.H = hSkinTheme["Window/H", 768]
+  BackImage.W = hSkinTheme["Window/W"]
+  BackImage.H = hSkinTheme["Window/H"]
+  BackImage.Stretch = True
+  FMain.W = BackImage.W
+  FMain.H = BackImage.H
+  'Default cover picture
+  CoverDefault = DataControl.SkinPath & DataControl.SkinTheme &/ hSkinTheme["Images/CoverDefault"]
   
   'Matriz de controles CoverAlbum
   For i = 1 To 10
     Cover = New CAlbum(Me) As "Cover"
-    Cover.Cover = hSkinTheme["Images/CoverDefault", "null.png"]
+    Cover.Cover = CoverDefault
     CoverAlbum.Add(Cover)
   Next
   'Vista de lista
@@ -86,7 +92,7 @@ Public Sub Cover_Click()
   SelectGenero = $hResult["Genero"]
   SongID = $hResult["Songsid1"]
   If $hResult["Cover_name"] = "0" Then 
-    CoverList.Cover = hSkinTheme["Images/CoverDefault", "null.png"]
+    CoverList.Cover = CoverDefault
   Else
     CoverList.Cover = DataControl.getWorkDir() &/ SelectGenero &/ SelectAlbum &/ $hResult["Cover_name"]
   Endif
@@ -186,8 +192,8 @@ Private Sub ShowBackground(type As String)
   
   Dim bgimage As String
   
-  bgimage = hSkinTheme["Images/" & type, "null.png"]
-  BackImage.Picture = Picture[User.Home &/ "Skins/default/" & bgimage]
+  bgimage = hSkinTheme["Images/" & type]
+  BackImage.Picture = Picture[DataControl.SkinPath & DataControl.SkinTheme &/ bgimage]
   
 End
 
@@ -255,7 +261,7 @@ Private Sub AlbumShow()
     If hResult.Available = True Then
       If hResult["Cover_name"] = "0" Then
         'Muestra imagen por defecto
-        CoverAlbum[i].cover = hSkinTheme["Images/CoverDefault", "null.png"]
+        CoverAlbum[i].cover = CoverDefault
       Else
         CoverAlbum[i].Cover = DataControl.getWorkDir() &/ hResult["Genero"] &/ hResult["Album"] &/ hResult["Cover_name"]
       Endif

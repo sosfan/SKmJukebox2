@@ -23,6 +23,8 @@ Property Credito As Integer
 Property channels As Integer[]
 Property Skm_Modo As String ''Establece o retorna el modo de busqueda.
 Property DBPlayList As Song ''Establece o retorna un elemento a la PlayList en la base de datos.
+Property SkinTheme As String ''Establece o retorna el nombre de piel seleccionada.
+Property SkinPath As String ''Retorna el path de skins
 Private Modo As String
 Private Total_Album As Integer
 Private hConn As Connection
@@ -558,5 +560,34 @@ Public Sub setPlayHistory(Value As Integer)
     hConn.Exec("update " & nModo & "playhistory set Contador=" & i & " where id=" & Value)
   Endif
 
+End
+
+Private Function SkinTheme_Read() As String
+
+  Dim hResult As Result
+  
+  hResult = hConn.Exec("select Theme from config_data where id=1")
+  Return hResult["Theme"]
 
 End
+
+Private Sub SkinTheme_Write(Value As String)
+
+  hConn.Exec("update config_data set Theme=" & Value & " where id=1")
+
+End
+
+Private Function SkinPath_Read() As String
+  
+  Dim path As String
+  path = User.Home &/ "Skins/"
+  Return path
+  
+End
+
+Private Sub SkinPath_Write(Value As String)
+  
+  Debug "Read only"
+  
+End
+

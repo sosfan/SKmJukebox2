@@ -1,7 +1,6 @@
 ' Gambas class file
 
 Private DataControl As New CData
-' Private ConfigData As Result
 Private $CMain As CMMain
 Private NumberPos As Integer
 Property Skm_Modo As String
@@ -9,17 +8,17 @@ Property Volumen As Integer ''Establece o retorna el valor de volumen.
 
 Public Sub _new()
   
-  ' ConfigData = DataControl.getConfigData
+  Dim SkinTheme As Settings
   DataControl.Skm_Modo = "Musica"
+  SkinTheme = New Settings(DataControl.SkinPath & DataControl.SkinTheme &/ "theme.conf")
   NumberPos = 1
   $CMain = New CMMain(FMain)
-  $CMain.H = 768
-  $CMain.W = 1024
+  $CMain.H = SkinTheme["Window/H"]
+  $CMain.W = SkinTheme["Window/W"]
   $CMain.X = 0
   $CMain.Y = 0
   $CMain.Skm_Modo = DataControl.Skm_Modo
   $CMain.NumberPos = NumberPos
-  
   
 End
 
@@ -49,7 +48,6 @@ Private Sub SetVolMaster(PercentVol As Integer)
   
   If PercentVol < 0 Or PercentVol > 100 Then Return
   Shell "pavol percent " & PercentVol & "%"
-  ' If PercentVol = ConfigData["MasterVol"] Then Return
   DataControl.MasterVol = PercentVol
   Debug PercentVol
   
