@@ -8,7 +8,7 @@ Requiere:
   *gb.db
   
   *gb.db.sqlite3
-  
+
   *gb.form
   
   *gb.qt4

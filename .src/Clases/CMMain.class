@@ -57,8 +57,9 @@ Public Sub _new()
   FMain.W = BackImage.W
   FMain.H = BackImage.H
   'Default cover picture
+
   CoverDefault = hSkinPath &/ hSkinTheme["Images/CoverDefault"]
-  
+
   'Matriz de controles CoverAlbum
   For i = 1 To 10
     Cover = New CAlbum(Me) As "Cover"
@@ -212,7 +213,7 @@ Private Sub ShowBackground(type As String)
   
   bgimage = hSkinTheme["Images/" & type]
   BackImage.Picture = Picture[hSkinPath &/ bgimage]
-  
+
 End
 
 Private Sub LoadThemeConfiguration()
