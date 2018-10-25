@@ -18,8 +18,8 @@
 '  51 Franklin Street, Fifth Floor, Boston, MA 02110 - 1301 USA
 
 Event ProcessEnd
-Property VisibleMovieBox As Boolean
-Property mpControl As Boolean
+Property VisibleMovieBox As Boolean ''Habilita o deshabilita la visibilidad del MovieBox.
+Property mpControl As Boolean ''Muestra el estado del timer.
 Private $hProcess As Process
 Private $pMonitor As Timer
 Private $MovieBox As DrawingArea

@@ -1,5 +1,22 @@
 ' Gambas class file
 
+'
+' Authors:
+'  J. Francisco Facundo <sos.sempai@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; version 3.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+' details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc.,
+' 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+
 Property getConfigData As Result
 Property MoneyValue As Integer
 Property CreditValue As Integer
@@ -398,7 +415,7 @@ Private Sub channels_Write(Value As Integer[])
 
 End
 
-Public Sub getDataAlbums(Contador As Short) As Result 'Devuelve 10 busquedas
+Public Sub getDataAlbums(Contador As Short) As Result ''Devuelve 10 busquedas
 
   Dim hResult As Result
   
@@ -416,7 +433,7 @@ Public Sub getDataAlbums(Contador As Short) As Result 'Devuelve 10 busquedas
 
 End
 
-Public Sub getDataAlbum(Contador As Short) As Result 'Devueve 1 busqueda
+Public Sub getDataAlbum(Contador As Short) As Result ''Devueve 1 busqueda
   
   Dim hResult As Result
   Select Modo
@@ -450,7 +467,7 @@ Public Sub getDataSongs(Contador As Short) As Result
   
 End
 
-Public Sub getAllPlaylist() As Integer ' Retorna la longitud de la cola de reproducción.
+Public Sub getAllPlaylist() As Integer '' Retorna la longitud de la cola de reproducción.
   
   Dim hResult As Result
   

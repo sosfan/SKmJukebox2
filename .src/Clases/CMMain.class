@@ -1,5 +1,22 @@
 ' Gambas class file
 
+'
+' Authors:
+'  J. Francisco Facundo <sos.sempai@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; version 3.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+' details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc.,
+' 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+
 Inherits Panel
 
 Private DataControl As New CData
@@ -16,7 +33,7 @@ Private BackImage As PictureBox
 Private NumAlbum As Integer
 Private TotalAlbums As Integer
 Private $hResult As Result
-
+Private hSkinPath As String
 Private hSkinTheme As Settings
 Private SelectAlbum As String
 Private SelectGenero As String
@@ -28,7 +45,8 @@ Public Sub _new()
   
   Dim i As Short
   'load theme configuration
-  hSkinTheme = New Settings(DataControl.SkinPath & DataControl.SkinTheme &/ "theme.conf")
+  hSkinPath = DataControl.SkinPath & DataControl.SkinTheme
+  hSkinTheme = New Settings(hSkinPath &/ "theme.conf")
 
   BackImage = New PictureBox(Me)
   BackImage.X = 0
@@ -39,7 +57,7 @@ Public Sub _new()
   FMain.W = BackImage.W
   FMain.H = BackImage.H
   'Default cover picture
-  CoverDefault = DataControl.SkinPath & DataControl.SkinTheme &/ hSkinTheme["Images/CoverDefault"]
+  CoverDefault = hSkinPath &/ hSkinTheme["Images/CoverDefault"]
   
   'Matriz de controles CoverAlbum
   For i = 1 To 10
@@ -193,7 +211,7 @@ Private Sub ShowBackground(type As String)
   Dim bgimage As String
   
   bgimage = hSkinTheme["Images/" & type]
-  BackImage.Picture = Picture[DataControl.SkinPath & DataControl.SkinTheme &/ bgimage]
+  BackImage.Picture = Picture[hSkinPath &/ bgimage]
   
 End
 

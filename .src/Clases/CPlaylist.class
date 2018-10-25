@@ -16,6 +16,7 @@
 '  You should have received a Copy Of the GNU General Public License along With
 '  this program; If Not, Write To the Free Software Foundation, Inc.,
 '  51 Franklin Street, Fifth Floor, Boston, MA 02110 - 1301 USA
+
 Private MatrizLed As PanelLed
 Private DataControl As New CData
 Private $bState As Boolean 
