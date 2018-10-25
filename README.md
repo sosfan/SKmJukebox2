@@ -10,9 +10,9 @@ Requiere:
   *gb.db.sqlite3
 
   *gb.form
-
+  
   *gb.qt4
-
+  
   *gb.image
   
   *gb.settings
