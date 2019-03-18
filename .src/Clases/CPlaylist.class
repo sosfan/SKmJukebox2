@@ -22,18 +22,27 @@ Private DataControl As New CData
 Private $bState As Boolean 
 Private PlayListSongs As Integer
 Private mPlayer As CPlayer
+Private hSkinPath As String
+Private hSkinTheme As Settings
+
  
 Public Sub _new()
 
   Dim MessageText As String
   
+  hSkinPath = DataControl.SkinPath & DataControl.SkinTheme
+  hSkinTheme = New Settings(hSkinPath &/ "theme.conf")
+  
   MatrizLed = New PanelLed(FMain)
-  MatrizLed.H = 43
-  MatrizLed.W = MatrizLed.H * 14
-  MatrizLed.X = 61
-  MatrizLed.Y = 32
-  MatrizLed.LedSpeed = 70
-  ' addMatrizLed("SKm Jukebox Version " & Application.Version)
+  
+  With MatrizLed
+    .X = hSkinTheme["ScrollText/X"]
+    .Y = hSkinTheme["ScrollText/Y"]
+    .H = hSkinTheme["ScrollText/H"]
+    .W = hSkinTheme["ScrollText/W"]
+    .LedSpeed = 70
+  End With
+
   MessageText = "Bienvenidos a su lugar preferido"
   addMatrizLed(MessageText)
   mPlayer = New CPlayer As "mPlayer"

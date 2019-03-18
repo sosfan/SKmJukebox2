@@ -29,13 +29,18 @@ Public Sub _new()
   DataControl.Skm_Modo = "Musica"
   SkinTheme = New Settings(DataControl.SkinPath & DataControl.SkinTheme &/ "theme.conf")
   NumberPos = 1
-  $CMain = New CMMain(FMain)
-  $CMain.H = SkinTheme["Window/H"]
-  $CMain.W = SkinTheme["Window/W"]
-  $CMain.X = 0
-  $CMain.Y = 0
-  $CMain.Skm_Modo = DataControl.Skm_Modo
-  $CMain.NumberPos = NumberPos
+  
+  $CMain = New CMMain(FMain) As "CMain"
+  
+  With $CMain
+    .H = SkinTheme["Window/H"]
+    .W = SkinTheme["Window/W"]
+    .X = 0
+    .Y = 0
+    .Skm_Modo = DataControl.Skm_Modo
+    .NumberPos = NumberPos
+  End With
+  
   
 End
 
@@ -125,3 +130,17 @@ Private Sub Skm_Modo_Write(Value As String)
   $CMain.Skm_Modo = Value
 
 End
+
+Public Sub CMain_ForwardKey()
+  
+  FwList
+  
+End
+
+Public Sub CMain_BackwardKey()
+  
+  BkList
+  
+End
+
+

@@ -1,0 +1,159 @@
+' Gambas class file
+
+' SKm Jukebox 2
+'
+' Descripción de la clase: Generador de teclas
+'
+' Autores:
+'  J. Francisco Facundo <sos.sempai@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; version 3.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+' details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc.,
+' 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+
+Inherits Panel
+
+Property LetterKey As String
+Property imgResPath As String
+Property $idKey As String
+
+Property HKey As Integer
+Property WKey As Integer
+
+Event PulseKey
+
+Private imgKey As PictureBox
+Private LabelKey As TextLabel
+Private ResKeyHover As Timer
+
+Private idKey As String
+' Private TypeK As Short
+Private imgRes As String
+Private Himg As Integer
+Private Wimg As Integer
+
+Public Sub _new()
+  
+  imgKey = New PictureBox(Me) As "imgKey"
+  imgKey.X = 0
+  imgKey.Y = 0
+  imgKey.Stretch = True
+  
+  LabelKey = New TextLabel(Me) As "LabelKey"
+  LabelKey.X = 0
+  LabelKey.Y = 0
+  LabelKey.Alignment = 3
+  LabelKey.Font.Name = "FreeSans"
+  LabelKey.Font.Bold = True
+  LabelKey.Font.Size = 14
+  LabelKey.Foreground = &00FFFFFF&
+  
+  ResKeyHover = New Timer As "ResKeyHover"
+  ResKeyHover.Delay = 50
+  
+End
+
+Public Sub ResKeyHover_Timer()
+
+  imgKey.Picture = Picture[imgRes]
+  ResKeyHover.Stop
+
+End
+
+Public Sub LabelKey_MouseDown()
+
+  imgKey.Picture = Picture[Left(imgRes, -4) & "_Hover.png"]
+  
+End
+
+Public Sub LabelKey_MouseUp()
+  
+  ResKeyHover.Start
+  Raise PulseKey
+  
+End
+
+Private Function LetterKey_Read() As String
+
+  Return idKey
+
+End
+
+Private Sub LetterKey_Write(Value As String)
+
+  LabelKey.Text = Value
+  idkey = Value
+
+End
+
+Private Function imgResPath_Read() As String
+
+  Return imgRes
+
+End
+
+Private Sub imgResPath_Write(Value As String)
+
+  imgRes = Value
+  ConfigureKey
+
+End
+
+
+Private Sub ConfigureKey()
+
+  imgKey.Picture = Picture[imgRes]
+
+End
+
+Private Function HKey_Read() As Integer
+
+  Return Himg
+
+End
+
+Private Sub HKey_Write(Value As Integer)
+
+  Himg = Value
+  imgKey.H = Himg
+  LabelKey.H = Himg
+  Me.H = Himg
+
+End
+
+Private Function WKey_Read() As Integer
+
+  Return Wimg
+
+End
+
+Private Sub WKey_Write(Value As Integer)
+
+  Wimg = Value
+  imgKey.W = Wimg
+  LabelKey.W = Wimg
+  Me.W = Wimg
+
+End
+
+
+Private Function $idKey_Read() As String
+
+  Return idKey
+
+End
+
+Private Sub $idKey_Write(Value As String)
+
+  idKey = Value
+
+End

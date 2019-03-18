@@ -78,13 +78,15 @@ Public Sub _new()
   If Not Exist(User.Home &/ "music_db.sqlite") Then
     MDatabase.CreateDatabase
     ConectarBase
-    MDatabase.ConfigCreateDatabaseTables(hConn)
-    MDatabase.EQCreateDatabaseTables(hConn)
-    MDatabase.MusicaCreateDatabaseTables(hConn)
-    MDatabase.VideoCreateDatabaseTables(hConn)
-    MDatabase.KaraokeCreateDatabaseTables(hConn)
-    MDatabase.MonederoCreateDatabaseTables(hConn)
-    MDatabase.PlayListCreateDatabaseTables(hConn)
+    With MDatabase
+      .ConfigCreateDatabaseTables(hConn)
+      .EQCreateDatabaseTables(hConn)
+      .MusicaCreateDatabaseTables(hConn)
+      .VideoCreateDatabaseTables(hConn)
+      .KaraokeCreateDatabaseTables(hConn)
+      .MonederoCreateDatabaseTables(hConn)
+      .PlayListCreateDatabaseTables(hConn)
+    End With
     CerrarConexion
   Endif
   ConectarBase
@@ -483,10 +485,13 @@ Private Function DBPlayList_Read() As Song
   hResult = hConn.Exec("select * from playlist")
   hResult.MoveFirst
   hConn.Exec("delete from playlist where id=" & hResult["id"])
-  sData.album = hResult["Album"]
-  sData.name = hResult["Nombre"]
-  sData.genere = hResult["Genero"]
-  sData.type = hResult["Tipo"]
+  
+  With sData
+    .album = hResult["Album"]
+    .name = hResult["Nombre"]
+    .genere = hResult["Genero"]
+    .type = hResult["Tipo"]
+  End With
   
   Return sData
 
