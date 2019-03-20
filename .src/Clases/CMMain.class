@@ -54,7 +54,6 @@ Public Sub _new()
   hSkinTheme = New Settings(hSkinPath &/ "theme.conf")
 
   BackImage = New PictureBox(Me)
-  
   With BackImage
     .X = 0
     .Y = 0
@@ -75,13 +74,16 @@ Public Sub _new()
       .WKey = hSkinTheme["Navigator" & i & "/W"]
       .imgResPath = hSkinPath &/ hSkinTheme["Images/Nav" & i]
       .$idKey = "Nav" & i
-      If i = 2 Then .Hide
+      If i = 2 Then
+        .Hide
+      Else
+        .MultiSend = DataControl.AutoScroll
+      Endif
     End With
     Navigators.Add(Navigator)
   Next
   
   'Default cover picture
-
   CoverDefault = hSkinPath &/ hSkinTheme["Images/CoverDefault"]
 
   'Matriz de controles CoverAlbum
@@ -90,6 +92,7 @@ Public Sub _new()
     Cover.Cover = CoverDefault
     CoverAlbum.Add(Cover)
   Next
+  
   'List view
   CoverList = New CAlbum(Me)
   CoverList.Visible = False

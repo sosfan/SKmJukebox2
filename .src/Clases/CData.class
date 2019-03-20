@@ -26,6 +26,7 @@ Property ShowCursor As Boolean
 Property ScreenSaver As Boolean
 Property VideoOut As Boolean
 Property AutoPlay As Boolean
+Property AutoScroll As Boolean
 Property MaxCreditKey As String
 Property MinCreditKey As String
 Property ConfigKey As String
@@ -228,6 +229,21 @@ End
 Private Sub AutoPlay_Write(Value As Boolean)
 
   hConn.Exec("update config_data set AutoPlay=" & Value & " where id=1")
+
+End
+
+Private Function AutoScroll_Read() As Boolean
+
+  Dim hResult As Result
+  
+  hResult = hConn.Exec("select AutoScroll from config_data where id=1")
+  Return hResult["AutoScroll"]
+
+End
+
+Private Sub AutoScroll_Write(Value As Boolean)
+
+  hConn.Exec("update config_data set AutoScroll=" & Value & " where id=1")
 
 End
 
@@ -612,4 +628,3 @@ Private Sub SkinPath_Write(Value As String)
   Debug "Read only"
   
 End
-

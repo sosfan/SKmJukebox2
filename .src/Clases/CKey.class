@@ -22,9 +22,10 @@
 
 Inherits Panel
 
-Property LetterKey As String
-Property imgResPath As String
-Property $idKey As String
+Property LetterKey As String ''Asigna el texto que mostrará la tecla.
+Property imgResPath As String ''Asigna la imagen que mostrará la tecla.
+Property $idKey As String ''Asinga el identificador de la tecla.
+Property MultiSend As Boolean ''Habilita el envío constante del evento PulseKey mientras se mantiene pulsado la tecla.
 
 Property HKey As Integer
 Property WKey As Integer
@@ -34,12 +35,13 @@ Event PulseKey
 Private imgKey As PictureBox
 Private LabelKey As TextLabel
 Private ResKeyHover As Timer
+Private SendEventKey As Timer
 
 Private idKey As String
-' Private TypeK As Short
 Private imgRes As String
 Private Himg As Integer
 Private Wimg As Integer
+Private MultiSendKey As Boolean
 
 Public Sub _new()
   
@@ -49,7 +51,6 @@ Public Sub _new()
     .Y = 0
     .Stretch = True
   End With
-  
   
   LabelKey = New TextLabel(Me) As "LabelKey"
   With LabelKey
@@ -62,9 +63,11 @@ Public Sub _new()
     .Foreground = &00FFFFFF&
   End With
   
-  
   ResKeyHover = New Timer As "ResKeyHover"
   ResKeyHover.Delay = 50
+  
+  SendEventKey = New Timer As "SendEventKey"
+  SendEventKey.Delay = 500
   
 End
 
@@ -75,9 +78,18 @@ Public Sub ResKeyHover_Timer()
 
 End
 
+Public Sub SendEventKey_Timer()
+  
+  Raise PulseKey
+  
+End
+
 Public Sub LabelKey_MouseDown()
 
   imgKey.Picture = Picture[Left(imgRes, -4) & "_Hover.png"]
+  If MultiSendKey = True Then
+    SendEventKey.Start
+  Endif
   
 End
 
@@ -85,6 +97,9 @@ Public Sub LabelKey_MouseUp()
   
   ResKeyHover.Start
   Raise PulseKey
+  If MultiSendKey = True Then
+    SendEventKey.Stop
+  Endif
   
 End
 
@@ -151,7 +166,6 @@ Private Sub WKey_Write(Value As Integer)
 
 End
 
-
 Private Function $idKey_Read() As String
 
   Return idKey
@@ -161,5 +175,17 @@ End
 Private Sub $idKey_Write(Value As String)
 
   idKey = Value
+
+End
+
+Private Function MultiSend_Read() As Boolean
+
+  Return MultiSendKey
+
+End
+
+Private Sub MultiSend_Write(Value As Boolean)
+
+  MultiSendKey = Value
 
 End

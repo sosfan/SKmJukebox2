@@ -34,6 +34,7 @@ Public Sub ConfigCreateDatabaseTables(hConn As Connection)
     .Fields.Add("ScreenSaver", db.Boolean)
     .Fields.Add("VideoOut", db.Boolean)
     .Fields.Add("AutoPlay", db.Boolean)
+    .Fields.Add("AutoScroll", db.Boolean)
     .Fields.Add("MaxCreditKey", db.String, 1)
     .Fields.Add("MinCreditKey", db.String, 1)
     .Fields.Add("ConfigKey", db.String, 1)
@@ -44,7 +45,6 @@ Public Sub ConfigCreateDatabaseTables(hConn As Connection)
     .Fields.Add("MusicDir", db.String)
     .Fields.Add("VideoDir", db.String)
     .Fields.Add("KaraokeDir", db.String)
-    
     
     .PrimaryKey = ["id"]
     
@@ -62,6 +62,7 @@ Public Sub ConfigCreateDatabaseTables(hConn As Connection)
   hResult["ScreenSaver"] = True
   hResult["VideoOut"] = False
   hResult["AutoPlay"] = True
+  hResult["AutoScroll"] = True
   hResult["MaxCreditKey"] = "z"
   hResult["MinCreditKey"] = "<"
   hResult["ConfigKey"] = "o"
