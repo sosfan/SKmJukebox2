@@ -29,12 +29,15 @@ Public Sub _new()
   $pMonitor = New Timer As "$pMonitor"
   $pMonitor.Delay = 500
   $MovieBox = New DrawingArea(FMain) As "$MovieBox"
-  $MovieBox.X = 0
-  $MovieBox.Y = 0
-  $MovieBox.H = FMain.H
-  $MovieBox.W = FMain.W
-  $MovieBox.Background = 0
-  $MovieBox.Visible = False
+  With $MovieBox
+    .X = 0
+    .Y = 0
+    .H = FMain.H
+    .W = FMain.W
+    .Background = 0
+    .Visible = False
+  End With
+  
   
 End
 

@@ -44,18 +44,24 @@ Private Wimg As Integer
 Public Sub _new()
   
   imgKey = New PictureBox(Me) As "imgKey"
-  imgKey.X = 0
-  imgKey.Y = 0
-  imgKey.Stretch = True
+  With imgKey
+    .X = 0
+    .Y = 0
+    .Stretch = True
+  End With
+  
   
   LabelKey = New TextLabel(Me) As "LabelKey"
-  LabelKey.X = 0
-  LabelKey.Y = 0
-  LabelKey.Alignment = 3
-  LabelKey.Font.Name = "FreeSans"
-  LabelKey.Font.Bold = True
-  LabelKey.Font.Size = 14
-  LabelKey.Foreground = &00FFFFFF&
+  With LabelKey
+    .X = 0
+    .Y = 0
+    .Alignment = 3
+    .Font.Name = "FreeSans"
+    .Font.Bold = True
+    .Font.Size = 14
+    .Foreground = &00FFFFFF&
+  End With
+  
   
   ResKeyHover = New Timer As "ResKeyHover"
   ResKeyHover.Delay = 50

@@ -102,10 +102,10 @@ Public Sub _new()
     Song = New TextLabel(CSongList) As "Song"
     With Song
       .Visible = False
-      .Font.Name = "FreeSans"
-      .Font.Size = 12
+      .Font.Name = hSkinTheme["SongList/Font"]
+      .Font.Size = hSkinTheme["SongList/FontSize"]
       .Font.Bold = True
-      .Foreground = &00FFFFFF&
+      .Foreground = CInt(hSkinTheme["SongList/Foreground"])
       .Wrap = True
       .Alignment = 0
       .Padding = 3
@@ -270,34 +270,46 @@ End
 
 Private Sub LoadThemeConfiguration()
   
-  Dim p, c, i As Short
+  Dim p, c, i, $H, $W As Short
   
   ShowBackground("Background")
   For i = 0 To 9
-    CoverAlbum[i].SizeH = hSkinTheme["Album" & i & "/H", 180]
-    CoverAlbum[i].SizeW = hSkinTheme["Album" & i & "/W", 180]
-    CoverAlbum[i].XPos = hSkinTheme["Album" & i & "/X"]
-    CoverAlbum[i].YPos = hSkinTheme["Album" & i & "/Y"]
+    With CoverAlbum[i]
+      .SizeH = hSkinTheme["Album" & i & "/H", 180]
+      .SizeW = hSkinTheme["Album" & i & "/W", 180]
+      .XPos = hSkinTheme["Album" & i & "/X"]
+      .YPos = hSkinTheme["Album" & i & "/Y"]
+    End With
   Next
 
-  CoverList.XPos = 57
-  CoverList.YPos = 139
-  CoverList.SizeH = 220
-  CoverList.SizeW = 220
+'Ajustar la imagen del caratula en la lista de canciones
+  With CoverList
+    .XPos = hSkinTheme["CoverList/X"]
+    .YPos = hSkinTheme["CoverList/Y"]
+    .SizeH = hSkinTheme["CoverList/H"]
+    .SizeW = hSkinTheme["CoverList/W"]
+  End With
   
-  CSongList.X = 291
-  CSongList.Y = 107
-  CSongList.H = 514
-  CSongList.W = 675
+  'Panel para organizar la lista de canciones
+  With CSongList
+    .X = hSkinTheme["SongList/X"]
+    .Y = hSkinTheme["SongList/Y"]
+    .H = hSkinTheme["SongList/H"]
+    .W = hSkinTheme["SongList/W"]
+  End With
   
-  'TO DO
+  $H = CInt(CSongList.H / 10)
+  $W = CInt(CSongList.W / 3)
+  
   'Ajustar lista de canciones
-  For p = 0 To 450 Step 225
+  For p = 0 To CSongList.W - $W Step $W
     For i = 0 To 9
-      SongList[c].H = 51
-      SongList[c].W = 225
-      SongList[c].X = p
-      SongList[c].Y = 51 * i
+      With SongList[c]
+        .H = $H
+        .W = $W
+        .X = p
+        .Y = $H * i
+      End With
       Inc c
     Next
   Next
@@ -328,22 +340,25 @@ Private Sub AlbumShow()
   'Si llega al final de los albumnes hace el calculo de cuanto mostrar.
   For i = 0 To 9
     hResult = DataControl.getDataAlbums(NumAlbum + i)
-    If hResult.Available = True Then
-      If hResult["Cover_name"] = "0" Then
-        'Muestra imagen por defecto
-        CoverAlbum[i].cover = CoverDefault
+    With CoverAlbum[i]
+      If hResult.Available = True Then
+        If hResult["Cover_name"] = "0" Then
+          'Muestra imagen por defecto
+          .cover = CoverDefault
+        Else
+          .Cover = DataControl.getWorkDir() &/ hResult["Genero"] &/ hResult["Album"] &/ hResult["Cover_name"]
+        Endif
+        .Title = hResult["Album"]
+        .Songs = hResult["Total_songs"]
+        .Number = Draw_Zeros(NumAlbum + i)
       Else
-        CoverAlbum[i].Cover = DataControl.getWorkDir() &/ hResult["Genero"] &/ hResult["Album"] &/ hResult["Cover_name"]
+        .cover = "./resource/null.png"
+        .Title = ""
+        .Songs = "0"
+        .Number = ""
       Endif
-      CoverAlbum[i].Title = hResult["Album"]
-      CoverAlbum[i].Songs = hResult["Total_songs"]
-      CoverAlbum[i].Number = Draw_Zeros(NumAlbum + i)
-    Else
-      CoverAlbum[i].cover = "./resource/null.png"
-      CoverAlbum[i].Title = ""
-      CoverAlbum[i].Songs = "0"
-      CoverAlbum[i].Number = ""
-    Endif
+    End With
+
   Next
   
 End

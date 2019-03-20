@@ -83,12 +83,14 @@ Private Sub CreateKeys()
         Ypos = TextSearch.Y - 3
         c = 0
     End Select
-    SingleKey.X = Xpos + Wkey * c
-    SingleKey.Y = Ypos
-    SingleKey.LetterKey = char
-    SingleKey.HKey = Hkey
-    SingleKey.WKey = Wkey
-    SingleKey.imgResPath = hSkinPath &/ hSkinTheme["Images/LongKey"]
+    With SingleKey
+      .X = Xpos + Wkey * c
+      .Y = Ypos
+      .LetterKey = char
+      .HKey = Hkey
+      .WKey = Wkey
+      .imgResPath = hSkinPath &/ hSkinTheme["Images/LongKey"]
+    End With
     Inc c
     $Keyboard.Add(SingleKey)
   Next
@@ -103,13 +105,16 @@ Private Sub CreateKeys()
   'Arreglo para teclado numerico
   For i = 48 To 57
     SingleKey = New CKey(Me) As "SingleKey"
-    SingleKey.X = Xpos + Wkey * c
-    SingleKey.Y = Ypos
-    SingleKey.LetterKey = Chr$(i)
-    SingleKey.HKey = Hkey
-    SingleKey.WKey = Wkey
-    SingleKey.imgResPath = hSkinPath &/ hSkinTheme["Images/SingleKey"]
-    SingleKey.$idKey = "Single"
+    With SingleKey
+      .X = Xpos + Wkey * c
+      .Y = Ypos
+      .LetterKey = Chr$(i)
+      .HKey = Hkey
+      .WKey = Wkey
+      .imgResPath = hSkinPath &/ hSkinTheme["Images/SingleKey"]
+      .$idKey = "Single"
+    End With
+    
     Inc c
     $Keyboard.Add(SingleKey)
   Next
@@ -196,23 +201,26 @@ Private Sub CreateKeys()
         c = 2
     End Select
     
-    'Define la tecla espaciadora
-    If i = 30 Then
-      SingleKey.HKey = 50
-      SingleKey.WKey = 273
-      SingleKey.$idKey = "Space"
-      SingleKey.imgResPath = hSkinPath &/ hSkinTheme["Images/SpaceKey"]
-    Else
-      'Teclas normales
-      SingleKey.HKey = Hkey
-      SingleKey.WKey = Wkey
-      SingleKey.$idKey = "Single"
-      SingleKey.imgResPath = hSkinPath &/ hSkinTheme["Images/SingleKey"]
-    Endif
+    With SingleKey
+      'Define la tecla espaciadora
+      If i = 30 Then
+        .HKey = 50
+        .WKey = 273
+        .$idKey = "Space"
+        .imgResPath = hSkinPath &/ hSkinTheme["Images/SpaceKey"]
+      Else
+        'Teclas normales
+        .HKey = Hkey
+        .WKey = Wkey
+        .$idKey = "Single"
+        .imgResPath = hSkinPath &/ hSkinTheme["Images/SingleKey"]
+      Endif
+      
+      .X = Xpos + Wkey * c
+      .Y = Ypos
+      .LetterKey = char
     
-    SingleKey.X = Xpos + Wkey * c
-    SingleKey.Y = Ypos
-    SingleKey.LetterKey = char
+    End With
     
     Inc c
     $Keyboard.Add(SingleKey)

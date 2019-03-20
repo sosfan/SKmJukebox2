@@ -57,4 +57,8 @@ Public Sub Form_KeyPress()
   
 End
 
+Public Sub Form_Close()
 
+  Quit
+
+End

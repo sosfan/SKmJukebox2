@@ -37,22 +37,31 @@ Property Genero As String ''Establece el Genero del album
 Public Sub _new(sContainer As Container)
   
   CoverPicture = New PictureBox(sContainer) As "CoverPicture"
-  CoverPicture.Stretch = True
-  CoverPicture.Visible = True
+  With CoverPicture
+    .Stretch = True
+    .Visible = True
+  End With
   
   TitleLabel = New TextLabel(sContainer)
-  TitleLabel.Visible = True
-  TitleLabel.Foreground = &00FFFFFF&
+  With TitleLabel
+    .Visible = True
+   .Foreground = &00FFFFFF&
+  End With
   
   SongsLabel = New TextLabel(sContainer)
-  SongsLabel.Font.Size = 8
-  SongsLabel.Visible = True
-  SongsLabel.Foreground = &00FFFFFF&
+  With SongsLabel
+    .Font.Size = 8
+    .Visible = True
+    .Foreground = &00FFFFFF&
+  End With
   
   NumberAlbum = New TextLabel(sContainer)
-  NumberAlbum.Font.Bold = True
-  NumberAlbum.Visible = True
-  NumberAlbum.Foreground = &00FFFF00&
+  With NumberAlbum
+    .Font.Bold = True
+    .Visible = True
+    .Foreground = &00FFFF00&
+    .Alignment = Align.BottomNormal
+  End With
   
 End
 
