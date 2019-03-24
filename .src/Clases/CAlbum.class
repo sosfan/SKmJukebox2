@@ -33,6 +33,9 @@ Property XPos As Integer ''Establece la posicion en coordenadas X del control
 Property YPos As Integer ''Establece la posicion en coordenadas Y del control
 Property Visible As Boolean ''Establece la visibilidad del objeto
 Property Genero As String ''Establece el Genero del album
+Property AlbumNameText As TextLabel
+Property AlbumNumText As TextLabel
+Property AlbumSongsText As TextLabel
 
 Public Sub _new(sContainer As Container)
   
@@ -45,7 +48,7 @@ Public Sub _new(sContainer As Container)
   TitleLabel = New TextLabel(sContainer)
   With TitleLabel
     .Visible = True
-   .Foreground = &00FFFFFF&
+    .Foreground = &00FFFFFF&
   End With
   
   SongsLabel = New TextLabel(sContainer)
@@ -217,5 +220,41 @@ End
 Private Sub Genero_Write(Value As String)
 
   GeneroAlbum = Value
+
+End
+
+Private Function AlbumNameText_Read() As TextLabel
+
+  Return TitleLabel
+
+End
+
+Private Sub AlbumNameText_Write(Value As TextLabel)
+
+  TitleLabel = Value
+
+End
+
+Private Function AlbumNumText_Read() As TextLabel
+
+  Return NumberAlbum
+
+End
+
+Private Sub AlbumNumText_Write(Value As TextLabel)
+
+  NumberAlbum = Value
+
+End
+
+Private Function AlbumSongsText_Read() As TextLabel
+
+  Return SongsLabel
+
+End
+
+Private Sub AlbumSongsText_Write(Value As TextLabel)
+
+  SongsLabel = Value
 
 End

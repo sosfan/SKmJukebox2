@@ -40,7 +40,7 @@ Public Sub _new()
     .Y = hSkinTheme["ScrollText/Y"]
     .H = hSkinTheme["ScrollText/H"]
     .W = hSkinTheme["ScrollText/W"]
-    .LedSpeed = 70
+    .LedSpeed = 80
   End With
 
   MessageText = "Bienvenidos a su lugar preferido"

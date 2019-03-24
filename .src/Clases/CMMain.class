@@ -282,6 +282,14 @@ Private Sub LoadThemeConfiguration()
       .SizeW = hSkinTheme["Album" & i & "/W", 180]
       .XPos = hSkinTheme["Album" & i & "/X"]
       .YPos = hSkinTheme["Album" & i & "/Y"]
+      .AlbumNameText.Font.Name = hSkinTheme["AlbumNameText/Font"]
+      .AlbumNameText.Font.Size = hSkinTheme["AlbumNameText/FontSize"]
+      .AlbumNameText.Foreground = hSkinTheme["AlbumNameText/Foreground"]
+      .AlbumSongsText.Font.Size = hSkinTheme["AlbumNameText/FontSize"]
+      .AlbumSongsText.Foreground = hSkinTheme["AlbumNameText/Foreground"]
+      .AlbumNumText.Font.Name = hSkinTheme["AlbumNumText/Font"]
+      .AlbumNumText.Font.Size = hSkinTheme["AlbumNumText/FontSize"]
+      .AlbumNumText.Foreground = hSkinTheme["AlbumNumText/Foreground"]
     End With
   Next
 

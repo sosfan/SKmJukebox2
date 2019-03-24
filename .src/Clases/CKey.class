@@ -67,7 +67,7 @@ Public Sub _new()
   ResKeyHover.Delay = 50
   
   SendEventKey = New Timer As "SendEventKey"
-  SendEventKey.Delay = 500
+  SendEventKey.Delay = 700
   
 End
 
@@ -88,6 +88,7 @@ Public Sub LabelKey_MouseDown()
 
   imgKey.Picture = Picture[Left(imgRes, -4) & "_Hover.png"]
   If MultiSendKey = True Then
+    Raise PulseKey
     SendEventKey.Start
   Endif
   
@@ -96,9 +97,10 @@ End
 Public Sub LabelKey_MouseUp()
   
   ResKeyHover.Start
-  Raise PulseKey
   If MultiSendKey = True Then
     SendEventKey.Stop
+  Else
+    Raise PulseKey
   Endif
   
 End

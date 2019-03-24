@@ -69,7 +69,15 @@ End
 Private Sub SetVolMaster(PercentVol As Integer)
   
   If PercentVol < 0 Or PercentVol > 100 Then Return
-  Shell "pavol percent " & PercentVol & "%"
+  
+  'Modo Raspberry Pi se utiliza amixer en lugar de pulseaudio
+  If Application.Args[1] = "-pimode" Then
+    Shell "amixer -q set PCM " & PercentVol & "%"
+  Else
+    'Script para pulseaudio
+    Shell "pavol percent " & PercentVol & "%"
+  Endif
+  
   DataControl.MasterVol = PercentVol
   Debug PercentVol
   
@@ -142,5 +150,3 @@ Public Sub CMain_BackwardKey()
   BkList
   
 End
-
-
