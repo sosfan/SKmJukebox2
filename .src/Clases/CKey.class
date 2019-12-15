@@ -1,0 +1,198 @@
+' Gambas class file
+
+' SKm Jukebox 2
+'
+' Descripción de la clase: Generador de teclas
+'
+' Autores:
+'  J. Francisco Facundo <sos.sempai@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; version 3.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+' details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc.,
+' 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+Inherits Panel
+
+Property LetterKey As String ''Asigna el texto que mostrará la tecla.
+Property imgResPath As String ''Asigna la imagen que mostrará la tecla.
+Property $idKey As String ''Asinga el identificador de la tecla.
+Property MultiSend As Boolean ''Habilita el envío constante del evento PulseKey mientras se mantiene pulsado la tecla.
+
+Property HKey As Integer
+Property WKey As Integer
+
+Event PulseKey
+
+Private imgKey As PictureBox
+Private LabelKey As TextLabel
+Private ResKeyHover As Timer
+Private SendEventKey As Timer
+
+Private idKey As String
+Private imgRes As String
+Private Himg As Integer
+Private Wimg As Integer
+Private MultiSendKey As Boolean
+Private iCont As Short
+
+Public Sub _new()
+  
+  imgKey = New PictureBox(Me) As "imgKey"
+  With imgKey
+    .X = 0
+    .Y = 0
+    .Stretch = True
+  End With
+  
+  LabelKey = New TextLabel(Me) As "LabelKey"
+  With LabelKey
+    .X = 0
+    .Y = 0
+    .Alignment = 3
+    .Font.Name = "FreeSans"
+    .Font.Bold = True
+    .Font.Size = 14
+    .Foreground = &00FFFFFF&
+  End With
+  
+  ResKeyHover = New Timer As "ResKeyHover"
+  ResKeyHover.Delay = 50
+  
+  SendEventKey = New Timer As "SendEventKey"
+  SendEventKey.Delay = 200
+  
+End
+
+Public Sub ResKeyHover_Timer()
+
+  imgKey.Picture = Picture[imgRes]
+  ResKeyHover.Stop
+
+End
+
+Public Sub SendEventKey_Timer()
+  
+  If iCont = 5 Then
+    Raise PulseKey
+  Else
+    Inc iCont
+  Endif
+  
+End
+
+Public Sub LabelKey_MouseDown()
+
+  imgKey.Picture = Picture[Left(imgRes, -4) & "_Hover.png"]
+  If MultiSendKey = True Then
+    Raise PulseKey
+    iCont = 1
+    SendEventKey.Start
+  Endif
+  
+End
+
+Public Sub LabelKey_MouseUp()
+  
+  ResKeyHover.Start
+  If MultiSendKey = True Then
+    SendEventKey.Stop
+  Else
+    Raise PulseKey
+  Endif
+  
+End
+
+Private Function LetterKey_Read() As String
+
+  Return LabelKey.Text
+
+End
+
+Private Sub LetterKey_Write(Value As String)
+
+  LabelKey.Text = Value
+  ' idkey = Value
+
+End
+
+Private Function imgResPath_Read() As String
+
+  Return imgRes
+
+End
+
+Private Sub imgResPath_Write(Value As String)
+
+  imgRes = Value
+  ConfigureKey
+
+End
+
+
+Private Sub ConfigureKey()
+
+  imgKey.Picture = Picture[imgRes]
+
+End
+
+Private Function HKey_Read() As Integer
+
+  Return Himg
+
+End
+
+Private Sub HKey_Write(Value As Integer)
+
+  Himg = Value
+  imgKey.H = Himg
+  LabelKey.H = Himg
+  Me.H = Himg
+
+End
+
+Private Function WKey_Read() As Integer
+
+  Return Wimg
+
+End
+
+Private Sub WKey_Write(Value As Integer)
+
+  Wimg = Value
+  imgKey.W = Wimg
+  LabelKey.W = Wimg
+  Me.W = Wimg
+
+End
+
+Private Function $idKey_Read() As String
+
+  Return idKey
+
+End
+
+Private Sub $idKey_Write(Value As String)
+
+  idKey = Value
+
+End
+
+Private Function MultiSend_Read() As Boolean
+
+  Return MultiSendKey
+
+End
+
+Private Sub MultiSend_Write(Value As Boolean)
+
+  MultiSendKey = Value
+
+End

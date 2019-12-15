@@ -1,8 +1,8 @@
-FMain
+MStart
 SKm Jukebox
 0
 0
-2.0.18
+2.0.22
 
 gb.image
 gb.qt4
@@ -11,5 +11,7 @@ gb.db
 gb.db.sqlite3
 gb.easyencrypt
 gb.settings
+gb.net
+gb.net.curl
 gb.panel_led
 

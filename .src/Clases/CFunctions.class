@@ -29,13 +29,18 @@ Public Sub _new()
   DataControl.Skm_Modo = "Musica"
   SkinTheme = New Settings(DataControl.SkinPath & DataControl.SkinTheme &/ "theme.conf")
   NumberPos = 1
-  $CMain = New CMMain(FMain)
-  $CMain.H = SkinTheme["Window/H"]
-  $CMain.W = SkinTheme["Window/W"]
-  $CMain.X = 0
-  $CMain.Y = 0
-  $CMain.Skm_Modo = DataControl.Skm_Modo
-  $CMain.NumberPos = NumberPos
+  
+  $CMain = New CMMain(FMain) As "CMain"
+  
+  With $CMain
+    .H = SkinTheme["Window/H"]
+    .W = SkinTheme["Window/W"]
+    .X = 0
+    .Y = 0
+    .Skm_Modo = DataControl.Skm_Modo
+    .NumberPos = NumberPos
+  End With
+  
   
 End
 
@@ -64,7 +69,15 @@ End
 Private Sub SetVolMaster(PercentVol As Integer)
   
   If PercentVol < 0 Or PercentVol > 100 Then Return
-  Shell "pavol percent " & PercentVol & "%"
+  
+  'Modo Raspberry Pi se utiliza amixer en lugar de pulseaudio
+  If Application.Args[1] = "-pimode" Then
+    Shell "amixer -q set PCM " & PercentVol & "%"
+  Else
+    'Script para pulseaudio
+    Shell "pavol percent " & PercentVol & "%"
+  Endif
+  
   DataControl.MasterVol = PercentVol
   Debug PercentVol
   
@@ -80,6 +93,13 @@ Private Sub Volumen_Write(Value As Integer)
 
   SetVolMaster(Value)
 
+End
+
+Public Sub ReloadList()
+  
+  NumberPos = 1
+  $CMain.NumberPos = NumberPos
+  
 End
 
 Public Sub FwList()
@@ -123,5 +143,25 @@ Private Sub Skm_Modo_Write(Value As String)
 
   DataControl.Skm_Modo = Value
   $CMain.Skm_Modo = Value
+  ReloadList
 
 End
+
+Public Sub CMain_ForwardKey()
+  
+  FwList
+  
+End
+
+Public Sub CMain_BackwardKey()
+  
+  BkList
+  
+End
+
+Public Sub PanelSearchKey()
+  
+  $CMain.PanelSearchRaise
+  
+End
+

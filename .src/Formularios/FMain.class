@@ -24,7 +24,11 @@ Private Functions As CFunctions
 
 Public Sub _new()
   
-  Me.Border = False
+  With Me
+    .Border = False
+    .FullScreen = DataControl.FullScreen
+  End With
+  
   
   'Cargar configuración global
   ' ConfigData = DataControl.getConfigData
@@ -50,9 +54,26 @@ Public Sub Form_KeyPress()
     Case DataControl.CancelKey
       Functions.CancelSong
     Case DataControl.MaxVolKey
-      Functions.Volumen = Functions.Volumen + 10
+      Functions.Volumen = Functions.Volumen + 5
     Case DataControl.MinVolKey
-      Functions.Volumen = Functions.Volumen - 10
+      Functions.Volumen = Functions.Volumen - 5
+    Case "v"
+      Select Functions.Skm_Modo
+        Case "Musica"
+          Functions.Skm_Modo = "Video"
+        Case "Video"
+          Functions.Skm_Modo = "Karaoke"
+        Case "Karaoke"
+          Functions.Skm_Modo = "Musica"
+      End Select
+    Case "s"
+      Functions.PanelSearchKey
   End Select
   
+End
+
+Public Sub Form_Close()
+
+  Quit
+
 End

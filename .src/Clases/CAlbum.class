@@ -33,26 +33,38 @@ Property XPos As Integer ''Establece la posicion en coordenadas X del control
 Property YPos As Integer ''Establece la posicion en coordenadas Y del control
 Property Visible As Boolean ''Establece la visibilidad del objeto
 Property Genero As String ''Establece el Genero del album
+Property AlbumNameText As TextLabel
+Property AlbumNumText As TextLabel
+Property AlbumSongsText As TextLabel
 
 Public Sub _new(sContainer As Container)
   
   CoverPicture = New PictureBox(sContainer) As "CoverPicture"
-  CoverPicture.Stretch = True
-  CoverPicture.Visible = True
+  With CoverPicture
+    .Stretch = True
+    .Visible = True
+  End With
   
   TitleLabel = New TextLabel(sContainer)
-  TitleLabel.Visible = True
-  TitleLabel.Foreground = &00FFFFFF&
+  With TitleLabel
+    .Visible = True
+    .Foreground = &00FFFFFF&
+  End With
   
   SongsLabel = New TextLabel(sContainer)
-  SongsLabel.Font.Size = 8
-  SongsLabel.Visible = True
-  SongsLabel.Foreground = &00FFFFFF&
+  With SongsLabel
+    .Font.Size = 8
+    .Visible = True
+    .Foreground = &00FFFFFF&
+  End With
   
   NumberAlbum = New TextLabel(sContainer)
-  NumberAlbum.Font.Bold = True
-  NumberAlbum.Visible = True
-  NumberAlbum.Foreground = &00FFFF00&
+  With NumberAlbum
+    .Font.Bold = True
+    .Visible = True
+    .Foreground = &00FFFF00&
+    ' .Alignment = Align.BottomNormal
+  End With
   
 End
 
@@ -125,9 +137,9 @@ End
 Private Sub SizeW_Write(Value As Integer)
 
   CoverPicture.W = Value - 5
-  TitleLabel.W = Value
-  SongsLabel.W = Value
-  NumberAlbum.W = Value / 2
+  TitleLabel.W = Value - 2
+  SongsLabel.W = Value - 2
+  NumberAlbum.W = Value - 10 ' / 2
 
 End
 
@@ -208,5 +220,41 @@ End
 Private Sub Genero_Write(Value As String)
 
   GeneroAlbum = Value
+
+End
+
+Private Function AlbumNameText_Read() As TextLabel
+
+  Return TitleLabel
+
+End
+
+Private Sub AlbumNameText_Write(Value As TextLabel)
+
+  TitleLabel = Value
+
+End
+
+Private Function AlbumNumText_Read() As TextLabel
+
+  Return NumberAlbum
+
+End
+
+Private Sub AlbumNumText_Write(Value As TextLabel)
+
+  NumberAlbum = Value
+
+End
+
+Private Function AlbumSongsText_Read() As TextLabel
+
+  Return SongsLabel
+
+End
+
+Private Sub AlbumSongsText_Write(Value As TextLabel)
+
+  SongsLabel = Value
 
 End

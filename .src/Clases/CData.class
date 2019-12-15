@@ -26,6 +26,7 @@ Property ShowCursor As Boolean
 Property ScreenSaver As Boolean
 Property VideoOut As Boolean
 Property AutoPlay As Boolean
+Property AutoScroll As Boolean
 Property MaxCreditKey As String
 Property MinCreditKey As String
 Property ConfigKey As String
@@ -42,6 +43,10 @@ Property Skm_Modo As String ''Establece o retorna el modo de busqueda.
 Property DBPlayList As Song ''Establece o retorna un elemento a la PlayList en la base de datos.
 Property SkinTheme As String ''Establece o retorna el nombre de piel seleccionada.
 Property SkinPath As String ''Retorna el path de skins
+Property FTPHost As String ''Retorna o establece la dirección del FTPServer cuando es usado para el envio de vídeos en TVOUT.
+Property FTPUser As String ''Retorna o establece el usuario establecido para la conexión en el FTPServer.
+Property FTPPassword As String '' Retorna o establece la contraseña para la conexión en el FTPerver.
+Private sEncrypt As New EasyEncrypt
 Private Modo As String
 Private Total_Album As Integer
 Private hConn As Connection
@@ -78,16 +83,25 @@ Public Sub _new()
   If Not Exist(User.Home &/ "music_db.sqlite") Then
     MDatabase.CreateDatabase
     ConectarBase
-    MDatabase.ConfigCreateDatabaseTables(hConn)
-    MDatabase.EQCreateDatabaseTables(hConn)
-    MDatabase.MusicaCreateDatabaseTables(hConn)
-    MDatabase.VideoCreateDatabaseTables(hConn)
-    MDatabase.KaraokeCreateDatabaseTables(hConn)
-    MDatabase.MonederoCreateDatabaseTables(hConn)
-    MDatabase.PlayListCreateDatabaseTables(hConn)
+    With MDatabase
+      .ConfigCreateDatabaseTables(hConn)
+      .EQCreateDatabaseTables(hConn)
+      .MusicaCreateDatabaseTables(hConn)
+      .VideoCreateDatabaseTables(hConn)
+      .KaraokeCreateDatabaseTables(hConn)
+      .MonederoCreateDatabaseTables(hConn)
+      .PlayListCreateDatabaseTables(hConn)
+    End With
     CerrarConexion
   Endif
   ConectarBase
+  
+  ' Canal y fuerza para el cifrado.
+  With sEncrypt
+    .Channel = 2
+    .Strong = 1
+  End With
+  
   Catch
     Debug "Database error."
   
@@ -226,6 +240,21 @@ End
 Private Sub AutoPlay_Write(Value As Boolean)
 
   hConn.Exec("update config_data set AutoPlay=" & Value & " where id=1")
+
+End
+
+Private Function AutoScroll_Read() As Boolean
+
+  Dim hResult As Result
+  
+  hResult = hConn.Exec("select AutoScroll from config_data where id=1")
+  Return hResult["AutoScroll"]
+
+End
+
+Private Sub AutoScroll_Write(Value As Boolean)
+
+  hConn.Exec("update config_data set AutoScroll=" & Value & " where id=1")
 
 End
 
@@ -482,11 +511,15 @@ Private Function DBPlayList_Read() As Song
 '   
   hResult = hConn.Exec("select * from playlist")
   hResult.MoveFirst
-  hConn.Exec("delete from playlist where id=" & hResult["id"])
-  sData.album = hResult["Album"]
-  sData.name = hResult["Nombre"]
-  sData.genere = hResult["Genero"]
-  sData.type = hResult["Tipo"]
+  
+  If hResult.Length > 0 Then
+    With sData
+      .album = hResult["Album"]
+      .name = hResult["Nombre"]
+      .genere = hResult["Genero"]
+      .type = hResult["Tipo"]
+    End With
+  Endif
   
   Return sData
 
@@ -517,6 +550,16 @@ Public Sub getWorkDir() As String
       WorkDir = KaraokeDir_Read()
   End Select
   Return WorkDir
+  
+End
+
+Public Sub DelFirstItemPL() ''Elimina la primera entrada en la DB playlist
+  
+  Dim hResult As Result
+'   
+  hResult = hConn.Exec("select * from playlist")
+  hResult.MoveFirst
+  hConn.Exec("delete from playlist where id=" & hResult["id"])
   
 End
 
@@ -608,3 +651,48 @@ Private Sub SkinPath_Write(Value As String)
   
 End
 
+Private Function FTPHost_Read() As String
+
+  Dim hResult As Result
+  
+  hResult = hConn.Exec("select FtpHost from config_data where id=1")
+  Return hResult["FtpHost"]
+
+End
+
+Private Sub FTPHost_Write(Value As String)
+
+  hConn.Exec("update config_data set FtpHost=" & Value & " where id=1")
+
+End
+
+Private Function FTPUser_Read() As String
+
+  Dim hResult As Result
+  
+  hResult = hConn.Exec("select FtpUser from config_data where id=1")
+  Return hResult["FtpUser"]
+
+End
+
+Private Sub FTPUser_Write(Value As String)
+
+  hConn.Exec("update config_data set FtpUser=" & Value & " where id=1")
+
+End
+
+Private Function FTPPassword_Read() As String
+
+  Dim hResult As Result
+  
+  hResult = hConn.Exec("select FtpPassword from config_data where id=1")
+  
+  Return sEncrypt.TextOfuscate(hResult["FtpPassword"], False, "")
+
+End
+
+Private Sub FTPPassword_Write(Value As String)
+
+  hConn.Exec("update config_data set FtpPassword=" & sEncrypt.TextOfuscate(Value, True, "") & " where id=1")
+
+End

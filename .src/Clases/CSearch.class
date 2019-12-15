@@ -1,0 +1,251 @@
+' Gambas class file
+
+' SKm Jukebox 2
+'
+' Descripción de la clase: Buscador de melodias
+'
+' Autores:
+'  J. Francisco Facundo <sos.sempai@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; version 3.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+' details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc.,
+' 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+
+Inherits Panel
+
+Private DataControl As New CData
+Private SingleKey As CKey
+Private TextSearch As TextBox
+
+Private hSkinPath As String
+Private hSkinTheme As Settings
+
+
+Private $Keyboard As New Object[]
+
+Public Sub _new()
+  
+  'Leer configuracion del tema
+  hSkinPath = DataControl.SkinPath & DataControl.SkinTheme
+  hSkinTheme = New Settings(hSkinPath &/ "theme.conf")
+  
+  TextSearch = New TextBox(Me)
+  With TextSearch
+    .H = 41
+    .W = 371
+    .Font.Name = "FreeSans"
+    .Font.Bold = True
+    .Font.Size = 17
+    .ReadOnly = True
+  End With
+  
+  CreateKeys
+  
+End
+
+Private Sub CreateKeys()
+  
+  Dim i, c, Xpos, Ypos, Hkey, Wkey As Integer
+  Dim char As String
+  
+  Hkey = 49
+  Wkey = 125
+  
+  Xpos = 20
+  Ypos = 357
+  
+  TextSearch.X = Xpos
+  TextSearch.Y = Ypos - TextSearch.H - 3
+  
+  'Arreglo para botones
+  For i = 0 To 4
+    SingleKey = New CKey(Me) As "SingleKey"
+     Select i
+      Case 0
+        char = "x MUSICA"
+      Case 1
+        char = "x ALBUM"
+      Case 2
+        char = "RESET"
+      Case 3
+        char = "←"
+      Case 4
+        char = "BUSCAR"
+        Xpos = TextSearch.X + TextSearch.W + 3
+        Ypos = TextSearch.Y - 3
+        c = 0
+    End Select
+    With SingleKey
+      .X = Xpos + Wkey * c
+      .Y = Ypos
+      .LetterKey = char
+      .HKey = Hkey
+      .WKey = Wkey
+      .imgResPath = hSkinPath &/ hSkinTheme["Images/LongKey"]
+    End With
+    Inc c
+    $Keyboard.Add(SingleKey)
+  Next
+  
+  Xpos = $Keyboard[0].X
+  Ypos = $Keyboard[0].Y + Hkey
+  Hkey = 49
+  Wkey = 49
+  
+  c = 0
+  
+  'Arreglo para teclado numerico
+  For i = 48 To 57
+    SingleKey = New CKey(Me) As "SingleKey"
+    With SingleKey
+      .X = Xpos + Wkey * c
+      .Y = Ypos
+      .LetterKey = Chr$(i)
+      .HKey = Hkey
+      .WKey = Wkey
+      .imgResPath = hSkinPath &/ hSkinTheme["Images/SingleKey"]
+      .$idKey = "Single"
+    End With
+    
+    Inc c
+    $Keyboard.Add(SingleKey)
+  Next
+  c = 0
+  Xpos = Xpos + Wkey / 3
+  Ypos = Ypos + Hkey
+  'Arreglo para teclado QWERTY
+  For i = 0 To 30
+    SingleKey = New CKey(Me) As "SingleKey"
+    Select i
+      Case 0
+        char = "Q"
+      Case 1
+        char = "W"
+      Case 2
+        char = "E"
+      Case 3
+        char = "R"
+      Case 4
+        char = "T"
+      Case 5
+        char = "Y"
+      Case 6
+        char = "U"
+      Case 7
+        char = "I"
+      Case 8
+        char = "O"
+      Case 9
+        char = "P"
+      Case 10
+        char = "A"
+        'Salto de posicion
+        Xpos = Xpos + Wkey / 3
+        Ypos = Ypos + Hkey
+        c = 0
+      Case 11
+        char = "S"
+      Case 12
+        char = "D"
+      Case 13
+        char = "F"
+      Case 14
+        char = "G"
+      Case 15
+        char = "H"
+      Case 16
+        char = "J"
+      Case 17
+        char = "K"
+      Case 18
+        char = "L"
+      Case 19
+        char = "Ñ"
+      Case 20
+        char = "Z"
+        'Salto de posicion
+        Xpos = Xpos + Wkey / 3
+        Ypos = Ypos + Hkey
+        c = 0
+      Case 21
+        char = "X"
+      Case 22
+        char = "C"
+      Case 23
+        char = "V"
+      Case 24
+        char = "B"
+      Case 25
+        char = "N"
+      Case 26
+        char = "M"
+      Case 27
+        char = ","
+      Case 28
+        char = "."
+      Case 29
+        char = "-"
+      Case 30
+        'Barra espaciadora
+        char = " "
+        'Salto de posicion
+        Ypos = Ypos + Hkey
+        c = 2
+    End Select
+    
+    With SingleKey
+      'Define la tecla espaciadora
+      If i = 30 Then
+        .HKey = 50
+        .WKey = 273
+        .$idKey = "Space"
+        .imgResPath = hSkinPath &/ hSkinTheme["Images/SpaceKey"]
+      Else
+        'Teclas normales
+        .HKey = Hkey
+        .WKey = Wkey
+        .$idKey = "Single"
+        .imgResPath = hSkinPath &/ hSkinTheme["Images/SingleKey"]
+      Endif
+      
+      .X = Xpos + Wkey * c
+      .Y = Ypos
+      .LetterKey = char
+    
+    End With
+    
+    Inc c
+    $Keyboard.Add(SingleKey)
+  Next
+  
+End
+
+Public Sub SingleKey_PulseKey()
+  
+  If Last.$idKey = "Single" Or Last.$idKey = "Space" Then 
+  
+    TextSearch.Text = TextSearch.Text & Last.LetterKey
+  
+  Else
+    Select Last.LetterKey
+      Case "RESET"
+        TextSearch.Text = ""
+      Case "←"
+        If Right$(TextSearch.Text, 2) = "Ñ" Then
+          TextSearch.Text = Left$(TextSearch.Text, -2)
+        Else
+          TextSearch.Text = Left$(TextSearch.Text, -1)
+        Endif
+    End Select
+  Endif
+  
+End
