@@ -95,6 +95,13 @@ Private Sub Volumen_Write(Value As Integer)
 
 End
 
+Public Sub ReloadList()
+  
+  NumberPos = 1
+  $CMain.NumberPos = NumberPos
+  
+End
+
 Public Sub FwList()
   
   'Avanza la lista +10 pasos
@@ -136,6 +143,7 @@ Private Sub Skm_Modo_Write(Value As String)
 
   DataControl.Skm_Modo = Value
   $CMain.Skm_Modo = Value
+  ReloadList
 
 End
 
@@ -150,3 +158,10 @@ Public Sub CMain_BackwardKey()
   BkList
   
 End
+
+Public Sub PanelSearchKey()
+  
+  $CMain.PanelSearchRaise
+  
+End
+

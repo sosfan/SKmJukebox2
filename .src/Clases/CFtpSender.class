@@ -1,0 +1,216 @@
+' Gambas class file
+
+'
+' Authors:
+'  J. Francisco Facundo <sos.sempai@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; version 3.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+' details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc.,
+' 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+
+Fast
+
+Private FTPCon As FtpClient
+Private MySocket As Socket
+Private ConTimer As Timer
+Private timTimeout As Timer
+Private DataControl As New CData
+Private TotalTimeFTP As Integer
+
+Public FtpIcon As PictureBox
+
+Event Send_Finish
+Event Send_Error
+
+Property ConStatus As Boolean
+
+
+
+Public Sub _new()
+  
+  FTPCon = New FtpClient As "FTPCon"
+  MySocket = New Socket As "MySocket"
+  ConTimer = New Timer As "ConTimer"
+  ConTimer.Delay = 1000
+  
+  FtpIcon = New PictureBox(FMain)
+  With FtpIcon
+    .X = 5
+    .y = 5
+    .H = 25
+    .w = 25
+    .Picture = Picture.Load("./resource/ftpupload.svg")
+    .Stretch = True
+    .Background = Color.White
+    .Visible = False
+  End With
+  
+  timTimeout = New Timer As "timTimeout"
+  timTimeout.Delay = 1000
+  
+End
+
+Public Sub SendFTPFile(sFileName As String, sDataFileName As String)
+  
+  
+  If FTPCon.Status > Net.Active Then
+    Close FTPCon 'Se cierra la conexión FTP para modificar el URL
+  Endif
+  
+  With FTPCon
+    
+    .URL = "ftp://" & DataControl.FTPHost & "/tmp/" & sFileName
+    .User = DataControl.FTPUser
+    .Password = DataControl.FTPPassword
+    Debug "Enviando al dispositivo."
+    .Put(sDataFileName)
+    
+  End With
+  FtpIcon.Visible = True
+  ConTimer.Start
+  TotalTimeFTP = 0
+  
+End
+
+Public Sub ConTimer_Timer()
+
+  Inc TotalTimeFTP
+
+End
+
+Public Sub FTPCon_Finished()
+  
+  ConTimer.Stop
+  FtpIcon.Visible = False
+  Debug "Transacción finalizada, duración de " & TotalTimeFTP & " segundos."
+  Raise Send_Finish
+  
+End
+
+Public Sub FTPCon_Error()
+  
+  Debug FTPCon.ErrorText
+  Raise Send_Error
+  FtpIcon.Visible = False
+  ConTimer.Stop
+  
+End
+
+Public Sub MySocket_Ready()
+  
+  timTimeout.Enabled = False
+  FtpIcon.Visible = False
+  
+End
+
+Public Sub MySocket_Closed()
+  
+  Debug "Conexion cerrada por anfitrion remoto."
+  FtpIcon.Visible = False
+  
+End
+
+Public Sub MySocket_Found()
+  
+  Debug "Host encontrado, conectando..."
+  ' FtpIcon.Visible = False
+  
+End
+
+Public Sub MySocket_Read()
+  
+  Dim S As String
+  FtpIcon.Visible = True
+  If MySocket.Status = Net.Connected Then
+    Read #MySocket, S, Lof(MySocket)
+    Print S
+  End If
+  FtpIcon.Visible = False
+  
+End
+
+Public Sub MySocket_Error()
+  
+  Select Case MySocket.Status
+    Case Net.CannotCreateSocket
+      Debug "El sistema no permite crear el socket"
+    Case Net.HostNotFound
+      Debug "Host no encontrado"
+    Case Net.ConnectionRefused
+      Debug "No puede conectarse. Conexión denegada"
+    Case Net.CannotRead
+      Debug "Error leyendo datos"
+    Case Net.CannotWrite
+      Debug "Error escribiendo datos"
+  End Select
+  
+End
+
+Public Sub OpenConConnect()
+  
+  FtpIcon.Visible = True
+  If MySocket.Status <> Net.Connected Then
+      MySocket.Host = DataControl.FTPHost
+      MySocket.Port = 5010
+      MySocket.Connect()
+  Endif
+  
+  If MySocket.Status > Net.Inactive Then 
+      Print "Buscando nombre de host..."
+      timTimeout.Delay = 3000 ' we'll wait a maximun time of  3 seconds
+      timTimeout.Enabled = True
+  End If
+  
+End
+
+Public Sub timTimeout_Timer()
+  
+  timTimeout.Enabled = False
+  FtpIcon.Visible = False
+  If MySocket.Status <> Net.Connected Then
+    Try Close MySocket
+    Debug "Tiempo excedido al conectar"
+  End If
+
+End
+
+Public Sub CloseConConect()
+  
+  Close MySocket
+  Debug "Conexión cerrada por usuario"
+  
+End
+
+Public Sub ConSendSocket(sCommand As String)
+
+  FtpIcon.Visible = True
+  If MySocket.Status = Net.Connected Then 
+    Write #MySocket, sCommand, Len(sCommand)
+  End If
+  FtpIcon.Visible = False
+End
+
+Private Function ConStatus_Read() As Boolean
+
+  If MySocket.Status = Net.Connected Then
+    Return True
+  Else
+    Return False
+  Endif
+
+End
+
+Private Sub ConStatus_Write(Value As Boolean)
+
+  Debug "Read only"
+
+End

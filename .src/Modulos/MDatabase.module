@@ -42,6 +42,9 @@ Public Sub ConfigCreateDatabaseTables(hConn As Connection)
     .Fields.Add("MaxVolKey", db.String, 1)
     .Fields.Add("MinVolKey", db.String, 1)
     .Fields.Add("Theme", db.String)
+    .Fields.Add("FtpHost", db.String)
+    .Fields.Add("FtpUser", db.String)
+    .Fields.Add("FtpPassword", db.String)
     .Fields.Add("MusicDir", db.String)
     .Fields.Add("VideoDir", db.String)
     .Fields.Add("KaraokeDir", db.String)
@@ -70,6 +73,9 @@ Public Sub ConfigCreateDatabaseTables(hConn As Connection)
   hResult["MaxVolKey"] = "*"
   hResult["MinVolKey"] = "/"
   hResult["Theme"] = "default"
+  hResult["FtpHost"] = "192.168.1.105"
+  hResult["FtpUser"] = "pi"
+  hResult["FtpPassword"] = "GFas5ctR6uY/2-:@"
   hResult["MusicDir"] = User.Home &/ "Música"
   hResult["VideoDir"] = User.Home &/ "Vídeos"
   hResult["KaraokeDir"] = User.Home &/ "Karaokes"

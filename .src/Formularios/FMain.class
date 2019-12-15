@@ -57,6 +57,17 @@ Public Sub Form_KeyPress()
       Functions.Volumen = Functions.Volumen + 5
     Case DataControl.MinVolKey
       Functions.Volumen = Functions.Volumen - 5
+    Case "v"
+      Select Functions.Skm_Modo
+        Case "Musica"
+          Functions.Skm_Modo = "Video"
+        Case "Video"
+          Functions.Skm_Modo = "Karaoke"
+        Case "Karaoke"
+          Functions.Skm_Modo = "Musica"
+      End Select
+    Case "s"
+      Functions.PanelSearchKey
   End Select
   
 End

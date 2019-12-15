@@ -24,6 +24,11 @@ Private PlayListSongs As Integer
 Private mPlayer As CPlayer
 Private hSkinPath As String
 Private hSkinTheme As Settings
+Private ResMovieBox As Timer
+Private iCont As Short
+Private UploadSong As String
+Private UploadTimer As Timer
+Private SongPlaying As String
 
  
 Public Sub _new()
@@ -40,7 +45,7 @@ Public Sub _new()
     .Y = hSkinTheme["ScrollText/Y"]
     .H = hSkinTheme["ScrollText/H"]
     .W = hSkinTheme["ScrollText/W"]
-    .LedSpeed = 80
+    .LedSpeed = 50
   End With
 
   MessageText = "Bienvenidos a su lugar preferido"
@@ -53,56 +58,125 @@ Public Sub _new()
     $bState = True
   Endif
   
+  ResMovieBox = New Timer As "ResMovieBox"
+  ResMovieBox.Delay = 1000
+  
+  UploadTimer = New Timer As "UploadTimer"
+  UploadTimer.Delay = 5000
+  
+  
+End
+
+Public Function AddPlay(sSong As Song)
+  
+  If PlayListSongs = 0 And $bState = False Then
+    DataControl.Skm_Modo = sSong.type
+    mPlayer.Play(sSong.name, DataControl.getWorkDir() &/ sSong.genere &/ sSong.album &/ sSong.name, sSong.type, True)
+    addMatrizLed("** Ahora sonando - " & Left$(sSong.name, -4) & " - " & sSong.album & " **")
+    SongPlaying = sSong.name
+    $bState = True
+  Else If $bState = True Then
+    Inc PlayListSongs
+    DataControl.DBPlayList = sSong
+    If PlayListSongs = 1 And DataControl.VideoOut Then UploadTimer.Start
+  Endif
+  
 End
 
 Public Sub mPlayer_ProcessEnd()
+  
+  Dim i As Integer, upState As Boolean = True
   
   Dim sSong As Song
   
   If PlayListSongs > 0 Then
     sSong = DataControl.DBPlayList
+    DataControl.DelFirstItemPL
     DataControl.Skm_Modo = sSong.type
-    mPlayer.Play(DataControl.getWorkDir() &/ sSong.genere &/ sSong.album &/ sSong.name, sSong.type)
+
+    'Al terminar la reproducción se borra el archivo remoto
+    'Si el archivo es el mismo al siguiente en la cola, se mantiene.
+    If sSong.name <> SongPlaying Then 
+      mPlayer.DeleteFile
+    Else
+      upState = False
+    Endif
+    
+    'Si el archivo esta en proceso de envio al servidor, esperar hasta que termine el proceso.
+    While mPlayer.upProcess = True
+      Wait 1
+    Wend
+    
+    'Si el archivo ya esta en el servidor se ignora el flag upState
+    If sSong.name = UploadSong Then upState = False
+    
+    mPlayer.Play(sSong.name, DataControl.getWorkDir() &/ sSong.genere &/ sSong.album &/ sSong.name, sSong.type, upState)
+    If sSong.type = "Musica" Then 
+      MatrizLed.Show
+      Try ResMovieBox.Stop
+    Endif
     addMatrizLed("** Ahora sonando - " & sSong.album & " - " & Left$(sSong.name, -4) & " **")
+    SongPlaying = sSong.name
     Dec PlayListSongs
+    If PlayListSongs >= 1 And DataControl.VideoOut Then UploadTimer.Start
   Else
     $bState = False
     HideMovie
+    mPlayer.DeleteFile
+    ResMovieBox.Stop
+    UploadTimer.Stop
     mPlayer.mpControl = False
     addMatrizLed("Rockola digital - inserte una moneda")
   Endif
   
 End
 
-Public Function HideMovie()
+Public Sub UploadTimer_Timer()
+  
+  Dim sSong As Song
+  UploadTimer.Stop
+  If mPlayer.upProcess = True Or PlayListSongs = 0 Then Return
+    
+  sSong = DataControl.DBPlayList
+  If sSong.name = "" Then Return
+  
+  DataControl.Skm_Modo = sSong.type
+  If sSong.name = SongPlaying Then
+    Debug "El archivo ya se encuentra en el servidor, ignorando envio."
+  Else
+    Debug "Enviando archivo"
+    mPlayer.UploadFile(sSong.name, DataControl.getWorkDir() &/ sSong.genere &/ sSong.album &/ sSong.name)
+    UploadSong = sSong.name
+  Endif
+  
+End
+
+Public Sub ResetResMovie()
+  
+  iCont = 0
+  
+End
+
+Public Sub HideMovie()
   
   If mPlayer.VisibleMovieBox = True Then mPlayer.VisibleMovieBox = False
+  MatrizLed.Show
+  ResMovieBox.Start
+  ResetResMovie
   
 End
 
-Public Function ResMovie()
+Public Sub ResMovie()
   
   If mPlayer.VisibleMovieBox = False Then mPlayer.VisibleMovieBox = True
+  MatrizLed.Hide
+  ResMovieBox.Stop
   
 End
 
-Public Function CancelSong()
+Public Sub CancelSong()
   
-  mPlayer.PKill
-  
-End
-
-Public Function addPlay(sSong As Song)
-  
-  If PlayListSongs = 0 And $bState = False Then
-    DataControl.Skm_Modo = sSong.type
-    mPlayer.Play(DataControl.getWorkDir() &/ sSong.genere &/ sSong.album &/ sSong.name, sSong.type)
-    addMatrizLed("** Ahora sonando - " & Left$(sSong.name, -4) & " - " & sSong.album & " **")
-    $bState = True
-  Else If $bState = True Then
-    Inc PlayListSongs
-    DataControl.DBPlayList = sSong
-  Endif
+  mPlayer.PlayerStop
   
 End
 
@@ -112,3 +186,22 @@ Private Sub addMatrizLed(sText As String)
   
 End
 
+Public Sub mPlayer_MovieBoxVisible()
+  
+  MatrizLed.Hide
+  
+End
+
+Public Sub mPlayer_MovieBox_click()
+  
+  HideMovie
+  
+End
+
+Public Sub ResMovieBox_Timer()
+  
+  Inc iCont
+  
+  If iCont = 5 Then ResMovie
+  
+End

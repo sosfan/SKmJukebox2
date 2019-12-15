@@ -22,7 +22,7 @@
 
 Inherits Panel
 
-Private DataControl As CData
+Private DataControl As New CData
 Private SingleKey As CKey
 Private TextSearch As TextBox
 
@@ -43,8 +43,9 @@ Public Sub _new()
     .H = 41
     .W = 371
     .Font.Name = "FreeSans"
-    .Font.Bold =
+    .Font.Bold = True
     .Font.Size = 17
+    .ReadOnly = True
   End With
   
   CreateKeys
@@ -70,9 +71,9 @@ Private Sub CreateKeys()
     SingleKey = New CKey(Me) As "SingleKey"
      Select i
       Case 0
-        char = "* MUSICA"
+        char = "x MUSICA"
       Case 1
-        char = "* ALBUM"
+        char = "x ALBUM"
       Case 2
         char = "RESET"
       Case 3

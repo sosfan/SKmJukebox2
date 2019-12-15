@@ -63,7 +63,7 @@ Public Sub _new(sContainer As Container)
     .Font.Bold = True
     .Visible = True
     .Foreground = &00FFFF00&
-    .Alignment = Align.BottomNormal
+    ' .Alignment = Align.BottomNormal
   End With
   
 End
@@ -137,9 +137,9 @@ End
 Private Sub SizeW_Write(Value As Integer)
 
   CoverPicture.W = Value - 5
-  TitleLabel.W = Value
-  SongsLabel.W = Value
-  NumberAlbum.W = Value / 2
+  TitleLabel.W = Value - 2
+  SongsLabel.W = Value - 2
+  NumberAlbum.W = Value - 10 ' / 2
 
 End
 

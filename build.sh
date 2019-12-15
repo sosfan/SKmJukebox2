@@ -1,6 +1,6 @@
 OUTPUT_BIN="skmjukebox"
 
-if [[ -e FILE ]]; then
+if [[ -e $OUTPUT_BIN.gambas ]]; then
   echo "Limpiando..."
   rm ./$OUTPUT_BIN.gambas
 fi

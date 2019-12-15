@@ -16,7 +16,7 @@
 ' You should have received a copy of the GNU General Public License along with
 ' this program; if not, write to the Free Software Foundation, Inc.,
 ' 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
-
+Fast
 Inherits Panel
 
 Event ForwardKey
@@ -41,6 +41,7 @@ Private hSkinPath As String
 Private hSkinTheme As Settings
 Private SelectAlbum As String
 Private SelectGenero As String
+Private SearchBox As CSearch
 
 Property Skm_Modo As String ''Establece la cadena para identificar el modo de visualización del objeto. (Musica, Video, Karaoke)
 Property NumberPos As Integer ''Establece o retorna el número del album que se usará como índice.
@@ -53,7 +54,7 @@ Public Sub _new()
   hSkinPath = DataControl.SkinPath & DataControl.SkinTheme
   hSkinTheme = New Settings(hSkinPath &/ "theme.conf")
 
-  BackImage = New PictureBox(Me)
+  BackImage = New PictureBox(Me) As "BackImage"
   With BackImage
     .X = 0
     .Y = 0
@@ -62,6 +63,16 @@ Public Sub _new()
     .Stretch = True
     FMain.W = .W
     FMain.H = .H
+  End With
+  
+  'Cuadro de busqueda
+  SearchBox = New CSearch(Me)
+  With SearchBox
+    .X = 0
+    .Y = 0
+    .W = hSkinTheme["Window/W"]
+    .H = hSkinTheme["Window/H"]
+    .Visible = False
   End With
   
   'Navigators
@@ -121,6 +132,12 @@ Public Sub _new()
   
 End
 
+Public Sub BackImage_MouseDown()
+  
+  ResetResMovie
+  
+End
+
 Private Sub HideAlbums()
   
   Dim i As Short
@@ -155,6 +172,7 @@ End
 Public Sub Cover_Click()
   
   ShowSelectAlbum
+  ResetResMovie
   
 End
 
@@ -188,6 +206,7 @@ Public Sub Song_MouseDown()
   
   Playlist.addPlay(sSong)
   DataControl.setPlayHistory(NumAlbum)
+  ResetResMovie
   
 End
 
@@ -249,8 +268,6 @@ Private Sub HideSelectAlbum()
   
   Dim i As Short
   
-  ShowBackground("Background")
-  ShowAlbums
   'Ocultar la lista
   For i = 0 To 29
     SongList[i].Visible = False
@@ -284,11 +301,17 @@ Private Sub LoadThemeConfiguration()
       .YPos = hSkinTheme["Album" & i & "/Y"]
       .AlbumNameText.Font.Name = hSkinTheme["AlbumNameText/Font"]
       .AlbumNameText.Font.Size = hSkinTheme["AlbumNameText/FontSize"]
+      .AlbumNameText.Alignment = hSkinTheme["AlbumNameText/Align"]
       .AlbumNameText.Foreground = hSkinTheme["AlbumNameText/Foreground"]
+      
+      .AlbumSongsText.Font.Name = hSkinTheme["AlbumNameText/Font"]
       .AlbumSongsText.Font.Size = hSkinTheme["AlbumNameText/FontSize"]
+      .AlbumSongsText.Alignment = hSkinTheme["AlbumNameText/Align"]
       .AlbumSongsText.Foreground = hSkinTheme["AlbumNameText/Foreground"]
+      
       .AlbumNumText.Font.Name = hSkinTheme["AlbumNumText/Font"]
       .AlbumNumText.Font.Size = hSkinTheme["AlbumNumText/FontSize"]
+      .AlbumNumText.Alignment = hSkinTheme["AlbumNumText/Align"]
       .AlbumNumText.Foreground = hSkinTheme["AlbumNumText/Foreground"]
     End With
   Next
@@ -441,8 +464,49 @@ Public Sub Navigator_PulseKey()
       'Right
       Raise ForwardKey
     Case "Nav2"
+      ShowBackground("Background")
+      ShowAlbums
       HideSelectAlbum
   End Select
   
+  ResetResMovie
+  
 End
+
+Private Sub ResetResMovie()
+  
+  'Poner a cero el contador de visibilidad para el MovieBox
+  Playlist.ResetResMovie
+  
+End
+
+Private Sub ShowPanelSearch()
+  
+  HideAlbums
+  HideSelectAlbum
+  ShowBackground("BGSearch")
+  SearchBox.Visible = True
+  
+End
+
+Private Sub HidePanelSearch()
+  
+  ShowAlbums
+  SearchBox.Visible = False
+  
+End
+
+Public Sub PanelSearchRaise()
+  
+  With SearchBox
+    Select .Visible
+      Case True
+        HidePanelSearch
+      Case False
+        ShowPanelSearch
+    End Select
+  End With
+  
+End
+
 

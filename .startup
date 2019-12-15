@@ -11,5 +11,7 @@ gb.db
 gb.db.sqlite3
 gb.easyencrypt
 gb.settings
+gb.net
+gb.net.curl
 gb.panel_led
 

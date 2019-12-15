@@ -10,5 +10,6 @@ vgcore.*
 .*.prof
 .lang/*.pot
 .gambas/*
+.connection/*
 .settings
 #----
