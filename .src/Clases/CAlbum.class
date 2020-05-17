@@ -19,6 +19,7 @@
 
 Event Click
 Private CoverPicture As PictureBox
+Private CoverPath As String
 Private TitleLabel As TextLabel
 Private SongsLabel As TextLabel
 Private NumberAlbum As TextLabel
@@ -76,13 +77,14 @@ End
 
 Private Function Cover_Read() As String
 
-  Return CoverPicture.Picture
+  Return CoverPath
 
 End
 
 Private Sub Cover_Write(Value As String)
 
   CoverPicture.Picture = Picture[Value]
+  CoverPath = Value
 
 End
 

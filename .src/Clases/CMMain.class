@@ -185,6 +185,7 @@ Public Sub Song_MouseDown()
     .album = hResult["Album"]
     .genere = hResult["Genero"]
     .type = DataControl.Skm_Modo
+    .cover = hResult["Cover_name"]
   End With
   
   idPos = CInt(Right$(Left$(Last.Text, 3), 2))

@@ -1,0 +1,33 @@
+' Gambas class file
+
+Private DataControl As New CData
+
+Public Sub BtnUpMusic_Click()
+
+  DataControl.UpMusicTb
+
+End
+
+Public Sub BtnUpVideo_Click()
+
+  DataControl.UpVideoTb
+
+End
+
+Public Sub BtnUpKaraoke_Click()
+
+  DataControl.UpKaraokeTb
+
+End
+
+Public Sub Form_Close()
+
+  FMain.Show
+
+End
+
+Public Sub BtnClose_Click()
+
+  Me.Close
+
+End

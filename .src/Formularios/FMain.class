@@ -68,6 +68,9 @@ Public Sub Form_KeyPress()
       End Select
     Case "s"
       Functions.PanelSearchKey
+    Case DataControl.ConfigKey
+      FConfig.Show
+      Me.Hide
   End Select
   
 End
