@@ -28,6 +28,8 @@ Private ResMovieBox As Timer
 Private iCont As Short
 Private UploadSong As String
 Private UploadTimer As Timer
+Private AutoPlay As Timer
+Private TimeCont As Integer
 Private SongPlaying As String
 Private WaitUpload As Boolean
 Private upFailed As Boolean
@@ -55,6 +57,10 @@ Public Sub _new()
   
   UploadTimer = New Timer As "UploadTimer"
   UploadTimer.Delay = 5000
+  
+  AutoPlay = New Timer As "AutoPlay"
+  AutoPlay.Delay = 10000
+  AutoPlay.Start
 
   MessageText = "Bienvenidos a su lugar preferido"
   addMatrizLed(MessageText)
@@ -82,6 +88,7 @@ Public Function AddPlay(sSong As Song)
     DataControl.DBPlayList = sSong
     If PlayListSongs = 1 And DataControl.VideoOut Then UploadTimer.Start
   Endif
+  AutoPlay.Stop
   
 End
 
@@ -127,6 +134,8 @@ Public Sub mPlayer_ProcessEnd()
     mPlayer.DeleteFile
     ResMovieBox.Stop
     UploadTimer.Stop
+    AutoPlay.Start
+    TimeCont = 0
     mPlayer.mpControl = False
     addMatrizLed("Rockola digital - inserte una moneda")
   Endif
@@ -158,6 +167,74 @@ Public Sub UploadTimer_Timer()
     Endif
     mPlayer.UploadFile(sSong.name, DataControl.getWorkDir() &/ sSong.genere &/ sSong.album &/ sSong.name)
     UploadSong = sSong.name
+  Endif
+  
+End
+
+Public Sub AutoPlay_Timer()
+  
+  Dim TotalAlbums, idPos, jmpPos, SongID, i As Integer
+  Dim hResult As Result
+  Dim sSong As New Song
+  Dim skmodo As String
+  '//Automatic Play
+  If TimeCont = 1 Then
+    
+    i = Rnd(1, 10)
+    If i < 6 Then
+        skmodo = "Musica"
+    Else
+        skmodo = "Video"
+    Endif
+   
+    DataControl.Skm_Modo = skmodo
+    TotalAlbums = DataControl.getTotalAlbums()
+    
+    If TotalAlbums > 0 Then
+      
+      hResult = DataControl.getDataAlbum(Rnd(1, TotalAlbums))
+      
+      With sSong
+        .album = hResult["Album"]
+        .genere = hResult["Genero"]
+        .type = DataControl.Skm_Modo
+        .cover = hResult["Cover_name"]
+      End With
+      
+      idPos = hResult["Total_songs"]
+      
+      If idPos > 0 Then
+        
+        idPos = Rnd(1, idPos)
+        For i = 1 To 4
+          Select idPos
+            Case jmpPos + 1 To i * 25
+              SongID = hResult["Songsid" & i]
+              jmpPos = (i * 25) - 25
+              Break
+          End Select
+        Next
+        
+        hResult = DataControl.getDataSongs(SongID)
+        
+        With sSong
+          .id = hResult["id"]
+          .idsong = idPos - jmpPos
+          .name = hResult["N" & sSong.idsong]
+        End With
+        
+        AddPlay(sSong)
+        
+      Endif
+      
+    Endif
+    
+    TimeCont = 0
+    
+  Else
+  
+    Inc TimeCont
+  
   Endif
   
 End

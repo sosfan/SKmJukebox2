@@ -111,7 +111,7 @@ Public Sub ConTimer_Timer()
     PercentUpd = TotalUp
   Else
     Inc SecTimeOut
-    If SecTimeOut = 2 Then
+    If SecTimeOut = 5 Then
       FTPCon.Stop
       FTPCon_Error
     Endif
