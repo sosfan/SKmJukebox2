@@ -30,6 +30,7 @@ Private UploadSong As String
 Private UploadTimer As Timer
 Private SongPlaying As String
 Private WaitUpload As Boolean
+Private upFailed As Boolean
 
  
 Public Sub _new()
@@ -46,7 +47,7 @@ Public Sub _new()
     .Y = hSkinTheme["ScrollText/Y"]
     .H = hSkinTheme["ScrollText/H"]
     .W = hSkinTheme["ScrollText/W"]
-    .LedSpeed = 50
+    .LedSpeed = 40
   End With
   
   ResMovieBox = New Timer As "ResMovieBox"
@@ -59,6 +60,7 @@ Public Sub _new()
   addMatrizLed(MessageText)
   mPlayer = New CPlayer As "mPlayer"
   $bState = False
+  upFailed = False
   PlayListSongs = DataControl.getAllPlaylist()
   If PlayListSongs > 0 Then
     mPlayer_ProcessEnd
@@ -108,7 +110,7 @@ Public Sub mPlayer_ProcessEnd()
     Wend
     
     'Si el archivo ya esta en el servidor se ignora el flag upState
-    If sSong.name = UploadSong Then upState = False
+    If sSong.name = UploadSong And upFailed = False Then upState = False
     
     mPlayer.Play(sSong.name, DataControl.getWorkDir() &/ sSong.genere &/ sSong.album, sSong.type, upState, sSong.cover, sSong.album)
     If sSong.type = "Musica" Then 
@@ -149,6 +151,7 @@ Public Sub UploadTimer_Timer()
     If sSong.cover <> "0" Then
       mPlayer.UploadFile(Left(sSong.name, -3) & Right(sSong.cover, 3), DataControl.getWorkDir() &/ sSong.genere &/ sSong.album &/ sSong.cover)
       WaitUpload = True
+      upFailed = False
       While WaitUpload = True
         Wait 0.1
       Wend
@@ -162,6 +165,13 @@ End
 Public Sub mPlayer_UploadFinish()
   
   WaitUpload = False
+  
+End
+
+Public Sub mPlayer_UploadFailed()
+  
+  WaitUpload = False
+  upFailed = True
   
 End
 

@@ -111,7 +111,7 @@ Public Sub ConTimer_Timer()
     PercentUpd = TotalUp
   Else
     Inc SecTimeOut
-    If SecTimeOut = 3 Then
+    If SecTimeOut = 2 Then
       FTPCon.Stop
       FTPCon_Error
     Endif
@@ -123,6 +123,7 @@ End
 
 Public Sub FTPCon_Progress()
   
+ If FTPCon.Uploaded = 0 Then Return
  Updbar.Value = (FTPCon.Uploaded / FTPCon.TotalUploaded)
   
 End
@@ -201,6 +202,7 @@ End
 
 Public Sub OpenConConnect()
   
+  If FtpIcon.Visible Then Return
   FtpIcon.Visible = True
   If MySocket.Status <> Net.Connected Then
       MySocket.Host = DataControl.FTPHost

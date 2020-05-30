@@ -400,44 +400,16 @@ End
 
 Private Sub Draw_Zeros(AlbumPos As Integer) As String
   
-  Dim sString As String, $TotalAlbum As Integer
+ Dim sString As String, $TotalAlbum, $AlbumPos, i As Integer
   '////////////// Acomodar ceros /////////////////
   $TotalAlbum = Len(CStr(TotalAlbums))
-  '//////////Menos de 100 albumnes, Posicion es menor a 10 acomodo un 0 antes del digito.
-  If $TotalAlbum = 2 And AlbumPos < 10 And TotalAlbums < 100 Then
-    sString = "0" & AlbumPos
-  '//////////Menos de 1000 albumnes, Posicion es menor a 10 acomodo 00 antes del digito.
-  Else If $TotalAlbum = 3 And AlbumPos < 10 And TotalAlbums < 1000 Then
-    sString = "00" & AlbumPos
-  '//////////Menos de 1000 albumnes, Posicion es menor a 100 y mayor a 10 acomodo un 0 antes de los dos digitos.
-  Else If $TotalAlbum = 3 And AlbumPos < 100 And AlbumPos < 1000 Then
-    sString = "0" & AlbumPos
-  '//////////Menos de 10000 albumnes, Posicion es menor a 10 acomodo 000 antes del digito.
-  Else If $TotalAlbum = 4 And AlbumPos < 10 And AlbumPos < 10000 Then
-    sString = "000" & AlbumPos
-  '//////////Menos de 10000 albumnes, Posicion es menor a 100 acomodo 00 antes de los digitos.
-  Else If $TotalAlbum = 4 And AlbumPos < 100 And AlbumPos < 10000 Then
-    sString = "00" & AlbumPos
-  '//////////Menos de 10000 albumnes, Posicion es menor a 1000 acomodo 0 antes de los tres digitos.
-  Else If $TotalAlbum = 4 And AlbumPos < 1000 And AlbumPos < 10000 Then
-    sString = "0" & AlbumPos
-  '//////////Menos de 100000 albumnes, Posicion es menor a 10 acomodo 0000 antes del digito.
-  Else If $TotalAlbum = 5 And AlbumPos < 10 And AlbumPos < 100000 Then
-    sString = "0000" & AlbumPos
-  '//////////Menos de 100000 albumnes, Posicion es menor a 100 acomodo 000 antes de los digitos.
-  Else If $TotalAlbum = 5 And AlbumPos < 100 And AlbumPos < 100000 Then
-    sString = "000" & AlbumPos
-  '//////////Menos de 100000 albumnes, Posicion es menor a 1000 acomodo 00 antes de los tres digitos.
-  Else If $TotalAlbum = 5 And AlbumPos < 1000 And AlbumPos < 100000 Then
-    sString = "00" & AlbumPos
-  '//////////Menos de 100000 albumnes, Posicion es menor a 10000 acomodo 0 antes de los cuatro digitos.
-  Else If $TotalAlbum = 5 And AlbumPos < 10000 And AlbumPos < 100000 Then
-    sString = "0" & AlbumPos
- '//////// De lo contrario, solo poner los digitos.
-  Else
-    sString = AlbumPos
-  Endif
-
+  $AlbumPos = Len(CStr(AlbumPos))
+  
+  For i = 1 To $TotalAlbum - $AlbumPos
+    sString = "0" & sString
+  Next
+  sString = sString & AlbumPos
+  
   Return sString
   
 End

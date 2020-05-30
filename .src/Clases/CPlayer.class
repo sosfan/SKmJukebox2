@@ -21,6 +21,7 @@ Event ProcessEnd
 Event MovieBoxVisible
 Event MovieBox_click
 Event UploadFinish
+Event UploadFailed
 
 Property VisibleMovieBox As Boolean ''Habilita o deshabilita la visibilidad del MovieBox.
 Property mpControl As Boolean ''Muestra el estado del timer.
@@ -53,7 +54,7 @@ Public Sub _new()
   $pMonitor.Delay = 1000
   
   ReconSocket = New Timer As "ReconSocket"
-  ReconSocket.Delay = 20000
+  ReconSocket.Delay = 120000
   ReconSocket.Start
   
   ResCount = New Timer As "ResCount"
@@ -232,7 +233,7 @@ End
 
 Public Sub RmtSender_Send_Error()
   
-  Raise UploadFinish
+  Raise UploadFailed
   If FileIgnore Then
     FileIgnore = False
     Return
