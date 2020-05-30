@@ -2,10 +2,10 @@ MStart
 SKm Jukebox
 0
 0
-2.0.22
+2.0.28
 
 gb.image
-gb.qt4
+gb.gui.qt
 gb.form
 gb.db
 gb.db.sqlite3

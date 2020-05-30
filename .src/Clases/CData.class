@@ -107,6 +107,76 @@ Public Sub _new()
   
 End
 
+Public Sub UpMusicTb()
+  
+  If Exist(MusicDir_Read()) Then
+    
+    With hConn
+      .Exec("drop table abc_data")
+      .Exec("drop table album_id")
+      .Exec("drop table mp3")
+      .Exec("drop table mp3playhistory")
+    End With
+    
+    MDatabase.MusicaCreateDatabaseTables(hConn)
+    Exec ["skmdbmgr", "-musica"] Wait
+    Last.Enabled = False
+    
+  Else
+    
+    Message.Error("\nLa ruta especificada de Música no existe, se ha movido o eliminado.\nEspecifique una nueva ruta.")
+    
+  Endif
+  
+End
+
+Public Sub UpVideoTb()
+  
+  If Exist(VideoDir_Read()) Then
+    
+    With hConn
+      .Exec("drop table video_abc_data")
+      .Exec("drop table video_album_id")
+      .Exec("drop table video")
+      .Exec("drop table videoplayhistory")
+    End With
+    
+    MDatabase.VideoCreateDatabaseTables(hConn)
+    Exec ["skmdbmgr", "-video"] Wait
+    Last.Enabled = False
+    
+  Else
+    
+    Message.Error("\nLa ruta especificada de vídeos no existe, se ha movido o eliminado.\nEspecifique una nueva ruta.")
+    
+  Endif
+  
+End
+
+Public Sub UpKaraokeTb()
+
+  If Exist(KaraokeDir_Read()) Then
+    
+  With hConn
+      .Exec("drop table karaoke_abc_data")
+      .Exec("drop table karaoke_album_id")
+      .Exec("drop table karaoke")
+      .Exec("drop table karaokeplayhistory")
+    End With
+    
+    MDatabase.KaraokeCreateDatabaseTables(hConn)
+    Exec ["skmdbmgr", "-karaoke"] Wait
+    Last.Enabled = False
+    
+  Else
+    
+    Message.Error("\nLa ruta especificada de Karaokes no existe, se ha movido o eliminado.\nEspecifique una nueva ruta.")
+    
+  Endif
+  
+End
+
+
 Private Function getConfigData_Read() As Result
 
   Dim hResult As Result
@@ -518,6 +588,7 @@ Private Function DBPlayList_Read() As Song
       .name = hResult["Nombre"]
       .genere = hResult["Genero"]
       .type = hResult["Tipo"]
+      .cover = hResult["Cover"]
     End With
   Endif
   
@@ -531,9 +602,9 @@ Private Sub DBPlayList_Write(sData As Song)
   
   hResult = hConn.Exec("select max(id) from playlist")
   If hResult["max(id)"] = Null Then
-    hConn.Exec("insert into playlist values (&1,&2,&3,&4,&5,&6)", 1, Null, sData.album, sData.name, sData.genere, sData.type)
+    hConn.Exec("insert into playlist values (&1,&2,&3,&4,&5,&6,&7)", 1, Null, sData.album, sData.name, sData.genere, sData.type, sData.cover)
   Else
-    hConn.Exec("insert into playlist values (&1,&2,&3,&4,&5,&6)", hResult["max(id)"] + 1, Null, sData.album, sData.name, sData.genere, sData.type)
+    hConn.Exec("insert into playlist values (&1,&2,&3,&4,&5,&6,&7)", hResult["max(id)"] + 1, Null, sData.album, sData.name, sData.genere, sData.type, sData.cover)
   Endif
 
 End
@@ -559,7 +630,7 @@ Public Sub DelFirstItemPL() ''Elimina la primera entrada en la DB playlist
 '   
   hResult = hConn.Exec("select * from playlist")
   hResult.MoveFirst
-  hConn.Exec("delete from playlist where id=" & hResult["id"])
+  Try hConn.Exec("delete from playlist where id=" & hResult["id"])
   
 End
 

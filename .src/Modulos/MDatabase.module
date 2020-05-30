@@ -60,10 +60,10 @@ Public Sub ConfigCreateDatabaseTables(hConn As Connection)
   hResult["MoneyValue"] = 10
   hResult["CreditValue"] = 3
   hResult["MasterVol"] = 100
-  hResult["FullScreen"] = True
+  hResult["FullScreen"] = False
   hResult["ShowCursor"] = False
   hResult["ScreenSaver"] = True
-  hResult["VideoOut"] = False
+  hResult["VideoOut"] = True
   hResult["AutoPlay"] = True
   hResult["AutoScroll"] = True
   hResult["MaxCreditKey"] = "z"
@@ -73,11 +73,11 @@ Public Sub ConfigCreateDatabaseTables(hConn As Connection)
   hResult["MaxVolKey"] = "*"
   hResult["MinVolKey"] = "/"
   hResult["Theme"] = "default"
-  hResult["FtpHost"] = "192.168.1.105"
+  hResult["FtpHost"] = "192.168.1.104"
   hResult["FtpUser"] = "pi"
   hResult["FtpPassword"] = "GFas5ctR6uY/2-:@"
   hResult["MusicDir"] = User.Home &/ "Música"
-  hResult["VideoDir"] = User.Home &/ "Vídeos"
+  hResult["VideoDir"] = User.Home &/ "VideosTest"
   hResult["KaraokeDir"] = User.Home &/ "Karaokes"
   hResult.Update
   hConn.Commit
@@ -131,6 +131,8 @@ Public Sub MusicaCreateDatabaseTables(hConn As Connection)
     .Fields.Add("Cover_name", db.String, 50)
     .Fields.Add("Total_songs", db.Integer)
     .Fields.Add("Genero", db.String, 50)
+    .Fields.Add("Fecha", db.String, 10)
+    .Fields.Add("Tipo", db.String, 10)
     For i = 1 To 4
       .Fields.Add("Songsid" & i, db.Integer)
     Next
@@ -191,6 +193,8 @@ Public Sub VideoCreateDatabaseTables(hConn As Connection)
     .Fields.Add("Cover_name", db.String, 100)
     .Fields.Add("Total_songs", db.Integer)
     .Fields.Add("Genero", db.String, 50)
+    .Fields.Add("Fecha", db.String, 10)
+    .Fields.Add("Tipo", db.String, 10)
     For i = 1 To 4
       .Fields.Add("Songsid" & i, db.Integer)
     Next
@@ -249,6 +253,8 @@ Public Sub KaraokeCreateDatabaseTables(hConn As Connection)
     .Fields.Add("Cover_name", db.String, 100)
     .Fields.Add("Total_songs", db.Integer)
     .Fields.Add("Genero", db.String, 50)
+    .Fields.Add("Fecha", db.String, 10)
+    .Fields.Add("Tipo", db.String, 10)
     For i = 1 To 4
       .Fields.Add("Songsid" & i, db.Integer)
     Next
@@ -298,6 +304,7 @@ Public Sub PlayListCreateDatabaseTables(hConn As Connection)
     .Fields.Add("Nombre", db.String, 50)
     .Fields.Add("Genero", db.String, 50)
     .Fields.Add("Tipo", db.String, 10)
+    .Fields.Add("Cover", db.String, 50)
     .PrimaryKey = ["id"]
     .Update
     

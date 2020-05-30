@@ -20,29 +20,46 @@
 Event ProcessEnd
 Event MovieBoxVisible
 Event MovieBox_click
+Event UploadFinish
+Event UploadFailed
 
 Property VisibleMovieBox As Boolean ''Habilita o deshabilita la visibilidad del MovieBox.
 Property mpControl As Boolean ''Muestra el estado del timer.
 Property upProcess As Boolean
+Property ResProcess As Boolean
+
 Private $upProcess As Boolean
 Private DataControl As New CData
 Private RmtSender As CFtpSender
 Private $hProcess As Process
 Private $pMonitor As Timer
+Private ReconSocket As Timer
+Private ResCount As Timer
+Private ResState As Boolean
 Private $MovieBox As DrawingArea
 Private $rPath As String
 Private $rFile As String
 Private $rType As String
+Private $rCover As String
 Private hSkinPath As String
 Private hSkinTheme As Settings
 Private fifofile As File
 Private fifopath As String
 Private WaitFTP As Boolean
+Private FileIgnore As Boolean
 
 Public Sub _new()
   
   $pMonitor = New Timer As "$pMonitor"
   $pMonitor.Delay = 1000
+  
+  ReconSocket = New Timer As "ReconSocket"
+  ReconSocket.Delay = 120000
+  ReconSocket.Start
+  
+  ResCount = New Timer As "ResCount"
+  ResCount.Delay = 80000
+  
   $MovieBox = New DrawingArea(FMain) As "$MovieBox"
   hSkinPath = DataControl.SkinPath & DataControl.SkinTheme
   hSkinTheme = New Settings(hSkinPath &/ "theme.conf")
@@ -68,12 +85,14 @@ Public Sub _new()
   'Abrir fifo de entrada para mplayer
   fifofile = Open fifopath For Write Append
   
+  Wait 1
   
 End
 
-Public Sub Play(FileName As String, FilePath As String, tSong As String, SendFile As Boolean)
+Public Sub Play(FileName As String, Path As String, tSong As String, SendFile As Boolean, CoverName As String, AlbumName As String)
+  Dim FilePath, CoverPath As String
   
-  FilePath = Conv(FilePath, Desktop.Charset, System.Charset)
+  FilePath = Conv(Path &/ FileName, Desktop.Charset, System.Charset)
   
   If DataControl.VideoOut Then
     
@@ -88,6 +107,11 @@ Public Sub Play(FileName As String, FilePath As String, tSong As String, SendFil
     $rPath = FilePath
     $rFile = FileName
     $rType = tSong
+    If CoverName <> "0" Then
+      $rCover = Left(FileName, -3) & Right(CoverName, 3)
+    Else
+      $rCover = CoverName
+    Endif
     
     If SendFile Then
       
@@ -95,6 +119,14 @@ Public Sub Play(FileName As String, FilePath As String, tSong As String, SendFil
       Wait 0.5
       If RmtSender.ConStatus = False Then
         Goto recnormal
+      Endif
+      If CoverName <> "0" Then
+        CoverPath = Conv(Path &/ CoverName, Desktop.Charset, System.Charset)
+        FileIgnore = True
+        UploadFile($rCover, CoverPath)
+        While FileIgnore = True
+          Wait 0.1
+        Wend
       Endif
       UploadFile(FileName, FilePath)
     Else
@@ -109,11 +141,22 @@ Public Sub Play(FileName As String, FilePath As String, tSong As String, SendFil
     Endif
   Endif
   
+  Catch
+    Debug Error.Text
+  
 End
 
 Public Sub UploadFile(FileName As String, FilePath As String)
   
   $upProcess = True
+  
+  'Detectar si estamos tratando con un archivo CDG
+  ' If Right(FileName, 3) = "cdg" Then
+  '   cdgUpload = True
+  '   UploadFile(Replace(FileName, ".cdg", ".mp3"), Replace(FilePath, ".cdg", ".mp3"))
+  '   cdgUpload = False
+  ' Endif
+  
   RmtSender.SendFTPFile(FileName, FilePath)
   
 End
@@ -121,9 +164,9 @@ End
 Public Sub DeleteFile()
   
   RmtSender.ConSendSocket("<DELETEFILE>")
+  Wait 0.2
   
 End
-
 
 Private Sub PlayAudio(sFilePath As String)
   
@@ -131,16 +174,20 @@ Private Sub PlayAudio(sFilePath As String)
   $hProcess = Exec ["mplayer", "-ao", "alsa", "-vo", "null", "-input", "file=" & fifopath, "-really-quiet", sFilePath] For Read Write As "Process"
   
   If WaitFTP Then
-    WaitFTP = False
     PlayerPause
-    If $rType = "Musica" Then 
-      Wait 1
-    Else
-      Wait 1.5
-    Endif
+    WaitFTP = False
+    ' If $rType = "Musica" Then 
+    '   Wait 2
+    ' Else
+    '   Wait 2
+    ' Endif
+    Wait 2
+    
+    ' If Right(sFilePath, 3) = "m4a" Then
     RmtSender.ConSendSocket("<PAUSE>")
-    Wait 0.1
     PlayerSeek
+    
+    
   Endif
   
   $pMonitor.Enabled = True
@@ -150,7 +197,7 @@ End
 Private Sub PlayVideo(sFilePath As String)
   
   If $MovieBox.Visible = False Then $MovieBox.Visible = True
-  
+  WaitFTP = False
   $hProcess = Exec ["mplayer", "-cache", "2048", "-ao", "alsa", "-vo", "x11", "-zoom", "-x", $MovieBox.W, "-y", $MovieBox.H, "-input", "file=" & fifopath, "-really-quiet", "-wid", $MovieBox.Handle, sFilePath] For Read Write As "Process"
   $pMonitor.Enabled = True
   $MovieBox.Raise
@@ -167,22 +214,38 @@ End
 
 Public Sub RmtSender_Send_Finish()
   
+  Raise UploadFinish
+  If FileIgnore Then
+    FileIgnore = False
+    Return
+  Endif
   $upProcess = False
   If WaitFTP = False Then Return
   RmtSender.ConSendSocket($rFile)
-  Wait 0.1
+  Wait 0.3
+  If $rCover <> "0" Then
+    RmtSender.ConSendSocket($rCover)
+    Wait 0.3
+  Endif
   PlayAudio($rPath)
-  
-  ' WaitFTP = False
   
 End
 
 Public Sub RmtSender_Send_Error()
   
+  Raise UploadFailed
+  If FileIgnore Then
+    FileIgnore = False
+    Return
+  Endif
   $upProcess = False
   'En caso de error, repoducir normalmente
+  Debug Error.Text
   If WaitFTP = False Then Return
   ' WaitFTP = False
+  RmtSender.ConSendSocket("<RESTART>")
+  ResCount.Start
+  ResState = True
   
   If $rType = "Musica" Then
     PlayAudio($rPath)
@@ -195,30 +258,43 @@ End
 Public Sub $pMonitor_Timer()
   
   If $hProcess.State = Process.Stopped And WaitFTP = False Then
+    'Matar el proceso en el servidor
+    RmtSender.ConSendSocket("<ENDFILE>")
+    Wait 0.5
     'Dispara el evento
     Raise ProcessEnd
+    
   Endif
+  
+End
+
+Public Sub ReconSocket_Timer()
+  
+  If ResState = True Then Return
+  If RmtSender.ConStatus = False Then RmtSender.OpenConConnect
   
 End
 
 Public Sub PlayerStop()
   
-  ' If Not $hProcess Then Return
-  ' Try Print #$hProcess, "q";
+  If Not $hProcess Then Return
+  If Not $hProcess.State = Process.Running Then Return
+  
+  Try Print #$hProcess, "q";
   
   RmtSender.ConSendSocket("<CANCEL>")
-  Wait 0.1
-  Print #fifofile, "stop"
+  Wait 0.2
+  ' Print #fifofile, "stop"
   
-  ' Catch
-  '   Debug "No existe el proceso."
+  Catch
+    Debug Error.Text
   
 End
 
 Private Sub PlayerSeek()
-
-  Print #fifofile, "seek -2 0"
-
+  
+  Print #fifofile, "seek -3 0"
+  
 End
 
 Public Sub PlayerPause()
@@ -228,15 +304,15 @@ Public Sub PlayerPause()
 End
 
 Private Function mpControl_Read() As Boolean
-
+  
   Return $pMonitor.Enabled
-
+  
 End
 
 Private Sub mpControl_Write(Value As Boolean)
-
+  
   $pMonitor.Enabled = Value
-
+  
 End
 
 Private Function VisibleMovieBox_Read() As Boolean
@@ -246,9 +322,9 @@ Private Function VisibleMovieBox_Read() As Boolean
 End
 
 Private Sub VisibleMovieBox_Write(Value As Boolean)
-
+  
   $MovieBox.Visible = Value
-
+  
 End
 
 Private Sub HideMovieBox()
@@ -267,13 +343,33 @@ Public Sub $MovieBox_MouseDown()
 End
 
 Private Function upProcess_Read() As Boolean
-
+  
   Return $upProcess
   
 End
 
-Private Sub upProcess_Write(Value As Boolean)
+Public Sub ResCount_Timer()
+  
+  ResCount.Stop
+  ResState = False
+  Debug "ResCount"
+  
+End
 
+Private Sub upProcess_Write(Value As Boolean)
+  
   Debug "Read only"
+  
+End
+
+Private Function ResProcess_Read() As Boolean
+
+  Return ResState
+
+End
+
+Private Sub ResProcess_Write(Value As Boolean)
+
+  ResState = Value
 
 End

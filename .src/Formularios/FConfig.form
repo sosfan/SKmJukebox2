@@ -1,0 +1,70 @@
+# Gambas Form File 3.0
+
+{ Form Form
+  Move(0,0,600,450)
+  #Scaled = False
+  Text = ("Configuración")
+  Resizable = False
+  { IconPanel1 IconPanel
+    Move(7,7,581,406)
+    Count = 7
+    Border = True
+    Index = 0
+    Text = ("Opciones")
+    Picture = Picture["icon:/32/options"]
+    Index = 1
+    Text = ("Rutas y BD")
+    Picture = Picture["icon:/32/database"]
+    { BtnUpMusic Button
+      Move(21,308,105,42)
+      Picture = Picture["icon:/32/multimedia"]
+    }
+    { BtnUpVideo Button
+      Move(154,308,105,42)
+      Picture = Picture["icon:/32/video"]
+    }
+    { BtnUpKaraoke Button
+      Move(287,308,105,42)
+      Picture = Picture["icon:/32/microphone"]
+    }
+    { LabelInfo1 Label
+      Move(21,280,252,28)
+      Text = ("Elija la sección que se actualizará en la BD.")
+    }
+    { Label1 Label
+      Move(28,357,91,14)
+      Text = ("Música")
+      Alignment = Align.Center
+    }
+    { Label2 Label
+      Move(161,357,91,14)
+      Text = ("Vídeos")
+      Alignment = Align.Center
+    }
+    { Label3 Label
+      Move(294,357,91,14)
+      Text = ("Karaokes")
+      Alignment = Align.Center
+    }
+    Index = 2
+    Text = ("Mapa de teclas")
+    Picture = Picture["icon:/32/keyboard"]
+    Index = 3
+    Text = ("Audio")
+    Picture = Picture["icon:/32/audio"]
+    Index = 4
+    Text = ("Conexión a TV")
+    Picture = Picture["icon:/32/screen"]
+    Index = 5
+    Text = ("Monedero")
+    Picture = Picture["icon:/32/save-as"]
+    Index = 6
+    Text = ("Info. Soporte")
+    Picture = Picture["icon:/32/star"]
+    Index = 0
+  }
+  { BtnClose Button
+    Move(462,413,126,28)
+    Text = ("Cerrar configuración")
+  }
+}

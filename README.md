@@ -11,7 +11,7 @@ Requiere:
 
   *gb.form
   
-  *gb.qt4
+  *gb.gui.qt
   
   *gb.image
   
@@ -19,8 +19,10 @@ Requiere:
   
   *gb.panel_led
   
-  *gb.easyencrypt(opcional)
+  *gb.easyencrypt
   
   *mplayer
   
   *Skmdbmgr
+  
+  *SkmVideoServer(orangepi opcional)

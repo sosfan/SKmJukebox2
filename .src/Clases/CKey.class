@@ -41,6 +41,7 @@ Private imgRes As String
 Private Himg As Integer
 Private Wimg As Integer
 Private MultiSendKey As Boolean
+Private KeyPressed As Boolean
 Private iCont As Short
 
 Public Sub _new()
@@ -64,7 +65,7 @@ Public Sub _new()
   End With
   
   ResKeyHover = New Timer As "ResKeyHover"
-  ResKeyHover.Delay = 50
+  ResKeyHover.Delay = 200
   
   SendEventKey = New Timer As "SendEventKey"
   SendEventKey.Delay = 200
@@ -73,14 +74,15 @@ End
 
 Public Sub ResKeyHover_Timer()
 
-  imgKey.Picture = Picture[imgRes]
   ResKeyHover.Stop
+  imgKey.Picture = Picture[imgRes]
 
 End
 
 Public Sub SendEventKey_Timer()
   
-  If iCont = 5 Then
+  If KeyPressed = False Then SendEventKey.Stop
+  If iCont = 7 Then
     Raise PulseKey
   Else
     Inc iCont
@@ -91,20 +93,26 @@ End
 Public Sub LabelKey_MouseDown()
 
   imgKey.Picture = Picture[Left(imgRes, -4) & "_Hover.png"]
+  KeyPressed = True
+  Wait 0.1
+  
   If MultiSendKey = True Then
     Raise PulseKey
     iCont = 1
     SendEventKey.Start
   Endif
+
+  While KeyPressed = True
+    Wait 0.1
+  Wend
   
 End
 
 Public Sub LabelKey_MouseUp()
   
   ResKeyHover.Start
-  If MultiSendKey = True Then
-    SendEventKey.Stop
-  Else
+  KeyPressed = False
+  If MultiSendKey = False Then
     Raise PulseKey
   Endif
   

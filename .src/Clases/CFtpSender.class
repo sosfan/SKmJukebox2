@@ -25,7 +25,10 @@ Private ConTimer As Timer
 Private timTimeout As Timer
 Private DataControl As New CData
 Private TotalTimeFTP As Integer
+Private PercentUpd As Integer
+Private SecTimeOut As Byte
 
+Public UpdBar As ProgressBar
 Public FtpIcon As PictureBox
 
 Event Send_Finish
@@ -37,10 +40,19 @@ Property ConStatus As Boolean
 
 Public Sub _new()
   
-  FTPCon = New FtpClient As "FTPCon"
+  ' FTPCon = New FtpClient As "FTPCon"
   MySocket = New Socket As "MySocket"
   ConTimer = New Timer As "ConTimer"
   ConTimer.Delay = 1000
+  
+  UpdBar = New ProgressBar(FMain)
+  With UpdBar
+    .X = 42
+    .Y = 7
+    .W = 77
+    .H = 21
+    .Hide
+  End With
   
   FtpIcon = New PictureBox(FMain)
   With FtpIcon
@@ -61,10 +73,12 @@ End
 
 Public Sub SendFTPFile(sFileName As String, sDataFileName As String)
   
-  
-  If FTPCon.Status > Net.Active Then
-    Close FTPCon 'Se cierra la conexión FTP para modificar el URL
-  Endif
+  FTPCon = New FtpClient As "FTPCon"
+  FTPCon.Timeout = 60
+  ' FTPCon.Debug = True
+  ' If FTPCon.Status > Net.Active Then
+   ' Try Close FTPCon 'Se cierra la conexión FTP para modificar el URL
+  ' Endif
   
   With FTPCon
     
@@ -77,14 +91,41 @@ Public Sub SendFTPFile(sFileName As String, sDataFileName As String)
   End With
   FtpIcon.Visible = True
   ConTimer.Start
+  SecTimeOut = 0
+  PercentUpd = 0
   TotalTimeFTP = 0
+  UpdBar.Value = 0
+  Updbar.show
+  UpdBar.Raise
   
 End
 
 Public Sub ConTimer_Timer()
-
+  
+  Dim TotalUp As Integer
   Inc TotalTimeFTP
+  If FTPCon.TotalUploaded = 0 Then Return
+  Try TotalUp = CInt((FTPCon.Uploaded / FTPCon.TotalUploaded) * 100)
+  'Si el procentaje de bytes no cambia en determinado tiempo, se detiene el proceso
+  If PercentUpd <> TotalUp Then
+    PercentUpd = TotalUp
+  Else
+    Inc SecTimeOut
+    If SecTimeOut = 5 Then
+      FTPCon.Stop
+      FTPCon_Error
+    Endif
+  Endif
+  
+  Catch
+    Debug Error.Text
+End
 
+Public Sub FTPCon_Progress()
+  
+ If FTPCon.Uploaded = 0 Then Return
+ Updbar.Value = (FTPCon.Uploaded / FTPCon.TotalUploaded)
+  
 End
 
 Public Sub FTPCon_Finished()
@@ -93,15 +134,19 @@ Public Sub FTPCon_Finished()
   FtpIcon.Visible = False
   Debug "Transacción finalizada, duración de " & TotalTimeFTP & " segundos."
   Raise Send_Finish
+  Updbar.Hide
+  FTPCon.Close
   
 End
 
 Public Sub FTPCon_Error()
   
-  Debug FTPCon.ErrorText
   Raise Send_Error
   FtpIcon.Visible = False
+  UpdBar.Hide
   ConTimer.Stop
+  FTPCon.Close
+  Debug FTPCon.ErrorText
   
 End
 
@@ -132,7 +177,7 @@ Public Sub MySocket_Read()
   FtpIcon.Visible = True
   If MySocket.Status = Net.Connected Then
     Read #MySocket, S, Lof(MySocket)
-    Print S
+    Print "recv " & S
   End If
   FtpIcon.Visible = False
   
@@ -157,6 +202,7 @@ End
 
 Public Sub OpenConConnect()
   
+  If FtpIcon.Visible Then Return
   FtpIcon.Visible = True
   If MySocket.Status <> Net.Connected Then
       MySocket.Host = DataControl.FTPHost
@@ -195,6 +241,7 @@ Public Sub ConSendSocket(sCommand As String)
   FtpIcon.Visible = True
   If MySocket.Status = Net.Connected Then 
     Write #MySocket, sCommand, Len(sCommand)
+    Print "send " & sCommand
   End If
   FtpIcon.Visible = False
 End

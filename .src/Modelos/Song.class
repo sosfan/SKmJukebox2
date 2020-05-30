@@ -23,13 +23,14 @@ Property name As String
 Property album As String
 Property genere As String
 Property type As String
+Property cover As String
 Private id_album As Integer
 Private id_song As Integer
 Private name_song As String
 Private album_song As String
 Private genere_song As String
 Private type_song As String
-
+Private cover_song As String
 
 Public Sub _new()
   
@@ -39,6 +40,7 @@ Public Sub _new()
   album_song = Null
   genere_song = Null
   type_song = Null
+  cover_song = Null
   
 End
 
@@ -111,5 +113,17 @@ End
 Private Sub genere_Write(Value As String)
 
   genere_song = Value
+
+End
+
+Private Function cover_Read() As String
+
+  Return cover_song
+
+End
+
+Private Sub cover_Write(Value As String)
+
+  cover_song = Value
 
 End
