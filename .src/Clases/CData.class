@@ -69,7 +69,8 @@ Private Function ConectarBase() As Boolean
   Return False
   
 End
-
+' Select * From "album_id" where "Genero" Like "Vocaloid"
+' Select DISTINCT "Genero" From "album_id"
 Private Function CerrarConexion()
   
   If hConn = Null Then Return
@@ -249,7 +250,7 @@ End
 
 Private Sub FullScreen_Write(Value As Boolean)
 
-  hConn.Exec("update config_data set FullScreen=" & Value & " where id=1")
+  hConn.Exec("update config_data set FullScreen='" & Value & "' where id=1")
 
 End
 
@@ -264,7 +265,7 @@ End
 
 Private Sub ShowCursor_Write(Value As Boolean)
 
-  hConn.Exec("update config_data set ShowCursor=" & Value & " where id=1")
+  hConn.Exec("update config_data set ShowCursor='" & Value & "' where id=1")
 
 End
 
@@ -279,7 +280,7 @@ End
 
 Private Sub ScreenSaver_Write(Value As Boolean)
 
-  hConn.Exec("update config_data set ScreenSaver=" & Value & " where id=1")
+  hConn.Exec("update config_data set ScreenSaver='" & Value & "' where id=1")
 
 End
 
@@ -293,9 +294,9 @@ Private Function VideoOut_Read() As Boolean
 End
 
 Private Sub VideoOut_Write(Value As Boolean)
-
-  hConn.Exec("update config_data set VideoOut=" & Value & " where id=1")
-
+  
+  hConn.Exec("update config_data set VideoOut='" & Value & "' where id=1")
+  
 End
 
 Private Function AutoPlay_Read() As Boolean
@@ -309,7 +310,7 @@ End
 
 Private Sub AutoPlay_Write(Value As Boolean)
 
-  hConn.Exec("update config_data set AutoPlay=" & Value & " where id=1")
+  hConn.Exec("update config_data set AutoPlay='" & Value & "' where id=1")
 
 End
 
@@ -324,7 +325,7 @@ End
 
 Private Sub AutoScroll_Write(Value As Boolean)
 
-  hConn.Exec("update config_data set AutoScroll=" & Value & " where id=1")
+  hConn.Exec("update config_data set AutoScroll='" & Value & "' where id=1")
 
 End
 
@@ -429,7 +430,7 @@ End
 
 Private Sub MusicDir_Write(Value As String)
 
-  hConn.Exec("update config_data set MusicDir=" & Value & " where id=1")
+  hConn.Exec("update config_data set MusicDir='" & Value & "' where id=1")
 
 End
 
@@ -444,7 +445,7 @@ End
 
 Private Sub VideoDir_Write(Value As String)
 
-  hConn.Exec("update config_data set VideoDir=" & Value & " where id=1")
+  hConn.Exec("update config_data set VideoDir='" & Value & "' where id=1")
 
 End
 
@@ -459,7 +460,7 @@ End
 
 Private Sub KaraokeDir_Write(Value As String)
 
-  hConn.Exec("update config_data set KaraokeDir=" & Value & " where id=1")
+  hConn.Exec("update config_data set KaraokeDir='" & Value & "' where id=1")
 
 End
 
@@ -658,7 +659,8 @@ Private Sub LoadTotalAlbum()
     Case "Karaoke"
       hResult = hConn.Exec("select id from karaoke_album_id")
   End Select
-  Total_Album = hResult.Count + 1
+  Total_Album = hResult.Count
+  If Total_Album > 0 Then Inc Total_Album
   
 End
 

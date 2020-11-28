@@ -1,0 +1,10 @@
+' Gambas class file
+
+Private gbImage As PictureBox
+
+Public Sub _new()
+  
+  gbImage = New PictureBox(Me)
+  
+  
+End

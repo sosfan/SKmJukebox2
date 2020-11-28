@@ -24,6 +24,10 @@ Property album As String
 Property genere As String
 Property type As String
 Property cover As String
+
+Property URL_image As String
+Property ID_video As String
+
 Private id_album As Integer
 Private id_song As Integer
 Private name_song As String
@@ -31,6 +35,8 @@ Private album_song As String
 Private genere_song As String
 Private type_song As String
 Private cover_song As String
+Private URLImage As String
+Private IDVideo As String
 
 Public Sub _new()
   
@@ -125,5 +131,29 @@ End
 Private Sub cover_Write(Value As String)
 
   cover_song = Value
+
+End
+
+Private Function URL_image_Read() As String
+
+  
+
+End
+
+Private Sub URL_image_Write(Value As String)
+
+  
+
+End
+
+Private Function ID_video_Read() As String
+
+  
+
+End
+
+Private Sub ID_video_Write(Value As String)
+
+  
 
 End

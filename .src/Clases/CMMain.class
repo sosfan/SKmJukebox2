@@ -42,6 +42,9 @@ Private hSkinTheme As Settings
 Private SelectAlbum As String
 Private SelectGenero As String
 Private SearchBox As CSearch
+Private PageList As TextLabel
+Private CreditLbl As TextLabel
+Private PlayAllSongs As PictureBox
 
 Property Skm_Modo As String ''Establece la cadena para identificar el modo de visualización del objeto. (Musica, Video, Karaoke)
 Property NumberPos As Integer ''Establece o retorna el número del album que se usará como índice.
@@ -66,7 +69,7 @@ Public Sub _new()
   End With
   
   'Cuadro de busqueda
-  SearchBox = New CSearch(Me)
+  SearchBox = New CSearch(Me) As "SearchBox"
   With SearchBox
     .X = 0
     .Y = 0
@@ -127,8 +130,86 @@ Public Sub _new()
     
     SongList.Add(Song)
   Next
+  
+  PlayAllSongs = New PictureBox(Me) As "PlayAllSongs"
+  With PlayAllSongs
+    .X = hSkinTheme["PlayAllSongs/X"]
+    .Y = hSkinTheme["PlayAllSongs/Y"]
+    .W = hSkinTheme["PlayAllSongs/W"]
+    .H = hSkinTheme["PlayAllSongs/H"]
+    .Picture = Picture[hSkinPath &/ hSkinTheme["PlayAllSongs/Picture"]]
+    .Hide
+  End With
+  
+  'Lista de paginas
+  PageList = New TextLabel(Me)
+  With PageList
+    .X = hSkinTheme["PageList/X"]
+    .Y = hSkinTheme["PageList/Y"]
+    .W = hSkinTheme["PageList/W"]
+    .H = hSkinTheme["PageList/H"]
+    .Font.Name = hSkinTheme["PageList/Font"]
+    .Font.Size = hSkinTheme["PageList/FontSize"]
+    .Font.Bold = True
+    .Alignment = Align.Center
+    .Foreground = CInt(hSkinTheme["PageList/Foreground"])
+  End With
+  
+  'Etiqueta de creditos
+  CreditLbl = New TextLabel(Me)
+  With CreditLbl
+    .X = hSkinTheme["CreditLbl0/X"]
+    .Y = hSkinTheme["CreditLbl0/Y"]
+    .W = hSkinTheme["CreditLbl0/W"]
+    .H = hSkinTheme["CreditLbl0/H"]
+    .Font.Name = hSkinTheme["CreditLbl0/Font"]
+    .Font.Size = hSkinTheme["CreditLbl0/FontSize"]
+    .Font.Bold = True
+    .Alignment = Align.Center
+    .Foreground = CInt(hSkinTheme["CreditLbl0/Foreground"])
+    .Text = DataControl.Credito
+  End With
 
   LoadThemeConfiguration()
+  
+End
+
+Public Sub PlayAllSongs_MouseDown()
+  
+  Dim sSong As New Song, hResult, $hResult As Result, TotalSongs, SongID, s, i, idPos, jmpPos As Integer
+  
+  hResult = DataControl.getDataAlbum(NumAlbum)
+  TotalSongs = hResult["Total_songs"]
+  With sSong
+    .album = hResult["Album"]
+    .genere = hResult["Genero"]
+    .type = DataControl.Skm_Modo
+    .cover = hResult["Cover_name"]
+  End With
+  Print "Añadiendo a la lista"
+  For s = 1 To TotalSongs
+    idPos = s
+    For i = 1 To 4
+      Select idPos
+        Case jmpPos + 1 To i * 25
+          SongID = hResult["Songsid" & i]
+          jmpPos = (i * 25) - 25
+          Break
+      End Select
+    Next
+    
+    $hResult = DataControl.getDataSongs(SongID)
+    With sSong
+      .id = $hResult["id"]
+      .idsong = idPos - jmpPos
+      .name = $hResult["N" & sSong.idsong]
+    End With
+    Playlist.addPlay(sSong)
+    Print "id= " & sSong.idsong & " --- " & sSong.name
+    Wait 0.3
+  Next
+  DataControl.setPlayHistory(NumAlbum)
+  ResetResMovie
   
 End
 
@@ -149,6 +230,8 @@ Private Sub HideAlbums()
   For i = 0 To 1
     Navigators[i].Visible = False
   Next
+  'Ocultar la lista de paginas
+  PageList.Hide
   
 End
 
@@ -166,6 +249,8 @@ Private Sub ShowAlbums()
   For i = 0 To 1
     Navigators[i].Visible = True
   Next
+  'Mostrar la lista de paginas
+  PageList.Show
   
 End
 
@@ -260,6 +345,7 @@ Private Sub ShowSelectAlbum()
   Next
   
   CoverList.Visible = True
+  If ViewList > 0 Then PlayAllSongs.Show
   CSongList.Show
   Navigators[2].Show
   
@@ -274,6 +360,7 @@ Private Sub HideSelectAlbum()
     SongList[i].Visible = False
   Next
   CoverList.Visible = False
+  PlayAllSongs.Hide
   ' ScrollList.Visible = False
   CSongList.Hide
   Navigators[2].Hide
@@ -371,7 +458,7 @@ End
 
 Private Sub AlbumShow()
   
-  Dim hResult As Result, i As Integer
+  Dim hResult As Result, i As Integer, PageText As String
   'Si llega al final de los albumnes hace el calculo de cuanto mostrar.
   For i = 0 To 9
     hResult = DataControl.getDataAlbums(NumAlbum + i)
@@ -393,8 +480,13 @@ Private Sub AlbumShow()
         .Number = ""
       Endif
     End With
-
   Next
+  If TotalAlbums > 0 Then
+    PageText = Left(Str(NumAlbum + 10), -1) & " de " & (CInt(TotalAlbums / 10) + 1)
+  Else
+    PageText = "Sin páginas"
+  Endif
+  PageList.Text = PageText
   
 End
 
@@ -459,6 +551,7 @@ Private Sub ShowPanelSearch()
   HideSelectAlbum
   ShowBackground("BGSearch")
   SearchBox.Visible = True
+  SearchBox.ShowSearch
   
 End
 
@@ -466,6 +559,7 @@ Private Sub HidePanelSearch()
   
   ShowAlbums
   SearchBox.Visible = False
+  SearchBox.HideSearch
   
 End
 
@@ -475,11 +569,23 @@ Public Sub PanelSearchRaise()
     Select .Visible
       Case True
         HidePanelSearch
+        Playlist.MatrizShow = True
       Case False
         ShowPanelSearch
+        Playlist.MatrizShow = False
     End Select
   End With
+  Debug
+End
+
+Public Sub SearchBox_ReturnMain()
+  
+  PanelSearchRaise
   
 End
 
-
+Public Sub SetLblCredito(Value As Integer)
+  
+  CreditLbl.Text = Value
+  
+End

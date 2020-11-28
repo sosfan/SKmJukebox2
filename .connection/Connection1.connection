@@ -7,5 +7,5 @@ IgnoreCharset=False
 DisplayMetadata=False
 RememberTemplate=False
 Database="music_db.sqlite"
-Requests=[""]
+Requests=["select * from \"album_id\" where \"Genero\" like \"Vocaloid\"\nselect DISTINCT \"Genero\" from \"album_id\""]
 

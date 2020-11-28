@@ -19,8 +19,9 @@
 
 Private DataControl As New CData
 ' Private ConfigData As Result
-
 Private Functions As CFunctions
+Private hKey As String
+Private keysd As Timer
 
 Public Sub _new()
   
@@ -29,6 +30,8 @@ Public Sub _new()
     .FullScreen = DataControl.FullScreen
   End With
   
+  keysd = New Timer As "keysd"
+  keysd.Delay = 2
   
   'Cargar configuración global
   ' ConfigData = DataControl.getConfigData
@@ -39,14 +42,35 @@ Public Sub _new()
   'Ajustar volumen
   Functions.Volumen = Functions.Volumen
   ' Wait 3
-  'Cargar ecualización
-  ' Functions.Equalization
 
 End
 
 Public Sub Form_KeyPress()
   
-  Select Key.Text
+  hKey = key.Text
+  
+End
+
+Public Sub Form_KeyRelease()
+  
+  keysd.Start
+  
+End
+
+Public Sub keysd_Timer()
+  
+  keysd.Stop
+  KeyDetect
+
+End
+
+Private Sub KeyDetect()
+  
+  Select hKey
+    Case DataControl.MaxCreditKey
+      Functions.IncMaxCredito
+    Case DataControl.MinCreditKey
+      Functions.IncCredito
     Case "+"
       Functions.FwList
     Case "-"
@@ -71,6 +95,7 @@ Public Sub Form_KeyPress()
     Case DataControl.ConfigKey
       FConfig.Show
       Me.Hide
+      
   End Select
   
 End

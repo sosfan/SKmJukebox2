@@ -31,9 +31,9 @@ Private UploadTimer As Timer
 Private AutoPlay As Timer
 Private TimeCont As Integer
 Private SongPlaying As String
-Private WaitUpload As Boolean
 Private upFailed As Boolean
-
+Private SearchBoxShow As Boolean
+Property MatrizShow As Boolean
  
 Public Sub _new()
 
@@ -59,7 +59,7 @@ Public Sub _new()
   UploadTimer.Delay = 5000
   
   AutoPlay = New Timer As "AutoPlay"
-  AutoPlay.Delay = 10000
+  AutoPlay.Delay = 60000
   AutoPlay.Start
 
   MessageText = "Bienvenidos a su lugar preferido"
@@ -69,15 +69,23 @@ Public Sub _new()
   upFailed = False
   PlayListSongs = DataControl.getAllPlaylist()
   If PlayListSongs > 0 Then
+    Wait 3
     mPlayer_ProcessEnd
     $bState = True
   Endif
   
 End
 
+Private Sub StopMatrizLed()
+  
+  If DataControl.VideoOut = True Then MatrizLed.Stop
+  
+End
+
 Public Function AddPlay(sSong As Song)
   
   If PlayListSongs = 0 And $bState = False Then
+    StopMatrizLed
     DataControl.Skm_Modo = sSong.type
     mPlayer.Play(sSong.name, DataControl.getWorkDir() &/ sSong.genere &/ sSong.album, sSong.type, True, sSong.cover, sSong.album)
     addMatrizLed("** Ahora sonando - " & Left$(sSong.name, -4) & " - " & sSong.album & " **")
@@ -95,9 +103,7 @@ End
 Public Sub mPlayer_ProcessEnd()
   
   Dim upState As Boolean = True
-  
   Dim sSong As Song
-  
   If PlayListSongs > 0 Then
     sSong = DataControl.DBPlayList
     DataControl.DelFirstItemPL
@@ -110,7 +116,6 @@ Public Sub mPlayer_ProcessEnd()
     Else
       upState = False
     Endif
-    
     'Si el archivo esta en proceso de envio al servidor, esperar hasta que termine el proceso.
     While mPlayer.upProcess = True
       Wait 1
@@ -118,10 +123,11 @@ Public Sub mPlayer_ProcessEnd()
     
     'Si el archivo ya esta en el servidor se ignora el flag upState
     If sSong.name = UploadSong And upFailed = False Then upState = False
+    StopMatrizLed
     
     mPlayer.Play(sSong.name, DataControl.getWorkDir() &/ sSong.genere &/ sSong.album, sSong.type, upState, sSong.cover, sSong.album)
     If sSong.type = "Musica" Then 
-      MatrizLed.Show
+      If SearchBoxShow = False Then MatrizLed.Show
       Try ResMovieBox.Stop
     Endif
     addMatrizLed("** Ahora sonando - " & sSong.album & " - " & Left$(sSong.name, -4) & " **")
@@ -145,6 +151,11 @@ End
 Public Sub UploadTimer_Timer()
   
   Dim sSong As Song
+  
+  'Si la salida de video está desactivado entonces lo ignora.
+  If DataControl.VideoOut = False Then Return
+  
+  'Si el servidor se encuentra en proceso de reinicio, ignorar el envio automático.
   If mPlayer.ResProcess Then Return
   UploadTimer.Stop
   If mPlayer.upProcess = True Or PlayListSongs = 0 Then Return
@@ -157,15 +168,14 @@ Public Sub UploadTimer_Timer()
     Debug "El archivo ya se encuentra en el servidor, ignorando envio."
   Else
     Debug "Enviando archivo"
+    StopMatrizLed
+    'Envio de archivo
+    mPlayer.UploadFile(sSong.name, DataControl.getWorkDir() &/ sSong.genere &/ sSong.album &/ sSong.name)
+    'Portada de album
     If sSong.cover <> "0" Then
       mPlayer.UploadFile(Left(sSong.name, -3) & Right(sSong.cover, 3), DataControl.getWorkDir() &/ sSong.genere &/ sSong.album &/ sSong.cover)
-      WaitUpload = True
       upFailed = False
-      While WaitUpload = True
-        Wait 0.1
-      Wend
     Endif
-    mPlayer.UploadFile(sSong.name, DataControl.getWorkDir() &/ sSong.genere &/ sSong.album &/ sSong.name)
     UploadSong = sSong.name
   Endif
   
@@ -178,7 +188,7 @@ Public Sub AutoPlay_Timer()
   Dim sSong As New Song
   Dim skmodo As String
   '//Automatic Play
-  If TimeCont = 1 Then
+  If TimeCont = 15 Then
     
     i = Rnd(1, 10)
     If i < 6 Then
@@ -241,13 +251,15 @@ End
 
 Public Sub mPlayer_UploadFinish()
   
-  WaitUpload = False
+  MatrizLed.Start
   
 End
 
 Public Sub mPlayer_UploadFailed()
   
-  WaitUpload = False
+  mPlayer_UploadFinish
+  Debug
+  MatrizLed.Start
   upFailed = True
   
 End
@@ -277,7 +289,7 @@ End
 
 Public Sub CancelSong()
   
-  mPlayer.PlayerStop
+  If $bState Then mPlayer.PlayerStop
   
 End
 
@@ -293,6 +305,12 @@ Public Sub mPlayer_MovieBoxVisible()
   
 End
 
+Public Sub mPlayer_MovieBoxHide()
+  
+  MatrizLed.Show
+  
+End
+
 Public Sub mPlayer_MovieBox_click()
   
   HideMovie
@@ -305,4 +323,22 @@ Public Sub ResMovieBox_Timer()
   
   If iCont = 5 Then ResMovie
   
+End
+
+Private Function MatrizShow_Read() As Boolean
+
+  Return MatrizLed.Visible
+
+End
+
+Private Sub MatrizShow_Write(Value As Boolean)
+
+  MatrizLed.Visible = Value
+  Select Value
+    Case False
+      SearchBoxShow = True
+    Case True
+      SearchBoxShow = False
+  End Select
+
 End

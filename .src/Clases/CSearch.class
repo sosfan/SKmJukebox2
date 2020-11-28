@@ -22,15 +22,25 @@
 
 Inherits Panel
 
+Event ReturnMain
+
 Private DataControl As New CData
 Private SingleKey As CKey
 Private TextSearch As TextBox
-
+Private CursorDelay As Timer
+Private MainReturn As Timer
+Private SecReturn As Integer = 40 'Segundos que se tarda la ventana de busqueda en regresar al main
+Private CursorShow As Boolean
+Private CursorCont As Byte
+Private ReturnCont As Byte
 Private hSkinPath As String
 Private hSkinTheme As Settings
-
-
+Private ListResult As ScrollView
+Private ResultAlbum As CAlbum
+Private $ListAlbum As New Object[]
 Private $Keyboard As New Object[]
+
+Private Navigator As CKey
 
 Public Sub _new()
   
@@ -38,14 +48,42 @@ Public Sub _new()
   hSkinPath = DataControl.SkinPath & DataControl.SkinTheme
   hSkinTheme = New Settings(hSkinPath &/ "theme.conf")
   
+  CursorDelay = New Timer As "CursorDelay"
+  CursorDelay.Delay = 500
+  CursorDelay.Start
+  
+  'Retorno automático al panel principal
+  MainReturn = New Timer As "MainReturn"
+  MainReturn.Delay = 1000
+  
   TextSearch = New TextBox(Me)
   With TextSearch
-    .H = 41
-    .W = 371
-    .Font.Name = "FreeSans"
-    .Font.Bold = True
+    .H = hSkinTheme["TextSearch/H"]
+    .W = hSkinTheme["TextSearch/W"]
+    .Font.Bold = False
     .Font.Size = 17
     .ReadOnly = True
+  End With
+  
+  ListResult = New ScrollView(Me)
+  'To Do
+  With ListResult
+    
+    .X = hSkinTheme["ListResult/X"]
+    .Y = hSkinTheme["ListResult/Y"]
+    .H = hSkinTheme["ListResult/H"]
+    .W = hSkinTheme["ListResult/W"]
+    
+  End With
+  
+  Navigator = New CKey(Me) As "Navigator"
+  With Navigator
+    .X = hSkinTheme["Navigator3/X"]
+    .Y = hSkinTheme["Navigator3/Y"]
+    .Hkey = hSkinTheme["Navigator3/H"]
+    .Wkey = hSkinTheme["Navigator3/W"]
+    .$idKey = "Nav2"
+    .imgResPath = hSkinPath &/ hSkinTheme["Images/Nav2"]
   End With
   
   CreateKeys
@@ -57,29 +95,28 @@ Private Sub CreateKeys()
   Dim i, c, Xpos, Ypos, Hkey, Wkey As Integer
   Dim char As String
   
-  Hkey = 49
-  Wkey = 125
+  Xpos = hSkinTheme["KeyboardSearch/X"]
+  Ypos = hSkinTheme["KeyboardSearch/Y"]
+  Hkey = hSkinTheme["KeyboardSearch/H"]
+  Wkey = hSkinTheme["KeyboardSearch/W"]
   
-  Xpos = 20
-  Ypos = 357
-  
-  TextSearch.X = Xpos
-  TextSearch.Y = Ypos - TextSearch.H - 3
+  TextSearch.X = hSkinTheme["TextSearch/X"]
+  TextSearch.Y = hSkinTheme["TextSearch/Y"]
   
   'Arreglo para botones
   For i = 0 To 4
     SingleKey = New CKey(Me) As "SingleKey"
      Select i
       Case 0
-        char = "x MUSICA"
+        char = "Por Nombre"
       Case 1
-        char = "x ALBUM"
+        char = "Por Álbum"
       Case 2
-        char = "RESET"
+        char = "Borrar"
       Case 3
         char = "←"
       Case 4
-        char = "BUSCAR"
+        char = "Buscar"
         Xpos = TextSearch.X + TextSearch.W + 3
         Ypos = TextSearch.Y - 3
         c = 0
@@ -231,21 +268,103 @@ End
 
 Public Sub SingleKey_PulseKey()
   
+  'Si el cursor esta visible, borrarlo primero.
+  If CursorShow Then 
+    TextSearch.Text = Left(TextSearch.Text, -1)
+  Endif
   If Last.$idKey = "Single" Or Last.$idKey = "Space" Then 
-  
-    TextSearch.Text = TextSearch.Text & Last.LetterKey
-  
+    TextSearch.Text = TextSearch.Text & Last.LetterKey & "|"
   Else
     Select Last.LetterKey
-      Case "RESET"
-        TextSearch.Text = ""
+      Case "Borrar"
+        TextSearch.Text = "|"
       Case "←"
         If Right$(TextSearch.Text, 2) = "Ñ" Then
-          TextSearch.Text = Left$(TextSearch.Text, -2)
+          TextSearch.Text = Left$(TextSearch.Text, -2) & "|"
         Else
-          TextSearch.Text = Left$(TextSearch.Text, -1)
+          TextSearch.Text = Left$(TextSearch.Text, -1) & "|"
         Endif
+      Case "Buscar"
+        TextSearch.Text = TextSearch.Text & "|"
+        Buscar
+      Case Else
+        TextSearch.Text = TextSearch.Text & "|"
     End Select
+  Endif
+  CursorShow = True
+  CursorCont = 0
+  ReturnCont = 0
+  
+End
+
+Private Sub Buscar()
+  
+  ' Dim i As Integer
+  ' 
+  ' For i = 0 To 10
+  '   ResultAlbum = New CAlbum As "ResultAlbum"
+  '   With ResultAlbum
+  '     .
+  '   End With
+  ' Next
+  
+End
+
+Public Sub CursorDelay_Timer()
+  
+  If CursorCont > 1 Then
+    If CursorShow = False Then
+      TextSearch.Text = TextSearch.Text & "|"
+      CursorShow = True
+    Else
+      TextSearch.Text = Left(TextSearch.Text, -1)
+      CursorShow = False
+    Endif
+  Else
+    Inc CursorCont
   Endif
   
 End
+
+Public Sub ShowSearch()
+  
+  CursorDelay.Start
+  ReturnCont = 0
+  MainReturn.Start
+  
+End
+
+Public Sub HideSearch()
+  
+  CursorDelay.Stop
+  ClearSearch
+  MainReturn.Stop
+  
+End
+
+Private Sub ClearSearch()
+  
+  'limpiar la busqueda
+  
+  TextSearch.text = "|"
+  CursorShow = True
+  
+End
+
+Public Sub Navigator_PulseKey()
+  
+  Raise ReturnMain
+  HideSearch
+  
+End
+
+Public Sub MainReturn_Timer()
+  
+  If ReturnCont > SecReturn Then
+    Navigator_PulseKey
+  Else
+    Inc ReturnCont
+  Endif
+  
+End
+

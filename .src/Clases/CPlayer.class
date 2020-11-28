@@ -19,14 +19,15 @@
 
 Event ProcessEnd
 Event MovieBoxVisible
+Event MovieBoxHide
 Event MovieBox_click
 Event UploadFinish
 Event UploadFailed
 
 Property VisibleMovieBox As Boolean ''Habilita o deshabilita la visibilidad del MovieBox.
 Property mpControl As Boolean ''Muestra el estado del timer.
-Property upProcess As Boolean
-Property ResProcess As Boolean
+Property upProcess As Boolean ''Muestra el estado del envio ftp.
+Property ResProcess As Boolean ''Muestra si el servidor se encuentra en proceso de reinicio.
 
 Private $upProcess As Boolean
 Private DataControl As New CData
@@ -113,22 +114,24 @@ Public Sub Play(FileName As String, Path As String, tSong As String, SendFile As
       $rCover = CoverName
     Endif
     
-    If SendFile Then
+    If SendFile = True Then
       
       Try RmtSender.OpenConConnect
       Wait 0.5
       If RmtSender.ConStatus = False Then
         Goto recnormal
       Endif
+      
+      'Portada de album
       If CoverName <> "0" Then
         CoverPath = Conv(Path &/ CoverName, Desktop.Charset, System.Charset)
         FileIgnore = True
         UploadFile($rCover, CoverPath)
-        While FileIgnore = True
-          Wait 0.1
-        Wend
       Endif
+      
+      'Subir archivos
       UploadFile(FileName, FilePath)
+      
     Else
       RmtSender_Send_Finish
     Endif
@@ -146,7 +149,7 @@ Public Sub Play(FileName As String, Path As String, tSong As String, SendFile As
   
 End
 
-Public Sub UploadFile(FileName As String, FilePath As String)
+Public Function UploadFile(FileName As String, FilePath As String) As Boolean
   
   $upProcess = True
   
@@ -159,6 +162,8 @@ Public Sub UploadFile(FileName As String, FilePath As String)
   
   RmtSender.SendFTPFile(FileName, FilePath)
   
+  Return True
+  
 End
 
 Public Sub DeleteFile()
@@ -169,6 +174,10 @@ Public Sub DeleteFile()
 End
 
 Private Sub PlayAudio(sFilePath As String)
+  
+  If Object.IsValid($hProcess) Then 
+    If $hProcess.State = $hProcess.Running Then Return
+  Endif
   
   HideMovieBox
   $hProcess = Exec ["mplayer", "-ao", "alsa", "-vo", "null", "-input", "file=" & fifopath, "-really-quiet", sFilePath] For Read Write As "Process"
@@ -181,7 +190,7 @@ Private Sub PlayAudio(sFilePath As String)
     ' Else
     '   Wait 2
     ' Endif
-    Wait 2
+    Wait 1.5
     
     ' If Right(sFilePath, 3) = "m4a" Then
     RmtSender.ConSendSocket("<PAUSE>")
@@ -214,11 +223,11 @@ End
 
 Public Sub RmtSender_Send_Finish()
   
-  Raise UploadFinish
   If FileIgnore Then
     FileIgnore = False
     Return
   Endif
+  Raise UploadFinish
   $upProcess = False
   If WaitFTP = False Then Return
   RmtSender.ConSendSocket($rFile)
@@ -233,17 +242,20 @@ End
 
 Public Sub RmtSender_Send_Error()
   
-  Raise UploadFailed
   If FileIgnore Then
     FileIgnore = False
     Return
   Endif
+  Raise UploadFailed
   $upProcess = False
   'En caso de error, repoducir normalmente
   Debug Error.Text
   If WaitFTP = False Then Return
   ' WaitFTP = False
   RmtSender.ConSendSocket("<RESTART>")
+  ' RmtSender.ConSendSocket("<RESTARTFTP>")
+  ' RmtSender.ConSendSocket("<RESETNET>")
+
   ResCount.Start
   ResState = True
   
@@ -270,9 +282,14 @@ End
 
 Public Sub ReconSocket_Timer()
   
+  If DataControl.VideoOut = False Then Return
   If ResState = True Then Return
-  If RmtSender.ConStatus = False Then RmtSender.OpenConConnect
+  If RmtSender.ConStatus = False Then 
+    Try RmtSender.OpenConConnect
+  Endif
   
+  Catch
+    Debug Error.Text
 End
 
 Public Sub PlayerStop()
@@ -331,7 +348,8 @@ Private Sub HideMovieBox()
   
   If $MovieBox.Visible Then
     $MovieBox.Visible = False
-    Raise MovieBox_click
+    ' Raise MovieBox_click
+    Raise MovieBoxHide
   Endif
   
 End

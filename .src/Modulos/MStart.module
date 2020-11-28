@@ -39,7 +39,7 @@ Private Sub CheckStart()
     Endif
     Try Copy "/usr/share/applications/SKm Jukebox.desktop" To User.Home &/ ".config/autostart/SKm Jukebox.desktop"
   Endif
-  
+  ' /sbin/ifconfig | grep ether | head -n 1 | tr -s ' ' | cut -d' ' -f3
   '//-------------Check Handler----------------//
   If Exist("/tmp/skmjukebox.0") Then Quit
   

@@ -1,12 +1,18 @@
 # Gambas Form File 3.0
 
 { Form Form
-  Move(0,0,600,450)
+  Move(0,0,602,504)
   #Scaled = False
   Text = ("Configuración")
   Resizable = False
+  Border = False
+  { TopBanner PictureBox
+    Move(0,0,602,28)
+    Picture = Picture["resource/topbanner.png"]
+    Stretch = True
+  }
   { IconPanel1 IconPanel
-    Move(7,7,581,406)
+    Move(7,7,588,427)
     Count = 7
     Border = True
     Index = 0
@@ -16,35 +22,62 @@
     Text = ("Rutas y BD")
     Picture = Picture["icon:/32/database"]
     { BtnUpMusic Button
-      Move(21,308,105,42)
+      Move(35,329,105,42)
       Picture = Picture["icon:/32/multimedia"]
     }
     { BtnUpVideo Button
-      Move(154,308,105,42)
+      Move(161,329,105,42)
       Picture = Picture["icon:/32/video"]
     }
     { BtnUpKaraoke Button
-      Move(287,308,105,42)
+      Move(287,329,105,42)
       Picture = Picture["icon:/32/microphone"]
     }
     { LabelInfo1 Label
-      Move(21,280,252,28)
-      Text = ("Elija la sección que se actualizará en la BD.")
+      Move(35,294,364,28)
+      Text = ("Actualizar Base de Datos.")
     }
     { Label1 Label
-      Move(28,357,91,14)
+      Move(42,385,98,14)
       Text = ("Música")
       Alignment = Align.Center
     }
     { Label2 Label
-      Move(161,357,91,14)
+      Move(161,385,105,14)
       Text = ("Vídeos")
       Alignment = Align.Center
     }
     { Label3 Label
-      Move(294,357,91,14)
+      Move(287,385,105,14)
       Text = ("Karaokes")
       Alignment = Align.Center
+    }
+    { MusicDirBox DirBox
+      Move(35,147,364,28)
+    }
+    { VideoDirBox DirBox
+      Move(35,203,364,28)
+    }
+    { KaraokeDirBox DirBox
+      Move(35,259,364,28)
+    }
+    { Label4 Label
+      Move(35,126,364,21)
+      Text = ("Directorio de Músicas")
+    }
+    { Label5 Label
+      Move(35,182,364,21)
+      Text = ("Directorio de Vídeos")
+    }
+    { Label6 Label
+      Move(35,238,364,21)
+      Text = ("Directorio de Karaokes")
+    }
+    { TextLabel1 TextLabel
+      Move(7,21,420,98)
+      Foreground = Color.DarkBlue
+      Text = ("Los directorios donde se almacenan los albumnes de Música, Videos y Karaokes generalmente se ubican en la carpeta del usuario por defecto. Si desea modificar su ubicación en otro dispositivo o partición, puede cambiar la ruta de busqueda en el ícono de carpeta de cada categoria.\n\n\nLos botones inferiores actualizan la base de datos.")
+      Alignment = Align.Justify
     }
     Index = 2
     Text = ("Mapa de teclas")
@@ -55,16 +88,48 @@
     Index = 4
     Text = ("Conexión a TV")
     Picture = Picture["icon:/32/screen"]
+    { tvOutCheck CheckBox
+      Move(35,63,371,21)
+      Text = ("Activar la salida de video a TV.")
+    }
+    { ftpSendCheck CheckBox
+      Move(35,98,371,49)
+      Text = ("Enviar los archivos por red en lugar de reproducirlos\npor conexión HDMI.")
+    }
+    { displayCheck CheckBox
+      Move(35,161,301,21)
+      Text = ("Mostrar en las dos pantallas al mismo tiempo.")
+    }
     Index = 5
     Text = ("Monedero")
     Picture = Picture["icon:/32/save-as"]
     Index = 6
     Text = ("Info. Soporte")
     Picture = Picture["icon:/32/star"]
+    { PNameLabel TextLabel
+      Move(84,28,315,42)
+      Font = Font["Bold,24"]
+      Foreground = Color.Blue
+    }
+    { VerLabel TextLabel
+      Move(14,77,399,21)
+      Foreground = Color.SelectedBackground
+    }
+    { LicenciaTextArea TextArea
+      Move(7,175,427,252)
+    }
+    { Label7 Label
+      Move(7,147,259,21)
+      Text = ("Licencia")
+    }
+    { AuthorLabel Label
+      Move(14,91,392,49)
+    }
     Index = 0
   }
   { BtnClose Button
-    Move(462,413,126,28)
+    Move(392,441,196,56)
     Text = ("Cerrar configuración")
+    Picture = Picture["icon:/32/save"]
   }
 }

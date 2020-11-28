@@ -44,28 +44,6 @@ Public Sub _new()
   
 End
 
-' Public Procedure Equalization() 
-'   
-'   Dim EQdata As New Integer[]
-'   
-'   EQdata = DataControl.channels
-'   
-'   Shell "amixer -q -D equal set \"01. 31 Hz\" " & EQdata[0] & "%"
-'   Shell "amixer -q -D equal set \"02. 63 Hz\" " & EQdata[1] & "%"
-'   Shell "amixer -q -D equal set \"03. 125 Hz\" " & EQdata[2] & "%"
-'   Shell "amixer -q -D equal set \"04. 250 Hz\" " & EQdata[3] & "%"
-'   Shell "amixer -q -D equal set \"05. 500 Hz\" " & EQdata[4] & "%"
-'   Shell "amixer -q -D equal set \"06. 1 kHz\" " & EQdata[5] & "%"
-'   Shell "amixer -q -D equal set \"07. 2 kHz\" " & EQdata[6] & "%"
-'   Shell "amixer -q -D equal set \"08. 4 kHz\" " & EQdata[7] & "%"
-'   Shell "amixer -q -D equal set \"09. 8 kHz\" " & EQdata[8] & "%"
-'   Shell "amixer -q -D equal set \"10. 16 kHz\" " & EQdata[9] & "%"
-' 
-'   Catch
-'     Debug "Error DataControl.getEQData"
-'   
-' End
-
 Private Sub SetVolMaster(PercentVol As Integer)
   
   If PercentVol < 0 Or PercentVol > 100 Then Return
@@ -116,12 +94,13 @@ End
 
 Public Sub BkList()
   
+  'Retrocede la lista -10 pasos
   If NumberPos - 10 < DataControl.getTotalAlbums() And NumberPos - 10 > 0 Then
     NumberPos = NumberPos - 10
   Else If NumberPos - 10 > -9
     NumberPos = 1
   Else
-    NumberPos = DataControl.getTotalAlbums() - 10
+    NumberPos = CInt(Left(Str(DataControl.getTotalAlbums()), -1) & "0")
   Endif
   $CMain.NumberPos = NumberPos
   
@@ -165,3 +144,37 @@ Public Sub PanelSearchKey()
   
 End
 
+Public Sub IncMaxCredito()
+  
+  Dim i As Integer
+  i = DataControl.Credito + DataControl.CreditValue
+  DataControl.Credito = i
+  DataControl.Total_credito = DataControl.Total_credito + 1
+  $CMain.SetLblCredito(i)
+  
+End
+
+Public Sub IncCredito()
+
+  Dim i As Integer
+  i = DataControl.Credito + 1
+  DataControl.Credito = i
+  $CMain.SetLblCredito(i)
+  
+End
+
+Public Sub DecCredito()
+  
+  Dim i As Integer
+  i = DataControl.Credito - 1
+  DataControl.Credito = i
+  $CMain.SetLblCredito(i)
+  
+End
+
+Public Sub ResetCredito()
+  
+  DataControl.Credito = 0
+  $CMain.SetLblCredito(0)
+  
+End

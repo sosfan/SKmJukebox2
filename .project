@@ -1,7 +1,8 @@
 # Gambas Project File 3.0
 Title=SKm Jukebox
 Startup=MStart
-Version=2.0.28
+Icon=resource/icon.png
+Version=2.0.33
 Component=gb.image
 Component=gb.gui.qt
 Component=gb.form

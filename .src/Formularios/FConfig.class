@@ -2,20 +2,37 @@
 
 Private DataControl As New CData
 
+Public Sub Form_Open()
+
+  tvOutCheck.Value = DataControl.VideoOut
+  MusicDirBox.Value = DataControl.MusicDir
+  VideoDirBox.Value = DataControl.VideoDir
+  KaraokeDirBox.Value = DataControl.KaraokeDir
+  
+  
+  PNameLabel.Text = Application.Name
+  VerLabel.Text = "Versión " & Application.Version
+  AuthorLabel.Text = "Autor:\n  José Francisco Facundo <sos.sempai@gmail.com>"
+
+End
+
 Public Sub BtnUpMusic_Click()
 
+  SaveDirBoxValues
   DataControl.UpMusicTb
 
 End
 
 Public Sub BtnUpVideo_Click()
 
+  SaveDirBoxValues
   DataControl.UpVideoTb
 
 End
 
 Public Sub BtnUpKaraoke_Click()
-
+  
+  SaveDirBoxValues
   DataControl.UpKaraokeTb
 
 End
@@ -23,11 +40,50 @@ End
 Public Sub Form_Close()
 
   FMain.Show
+  BtnClose_Click
 
 End
 
 Public Sub BtnClose_Click()
 
+  'Guarda las configuraciones
+  SaveDirBoxValues
   Me.Close
 
+End
+
+Public Sub tvOutCheck_Click()
+
+  ' If DataControl.VideoOut = tvOutCheck.Value Then Return
+  DataControl.VideoOut = tvOutCheck.Value
+
+End
+
+Private Sub SaveDirBoxValues()
+  
+  If MusicDirBox.Value <> DataControl.MusicDir Then
+    If MusicDirBox.Value = "" Then
+      DataControl.MusicDir = User.Home & "/Música"
+    Else
+      DataControl.MusicDir = MusicDirBox.Value
+    Endif
+  Endif
+  
+  If VideoDirBox.Value <> DataControl.VideoDir Then
+    If VideoDirBox.Value = "" Then
+      DataControl.VideoDir = User.Home & "/Videos"
+    Else
+      DataControl.VideoDir = VideoDirBox.Value
+    Endif
+  Endif
+  
+  If KaraokeDirBox.Value <> DataControl.KaraokeDir Then
+    If KaraokeDirBox.Value = "" Then
+      DataControl.KaraokeDir = User.Home & "/Karaoke"
+    Else
+      DataControl.KaraokeDir = KaraokeDirBox.Value
+    Endif
+  Endif
+  
+  
 End

@@ -1,0 +1,142 @@
+' Gambas class file
+
+Event Click
+
+Private URLImage As String
+Private IDVideo As String
+
+Private sSong As Song
+
+Private NombreLbl As TextLabel
+Private DuracionLbl As TextLabel
+Private CoverPicture As PictureBox
+Private ClickedArea As Panel
+
+Property Nombre As String
+Property ID_Video As String
+Property URL_Image As String
+Property Duration_Video As String
+Property SongInfo As Song
+
+
+Public hDownloadClient As New HttpClient As "hDownloadClient"
+Private $imagebuffer As String
+
+Public Sub _new()
+  
+  NombreLbl = New TextLabel(Me)
+  DuracionLbl = New TextLabel(Me)
+  CoverPicture = New PictureBox(Me)
+  ClickedArea = New Panel(Me)
+  
+End
+
+Private Function Nombre_Read() As String
+
+  Return NombreLbl.Text
+
+End
+
+Private Sub Nombre_Write(Value As String)
+
+  NombreLbl.Text = Value
+
+End
+
+Private Function ID_Video_Read() As String
+
+  Return IDVideo
+
+End
+
+Private Sub ID_Video_Write(Value As String)
+
+  IDVideo = Value
+
+End
+
+Private Function URL_Image_Read() As String
+
+  Return URLImage
+
+End
+
+Private Sub URL_Image_Write(Value As String)
+
+  URLImage = Value
+  DownloadPicture(URLImage)
+
+End
+
+Private Function Duration_Video_Read() As String
+
+  Return DuracionLbl.Text
+
+End
+
+Private Sub Duration_Video_Write(Value As String)
+
+  DuracionLbl.Text = Value
+
+End
+
+Public Sub DownloadPicture($url As String)
+  
+  ' hDownloadClient.URL = Replace($url, "\r", "")
+  hDownloadClient.URL = $url
+  hDownloadClient.TimeOut = 20
+  hDownloadClient.Async = True
+  Try hDownloadClient.Get()
+  
+  Catch
+    Debug Error.Text
+  
+End
+
+Public Sub hDownloadClient_Read()
+  
+  Dim sBuffer As String
+  
+  sBuffer = Read #Last, Lof(Last)
+  $imagebuffer &= sBuffer
+  
+End
+
+Public Sub hDownloadClient_Finished()
+  
+  CoverPicture.Picture = Null
+  Debug
+  CoverPicture.Picture = Picture.FromString($imagebuffer)
+  $imagebuffer = Null
+  
+End
+
+Public Sub ClickedArea_MouseDown()
+
+  If IDVideo = "" Then Return
+  Raise Click
+
+End
+
+Public Sub CleanMiniCover()
+  
+  CoverPicture.Picture = Picture.Load("./resource/default.jpg")
+  NombreLbl.Text = ""
+  DuracionLbl.Text = ""
+  ' IDLbl.Text = ""
+  URLImage = ""
+  IDVideo = ""
+  
+End
+
+Private Function SongInfo_Read() As Song
+
+  
+
+End
+
+Private Sub SongInfo_Write(Value As Song)
+
+  
+
+End
