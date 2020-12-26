@@ -193,8 +193,9 @@ Private Sub PlayAudio(sFilePath As String)
     Wait 1.5
     
     ' If Right(sFilePath, 3) = "m4a" Then
-    RmtSender.ConSendSocket("<PAUSE>")
     PlayerSeek
+    RmtSender.ConSendSocket("<PAUSE>")
+    
     
     
   Endif

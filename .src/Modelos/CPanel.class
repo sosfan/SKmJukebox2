@@ -1,0 +1,204 @@
+' Gambas class file
+
+Inherits Panel
+
+Event CloseBox ''Close signal
+Event PlayClick
+Event PlayAllClick
+Event CancelClick
+Event SelectGenre(sData As String)
+
+
+Private bgImage As PictureBox
+Private playBttn As PictureBox
+Private cancelBttn As PictureBox
+Private hSkinPath As String
+Private hSkinTheme As Settings
+Private DataControl As New CData
+Private timerClose As Timer
+Private segCont As Short
+Private sList As ScrollView
+Private QType As Boolean
+Private GenreItem As CKey
+Private KeyList As Object[]
+
+
+
+Public Sub _new()
+  
+  'Leer configuracion del tema
+  hSkinPath = DataControl.SkinPath & DataControl.SkinTheme
+  hSkinTheme = New Settings(hSkinPath &/ "theme.conf")
+  
+  bgImage = New PictureBox(Me) As "bgImage"
+  With bgImage
+    .X = 0
+    .Y = 0
+    .H = hSkinTheme["InfoBox/H"]
+    .W = hSkinTheme["InfoBox/W"]
+    .Visible = True
+  End With
+  
+  playBttn = New PictureBox(Me) As "playBttn"
+  With playBttn
+    .X = hSkinTheme["InfoBoxPlayBttn/X"]
+    .Y = hSkinTheme["InfoBoxPlayBttn/Y"]
+    .H = hSkinTheme["InfoBoxPlayBttn/H"]
+    .W = hSkinTheme["InfoBoxPlayBttn/W"]
+    .Picture = Picture[hSkinPath &/ hSkinTheme["Images/PlayBttn"]]
+    .Visible = True
+  End With
+  
+  cancelBttn = New PictureBox(Me) As "cancelBttn"
+  With cancelBttn
+    .X = hSkinTheme["InfoBoxCancelBttn/X"]
+    .Y = hSkinTheme["InfoBoxCancelBttn/Y"]
+    .H = hSkinTheme["InfoBoxCancelBttn/H"]
+    .W = hSkinTheme["InfoBoxCancelBttn/W"]
+    .Picture = Picture[hSkinPath &/ hSkinTheme["Images/CancelBttn"]]
+    .Visible = True
+  End With
+  
+  createList()
+  
+  KeyList = New Object[]
+  
+  timerClose = New Timer As "timerClose"
+  timerClose.Delay = 1000
+  
+  
+End
+
+Private Sub createList()
+  
+  sList = New ScrollView(Me) As "sList"
+  With sList
+    .X = hSkinTheme["InfoBoxList/X"]
+    .Y = hSkinTheme["InfoBoxList/Y"]
+    .H = hSkinTheme["InfoBoxList/H"]
+    .W = hSkinTheme["InfoBoxList/W"]
+    .Visible = False
+  End With
+  
+End
+
+Public Sub MessageType(value As String)
+  
+  Select value
+    Case 1
+      'Pregunta normal de reproducción
+      bgImage.Picture = Picture[hSkinPath &/ hSkinTheme["Images/QuestionBox1"]]
+      playBttn.Show
+      cancelBttn.Show
+      sList.Hide
+      QType = False
+    Case 2
+      bgImage.Picture = Picture[hSkinPath &/ hSkinTheme["Images/QuestionBox2"]]
+      playBttn.Show
+      cancelBttn.Show
+      sList.Hide
+      QType = True
+    Case 3
+      bgImage.Picture = Picture[hSkinPath &/ hSkinTheme["Images/NoCredit"]]
+      playBttn.Hide
+      cancelBttn.Hide
+      sList.Hide
+    Case 4
+      bgImage.Picture = Picture[hSkinPath &/ hSkinTheme["Images/QuestionBox3"]]
+      playBttn.Hide
+      cancelBttn.Hide
+      sList.Show
+      QType = False
+  End Select
+  
+  TimerOn
+  
+End
+
+Public Sub loadList(Skm_Modo As String)
+  
+  Dim hResult As Result, i, b, c As Short, hItem As Integer
+  If KeyList.Count > 0 Then
+    KeyList.Clear
+    sList.Delete
+    createList
+  Endif
+  
+  hResult = DataControl.getGenres(Skm_Modo)
+  hItem = hSkinTheme["GenreItem/H"]
+  For i = 0 To hResult.Max + 1
+    GenreItem = New CKey(sList) As "GenreItem"
+    If b = 2 Then
+       b = 0
+       Inc c
+    Endif
+    With GenreItem
+      .X = b * ((hSkinTheme["GenreItem/W"]) + 2)
+      .Y = (hItem * c)
+      .Hkey = hItem
+      .Wkey = hSkinTheme["GenreItem/W"]
+      .imgResPath = hSkinPath &/ hSkinTheme["Images/GenreList"]
+      If i = 0 Then
+        .LetterKey = "Todos"
+      Else
+        .LetterKey = hResult["Genero"]
+        hResult.MoveNext
+      Endif
+    End With
+    Inc b
+    KeyList.Add(GenreItem)
+  Next
+  
+End
+
+Public Sub GenreItem_PulseKey()
+  
+  Raise SelectGenre(Last.LetterKey)
+  
+End
+
+Public Sub playBttn_MouseDown()
+  
+  Select QType
+    Case True
+      Raise PlayAllClick
+    Case False
+      Raise PlayClick
+  End Select
+  
+  TimerOff
+  
+End
+
+Public Sub CancelBttn_MouseDown()
+  
+  Raise CancelClick
+  TimerOff
+  
+End
+
+Private Sub TimerOn()
+  
+  segCont = 0
+  timerClose.Start
+  
+End
+
+Private Sub TimerOff()
+  
+  segCont = 0
+  timerClose.Stop
+  
+End
+
+Public Sub timerClose_Timer()
+  
+  'auto Close
+  If segCont < 15 Then
+    Inc segCont
+  Else
+    Raise CloseBox
+    TimerOff
+  Endif
+  
+End

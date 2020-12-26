@@ -56,7 +56,7 @@ Public Sub _new()
   ResMovieBox.Delay = 1000
   
   UploadTimer = New Timer As "UploadTimer"
-  UploadTimer.Delay = 5000
+  UploadTimer.Delay = 10000
   
   AutoPlay = New Timer As "AutoPlay"
   AutoPlay.Delay = 60000
@@ -198,7 +198,7 @@ Public Sub AutoPlay_Timer()
     Endif
    
     DataControl.Skm_Modo = skmodo
-    TotalAlbums = DataControl.getTotalAlbums()
+    TotalAlbums = DataControl.getTotalAlbums(skmodo)
     
     If TotalAlbums > 0 Then
       
@@ -257,7 +257,7 @@ End
 
 Public Sub mPlayer_UploadFailed()
   
-  mPlayer_UploadFinish
+  ' mPlayer_UploadFinish
   Debug
   MatrizLed.Start
   upFailed = True

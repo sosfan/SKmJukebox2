@@ -64,6 +64,36 @@ Public Sub keysd_Timer()
 
 End
 
+Public Sub $decCredito(Value As Integer)
+  
+  Functions.DecCredito(Value)
+  
+End
+
+Public Sub Skm_Modo_Musica()
+  
+  Functions.Skm_Modo = "Musica"
+  
+End
+
+Public Sub Skm_Modo_Videos()
+  
+  Functions.Skm_Modo = "Video"
+  
+End
+
+Public Sub Skm_Modo_Karaoke()
+  
+  Functions.Skm_Modo = "Karaoke"
+  
+End
+
+Public Sub ViewPanelSearch()
+  
+  Functions.PanelSearchKey
+  
+End
+
 Private Sub KeyDetect()
   
   Select hKey
@@ -71,27 +101,27 @@ Private Sub KeyDetect()
       Functions.IncMaxCredito
     Case DataControl.MinCreditKey
       Functions.IncCredito
-    Case "+"
-      Functions.FwList
-    Case "-"
-      Functions.BkList
+    ' Case "+"
+    '   Functions.FwList
+    ' Case "-"
+    '   Functions.BkList
     Case DataControl.CancelKey
       Functions.CancelSong
-    Case DataControl.MaxVolKey
-      Functions.Volumen = Functions.Volumen + 5
-    Case DataControl.MinVolKey
-      Functions.Volumen = Functions.Volumen - 5
-    Case "v"
-      Select Functions.Skm_Modo
-        Case "Musica"
-          Functions.Skm_Modo = "Video"
-        Case "Video"
-          Functions.Skm_Modo = "Karaoke"
-        Case "Karaoke"
-          Functions.Skm_Modo = "Musica"
-      End Select
-    Case "s"
-      Functions.PanelSearchKey
+    ' Case DataControl.MaxVolKey
+    '   Functions.Volumen = Functions.Volumen + 5
+    ' Case DataControl.MinVolKey
+    '   Functions.Volumen = Functions.Volumen - 5
+    ' Case "v"
+    '   Select Functions.Skm_Modo
+    '     Case "Musica"
+    '       Functions.Skm_Modo = "Video"
+    '     Case "Video"
+    '       Functions.Skm_Modo = "Karaoke"
+    '     Case "Karaoke"
+    '       Functions.Skm_Modo = "Musica"
+    '   End Select
+    ' Case "s"
+    '   Functions.PanelSearchKey
     Case DataControl.ConfigKey
       FConfig.Show
       Me.Hide

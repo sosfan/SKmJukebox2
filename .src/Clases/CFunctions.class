@@ -19,7 +19,10 @@
 
 Private DataControl As New CData
 Private $CMain As CMMain
-Private NumberPos As Integer
+Private $NumberPos As New Integer[10]
+Private $hResult As Result
+Private PageView As Integer ''Contador de pagina
+Private rslCont As Integer ''Contador de posicion
 Property Skm_Modo As String ''Establece o retorna el modo seleccionado.
 Property Volumen As Integer ''Establece o retorna el valor de volumen.
 
@@ -28,7 +31,7 @@ Public Sub _new()
   Dim SkinTheme As Settings
   DataControl.Skm_Modo = "Musica"
   SkinTheme = New Settings(DataControl.SkinPath & DataControl.SkinTheme &/ "theme.conf")
-  NumberPos = 1
+  ' NumberPos = 1
   
   $CMain = New CMMain(FMain) As "CMain"
   
@@ -38,8 +41,10 @@ Public Sub _new()
     .X = 0
     .Y = 0
     .Skm_Modo = DataControl.Skm_Modo
-    .NumberPos = NumberPos
+    ' .NumberPos = NumberPos
   End With
+  
+  ReloadList
   
   
 End
@@ -75,34 +80,146 @@ End
 
 Public Sub ReloadList()
   
-  NumberPos = 1
-  $CMain.NumberPos = NumberPos
+  Dim i As Byte
+
+  $NumberPos.Clear
+  'Cargar el Result de la opcion actual para almacenarlo y usarlo despues
+  'Para navegar hacia delante y atras
+  $hResult = DataControl.getAllIDInfo($CMain.$Genre)
+  
+  For i = 0 To 9
+    
+    If $hResult.Length <= i Then Break
+    
+    $NumberPos.Add($hResult["id"])
+    $hResult.MoveNext
+    
+  Next
+  
+  rslCont = 1
+  PageView = 1
+  
+  $CMain.NumberPos = $NumberPos
+  $CMain.PageNum = PageView
   
 End
 
 Public Sub FwList()
   
+  Dim i As Byte
   'Avanza la lista +10 pasos
-  If NumberPos + 10 < DataControl.getTotalAlbums() Then
-    NumberPos = NumberPos + 10
+  $NumberPos.Clear
+  
+  If rslCont + 10 <= $hResult.Length Then
+    rslCont = CInt(Left(Str(rslCont + 10), -1) & "1")
+    Inc PageView
+    $hResult.MoveTo(rslCont - 1)
   Else
-    NumberPos = 1
+    rslCont = 1
+    PageView = 1
+    $hResult.MoveFirst
   Endif
-  $CMain.NumberPos = NumberPos
+  
+  For i = 0 To 9
+    If $hResult.Index = -1 Then Break
+    $NumberPos.Add($hResult["id"])
+    $hResult.MoveNext
+  Next
+  
+  $CMain.NumberPos = $NumberPos
+  $CMain.PageNum = PageView
   
 End
 
 Public Sub BkList()
   
+  Dim i As Byte, TotalAlbums As Integer
   'Retrocede la lista -10 pasos
-  If NumberPos - 10 < DataControl.getTotalAlbums() And NumberPos - 10 > 0 Then
-    NumberPos = NumberPos - 10
-  Else If NumberPos - 10 > -9
-    NumberPos = 1
+  $NumberPos.Clear
+  TotalAlbums = DataControl.getTotalAlbums($CMain.$Genre) - 1
+  
+  If rslCont - 10 < TotalAlbums And rslCont - 10 > 0 Then
+    rslCont = CInt(Left(Str(rslCont - 10), -1) & "0")
+    Dec PageView
+    $hResult.MoveTo(rslCont)
+  Else If rslCont - 10 > -9
+    rslCont = 1
+    PageView = 1
+    $hResult.MoveFirst
   Else
-    NumberPos = CInt(Left(Str(DataControl.getTotalAlbums()), -1) & "0")
+    rslCont = CInt(Left(Str(TotalAlbums), -1) & "0")
+    
+    If rslCont = 0 Then Return
+    
+    If $hResult.Max > rslCont - 1 Then
+      PageView = (CInt(TotalAlbums / 10) + 1)
+      $hResult.MoveTo(rslCont)
+    Else
+      PageView = 1
+      $hResult.MoveFirst
+    Endif
+    
   Endif
-  $CMain.NumberPos = NumberPos
+  
+  For i = 0 To 9
+    If $hResult.Index = -1 Then Break
+    $NumberPos.Add($hResult["id"])
+    $hResult.MoveNext
+  Next
+  
+  $CMain.NumberPos = $NumberPos
+  $CMain.PageNum = PageView
+  
+End
+
+Public Sub CMain_NavJump(Value As String)
+  
+  Dim i, c, d As Integer
+  
+  If Value = "#" Then
+    
+    If $hResult.Length > 0 Then
+      
+      ReloadList
+      
+    Endif
+    
+  Else
+    
+    i = DataControl.getIDJump($CMain.$Genre, Value)
+    $hResult.MoveFirst
+    If i > 0 Then
+      $NumberPos.Clear
+      If $CMain.$Genre = "*" Then
+        rslCont = CInt(Left(Str(i), -1) & "1")
+      Else
+        For c = 1 To $hResult.Length
+          Inc d
+          If $hResult["id"] = i Then Break
+          $hResult.MoveNext
+        Next
+        rslCont = CInt(Left(Str(d), -1) & "1")
+      Endif
+      
+      If Len(Str(rslCont)) > 1 Then
+        PageView = CInt(Left(Str(rslCont), -1)) + 1
+      Else
+        PageView = 1
+      Endif
+      $hResult.MoveTo(rslCont - 1)
+      
+      For i = 0 To 9
+        If $hResult.Index = -1 Then Break
+        $NumberPos.Add($hResult["id"])
+        $hResult.MoveNext
+      Next
+      
+      $CMain.NumberPos = $NumberPos
+      $CMain.PageNum = PageView
+      
+    Endif
+    
+  Endif
   
 End
 
@@ -138,6 +255,24 @@ Public Sub CMain_BackwardKey()
   
 End
 
+Public Sub CMain_VolMinus()
+  
+  SetVolMaster(DataControl.MasterVol - 5)
+  
+End
+
+Public Sub CMain_VolPlus()
+  
+  SetVolMaster(DataControl.MasterVol + 5)
+  
+End
+
+Public Sub CMain_ReloadAlbums()
+  
+  ReloadList
+  
+End
+
 Public Sub PanelSearchKey()
   
   $CMain.PanelSearchRaise
@@ -163,10 +298,10 @@ Public Sub IncCredito()
   
 End
 
-Public Sub DecCredito()
+Public Sub DecCredito(Value As Integer)
   
   Dim i As Integer
-  i = DataControl.Credito - 1
+  i = DataControl.Credito - Value
   DataControl.Credito = i
   $CMain.SetLblCredito(i)
   

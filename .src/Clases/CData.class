@@ -38,7 +38,7 @@ Property VideoDir As String
 Property KaraokeDir As String
 Property Total_credito As Integer
 Property Credito As Integer
-Property channels As Integer[]
+' Property channels As Integer[]
 Property Skm_Modo As String ''Establece o retorna el modo de busqueda.
 Property DBPlayList As Song ''Establece o retorna un elemento a la PlayList en la base de datos.
 Property SkinTheme As String ''Establece o retorna el nombre de piel seleccionada.
@@ -69,8 +69,7 @@ Private Function ConectarBase() As Boolean
   Return False
   
 End
-' Select * From "album_id" where "Genero" Like "Vocaloid"
-' Select DISTINCT "Genero" From "album_id"
+
 Private Function CerrarConexion()
   
   If hConn = Null Then Return
@@ -494,43 +493,73 @@ Private Sub Credito_Write(Value As Integer)
 
 End
 
-Private Function channels_Read() As Integer[]
+' Private Function channels_Read() As Integer[]
+' 
+'   Dim hResult As Result, ch As New Integer[], i As Integer
+'   hResult = hConn.Exec("select * from EQ_data where id=1")
+'   For i = 1 To 10
+'     ch.Push(hResult[i & "ch"])
+'   Next
+'   Return ch
+' 
+' End
+' 
+' Private Sub channels_Write(Value As Integer[])
+' 
+'   Dim i As Integer
+'   
+'   For i = 1 To 10
+'     hConn.Exec("update EQ_data set " & i & "ch=" & Value[i - 1] & " where id=1")
+'   Next
+' 
+' End
 
-  Dim hResult As Result, ch As New Integer[], i As Integer
-  hResult = hConn.Exec("select * from EQ_data where id=1")
-  For i = 1 To 10
-    ch.Push(hResult[i & "ch"])
-  Next
-  Return ch
-
-End
-
-Private Sub channels_Write(Value As Integer[])
-
-  Dim i As Integer
+' Public Sub getDataAlbums(Contador As Short) As Result ''Devuelve 10 busquedas
+' 
+'   Dim hResult As Result
+'   
+'   Select Modo
+'     Case "Musica"
+'       hResult = hConn.Exec("select * from album_id where id=" & contador & " limit 10")
+'     Case "Video"
+'       hResult = hConn.EXEC("select * from video_album_id where id=" & contador & " limit 10")
+'     Case "Karaoke"
+'       hResult = hConn.EXEC("select * from karaoke_album_id where id=" & contador & " limit 10")
+'     'Case "MasTocado"
+'     'Case "Nuevos"
+'   End Select
+'   Return hResult
+' 
+' End
+' Select * From "album_id" where "Genero" Like "Vocaloid"
+Public Sub getAllIDInfo(sGenre As String) As Result
   
-  For i = 1 To 10
-    hConn.Exec("update EQ_data set " & i & "ch=" & Value[i - 1] & " where id=1")
-  Next
-
-End
-
-Public Sub getDataAlbums(Contador As Short) As Result ''Devuelve 10 busquedas
-
   Dim hResult As Result
-  
-  Select Modo
-    Case "Musica"
-      hResult = hConn.Exec("select * from album_id where id=" & contador & " limit 10")
-    Case "Video"
-      hResult = hConn.EXEC("select * from video_album_id where id=" & contador & " limit 10")
-    Case "Karaoke"
-      hResult = hConn.EXEC("select * from karaoke_album_id where id=" & contador & " limit 10")
-    'Case "MasTocado"
-    'Case "Nuevos"
-  End Select
+  If sGenre = "*" Then
+    Select Modo
+      Case "Musica"
+        hResult = hConn.Exec("select id from album_id")
+      Case "Video"
+        hResult = hConn.EXEC("select id from video_album_id")
+      Case "Karaoke"
+        hResult = hConn.EXEC("select id from karaoke_album_id")
+      'Case "MasTocado"
+      'Case "Nuevos"
+    End Select
+  Else
+    Select Modo
+      Case "Musica"
+        hResult = hConn.Exec("select id from album_id where Genero Like '" & sGenre & "'")
+      Case "Video"
+        hResult = hConn.EXEC("select id from video_album_id where Genero Like '" & sGenre & "'")
+      Case "Karaoke"
+        hResult = hConn.EXEC("select id from karaoke_album_id where Genero Like '" & sGenre & "'")
+      'Case "MasTocado"
+      'Case "Nuevos"
+    End Select
+  Endif
   Return hResult
-
+  
 End
 
 Public Sub getDataAlbum(Contador As Short) As Result ''Devueve 1 busqueda
@@ -564,6 +593,53 @@ Public Sub getDataSongs(Contador As Short) As Result
     'Case "Nuevos"
   End Select
   Return hResult
+  
+End
+' Select DISTINCT "Genero" From "album_id"
+Public Sub getGenres(Value As String) As Result
+  
+  Dim hResult As Result
+  
+  Select Value
+    Case "Musica"
+      hResult = hConn.Exec("Select DISTINCT Genero From album_id")
+    Case "Video"
+      hResult = hConn.Exec("Select DISTINCT Genero From video_album_id")
+    Case "Karaoke"
+      hResult = hConn.Exec("Select DISTINCT Genero From karaoke_album_id")
+  End Select
+  
+  Return hResult
+  
+End
+' select * from "album_id" where "Genero" like "musica septiembre 2018" AND "Album" like "l%" Limit 1
+Public Sub getIdJump(sGenre As String, Value As String) As Integer ''Retorna el valor de ID de album al saltar en el NavKey
+  
+  Dim hResult As Result
+  
+  If sGenre = "*" Then
+    Select Modo
+      Case "Musica"
+        hResult = hConn.Exec("Select id From album_id where Album like '" & Value & "%' Limit 1")
+      Case "Video"
+        hResult = hConn.Exec("Select id From video_album_id where Album like '" & Value & "%' Limit 1")
+      Case "Karaoke"
+        hResult = hConn.Exec("Select id From karaoke_album_id where Album like '" & Value & "%' Limit 1")
+    End Select
+  Else
+    Select Modo
+      Case "Musica"
+        hResult = hConn.Exec("Select id From album_id where Genero Like '" & sGenre & "' AND Album like '" & Value & "%' Limit 1")
+      Case "Video"
+        hResult = hConn.Exec("Select id From video_album_id where Genero Like '" & sGenre & "' AND Album like '" & Value & "%' Limit 1")
+      Case "Karaoke"
+        hResult = hConn.Exec("Select id From karaoke_album_id where Genero Like '" & sGenre & "' AND Album like '" & Value & "%' Limit 1")
+    End Select
+  Endif
+  
+  If hResult.Count > 0 Then
+    Return hResult["id"]
+  Endif
   
 End
 
@@ -647,26 +723,37 @@ Private Sub Skm_Modo_Write(Value As String)
 
 End
 
-Private Sub LoadTotalAlbum()
+Private Sub LoadTotalAlbum(sGenre As String)
   
   Dim hResult As Result
+  If sGenre = "*" Then
+      Select Case Modo
+        Case "Musica"
+          hResult = hConn.Exec("select id from album_id")
+        Case "Video"
+          hResult = hConn.Exec("select id from video_album_id")
+        Case "Karaoke"
+          hResult = hConn.Exec("select id from karaoke_album_id")
+      End Select
+  Else
+      Select Case Modo
+        Case "Musica"
+          hResult = hConn.Exec("select id from album_id where Genero Like '" & sGenre & "'")
+        Case "Video"
+          hResult = hConn.Exec("select id from video_album_id where Genero Like '" & sGenre & "'")
+        Case "Karaoke"
+          hResult = hConn.Exec("select id from karaoke_album_id where Genero Like '" & sGenre & "'")
+      End Select
+  Endif
   
-  Select Case Modo
-    Case "Musica"
-      hResult = hConn.Exec("select id from album_id")
-    Case "Video"
-      hResult = hConn.Exec("select id from video_album_id")
-    Case "Karaoke"
-      hResult = hConn.Exec("select id from karaoke_album_id")
-  End Select
   Total_Album = hResult.Count
   If Total_Album > 0 Then Inc Total_Album
   
 End
 
-Public Sub getTotalAlbums() As Integer
+Public Sub getTotalAlbums(sGenre As String) As Integer
 
-  LoadTotalAlbum
+  LoadTotalAlbum(sGenre)
   Return Total_Album
   
 End

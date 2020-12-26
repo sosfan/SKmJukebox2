@@ -2,7 +2,7 @@
 Title=SKm Jukebox
 Startup=MStart
 Icon=resource/icon.png
-Version=2.0.33
+Version=2.0.37
 Component=gb.image
 Component=gb.gui.qt
 Component=gb.form
