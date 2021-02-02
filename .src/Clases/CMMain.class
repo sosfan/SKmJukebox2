@@ -62,6 +62,8 @@ Private CreditLbl As TextLabel
 Private PlayAllSongs As PictureBox
 Private InfoBox As CPanel
 Private NavKbd As CNavKbd
+Private ReturnCovers As Timer
+Private ReturnCont As Integer
 
 Property Skm_Modo As String ''Establece la cadena para identificar el modo de visualización del objeto. (Musica, Video, Karaoke)
 Property NumberPos As Integer[] ''Establece o retorna el array identificador del los albumnes que se usará como índice.
@@ -139,6 +141,9 @@ Public Sub _new()
   Next
   
   PlayAllSongs = New PictureBox(Me) As "PlayAllSongs"
+  'Timer para volver a Main principal de covers
+  ReturnCovers = New Timer As "ReturnCovers"
+  ReturnCovers.Delay = 1000
   'Lista de paginas
   PageList = New TextLabel(Me)
   'Etiqueta de Generos
@@ -149,7 +154,7 @@ Public Sub _new()
   InfoBox = New CPanel(Me) As "InfoBox"
   'Teclado de navegación
   NavKbd = New CNavKbd(Me) As "NavKbd"
-
+  
   LoadThemeConfiguration()
   
 End
@@ -414,40 +419,42 @@ End
 
 Private Sub PlayAll()
   
-  Dim sSong As New Song, hResult, $hResult As Result, TotalSongs, SongID, s, i, idPos, jmpPos As Integer
+  Dim $sSong As New Song, hResult, $Result As Result, $TotalSongs, SongID, s, i, idPos, jmpPos As Integer
   
   hResult = DataControl.getDataAlbum(idAlbum)
-  TotalSongs = hResult["Total_songs"]
-  FMain.$decCredito(TotalSongs)
-  With sSong
+  $TotalSongs = hResult["Total_songs"]
+  FMain.$decCredito($TotalSongs)
+  With $sSong
     .album = hResult["Album"]
-    .genere = hResult["Genero"]
+    .genre = hResult["Genero"]
     .type = DataControl.Skm_Modo
     .cover = hResult["Cover_name"]
   End With
   Print "Añadiendo a la lista"
-  For s = 1 To TotalSongs
+  For s = 1 To $TotalSongs
     idPos = s
     For i = 1 To 4
       Select idPos
         Case jmpPos + 1 To i * 25
+          Debug
           SongID = hResult["Songsid" & i]
           jmpPos = (i * 25) - 25
           Break
       End Select
     Next
     
-    $hResult = DataControl.getDataSongs(SongID)
-    With sSong
-      .id = $hResult["id"]
+    $Result = DataControl.getDataSongs(SongID)
+    With $sSong
+      .id = $Result["id"]
+      Debug
       .idsong = idPos - jmpPos
-      .name = $hResult["N" & sSong.idsong]
+      .name = $Result["N" & sSong.idsong]
     End With
-    Playlist.addPlay(sSong)
-    Print "id= " & sSong.idsong & " --- " & sSong.name
+    ' Playlist.addPlay($sSong)
+    ' Print "id= " & $sSong.idsong & " --- " & sSong.name
     Wait 0.3
   Next
-  DataControl.setPlayHistory(idAlbum)
+  ' DataControl.setPlayHistory(idAlbum)
   ResetResMovie
   InfoBox.Hide
   
@@ -530,7 +537,7 @@ Public Sub Song_MouseDown()
   sSong = New Song
   With sSong
     .album = hResult["Album"]
-    .genere = hResult["Genero"]
+    .genre = hResult["Genero"]
     .type = DataControl.Skm_Modo
     .cover = hResult["Cover_name"]
   End With
@@ -552,6 +559,7 @@ Public Sub Song_MouseDown()
     .name = hResult["N" & sSong.idsong]
   End With
   
+  ReturnCont = 0
   InfoBox.MessageType("1")
   InfoBox.Show
   
@@ -559,10 +567,24 @@ End
 
 Private Sub PlaySelectSong()
   
-  Playlist.addPlay(sSong)
-  DataControl.setPlayHistory(idAlbum)
   FMain.$decCredito(1)
+  DataControl.setPlayHistory(idAlbum)
+  Playlist.addPlay(sSong)
   ResetResMovie
+  
+End
+
+Public Sub SearchBox_addPlay(Value As Song)
+  
+  If DataControl.Credito = 0 Then 
+    InfoBox.MessageType("3")
+    InfoBox.Show
+    Return
+  Endif
+  sSong = Value
+  idAlbum = Value.id
+  InfoBox.MessageType("1")
+  InfoBox.Show
   
 End
 
@@ -663,6 +685,8 @@ Private Sub ShowSelectAlbum()
     Endif
   Endif
    
+  ReturnCovers.Start
+  ReturnCont = 0
   CSongList.Show
   Navigators[2].Show
   
@@ -682,6 +706,17 @@ Private Sub HideSelectAlbum()
   ' ScrollList.Visible = False
   CSongList.Hide
   Navigators[2].Hide
+  
+End
+
+Public Sub ReturnCovers_Timer()
+  
+  If ReturnCont = 60 Then
+    ShowBackground("Background")
+    ShowAlbums
+    HideSelectAlbum
+  Endif
+  Inc ReturnCont
   
 End
 
@@ -737,6 +772,8 @@ Public Sub Navigator_PulseKey()
       ShowAlbums
       HideSelectAlbum
   End Select
+  ReturnCovers.Stop
+  ReturnCont = 0
   ResetResMovie
   InfoBox.Hide
   
@@ -775,11 +812,13 @@ Public Sub PanelSearchRaise()
         HidePanelSearch
         VolMinusBttn.Show
         VolPlusBttn.Show
+        Playlist.setPSearch(False)
         Playlist.MatrizShow = True
       Case False
         ShowPanelSearch
         VolMinusBttn.Hide
         VolPlusBttn.Hide
+        Playlist.setPSearch(True)
         Playlist.MatrizShow = False
     End Select
   End With
@@ -789,6 +828,7 @@ End
 Public Sub SearchBox_ReturnMain()
   
   PanelSearchRaise
+  Playlist.MatrizShow = True
   InfoBox.Hide
   
 End

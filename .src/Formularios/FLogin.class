@@ -1,0 +1,90 @@
+' Gambas class file
+
+Event ShowConf
+
+Public Sub _new()
+  
+  
+End
+
+Private Sub addtext()
+  
+  passbox.Text = passbox.Text & Last.Text
+  
+End
+
+
+Public Sub uno_Click()
+
+  addtext
+
+End
+
+Public Sub dos_Click()
+
+  addtext
+
+End
+
+Public Sub tres_Click()
+
+  addtext
+
+End
+
+Public Sub cuatro_Click()
+
+  addtext
+
+End
+
+Public Sub cinco_Click()
+
+  addtext
+
+End
+
+Public Sub seis_Click()
+
+  addtext
+
+End
+
+Public Sub siete_Click()
+
+  addtext
+
+End
+
+Public Sub ocho_Click()
+
+  addtext
+
+End
+
+Public Sub nueve_Click()
+
+  addtext
+
+End
+
+Public Sub cero_Click()
+
+  addtext
+
+End
+
+Public Sub limpiar_Click()
+
+  passbox.Clear
+
+End
+
+Public Sub enter_Click()
+
+  If passbox.Text = "54321" Then
+    Raise ShowConf
+    Me.Close
+  Endif
+
+End

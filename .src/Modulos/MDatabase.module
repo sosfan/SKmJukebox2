@@ -33,6 +33,7 @@ Public Sub ConfigCreateDatabaseTables(hConn As Connection)
     .Fields.Add("ShowCursor", db.Boolean)
     .Fields.Add("ScreenSaver", db.Boolean)
     .Fields.Add("VideoOut", db.Boolean)
+    .Fields.Add("RmtDelay", db.Float)
     .Fields.Add("AutoPlay", db.Boolean)
     .Fields.Add("AutoScroll", db.Boolean)
     .Fields.Add("MaxCreditKey", db.String, 1)
@@ -64,6 +65,7 @@ Public Sub ConfigCreateDatabaseTables(hConn As Connection)
   hResult["ShowCursor"] = False
   hResult["ScreenSaver"] = True
   hResult["VideoOut"] = True
+  hResult["RmtDelay"] = 1
   hResult["AutoPlay"] = True
   hResult["AutoScroll"] = True
   hResult["MaxCreditKey"] = "z"
@@ -161,6 +163,18 @@ Public Sub MusicaCreateDatabaseTables(hConn As Connection)
   With hTable
     
       .Fields.Add("id", db.Integer)
+      .Fields.Add("N", db.Integer)
+      .Fields.Add("Contador", db.Integer)
+      .PrimaryKey = ["id"]
+      .Update
+    
+  End With
+  
+  hTable = hConn.Tables.Add("mp3albumplayhistory")
+  
+  With hTable
+    
+      .Fields.Add("id", db.Integer)
       .Fields.Add("Contador", db.Integer)
       .PrimaryKey = ["id"]
       .Update
@@ -217,6 +231,18 @@ Public Sub VideoCreateDatabaseTables(hConn As Connection)
   End With
   
   hTable = hConn.Tables.Add("videoplayhistory")
+  
+  With hTable
+    
+      .Fields.Add("id", db.Integer)
+      .Fields.Add("N", db.Integer)
+      .Fields.Add("Contador", db.Integer)
+      .PrimaryKey = ["id"]
+      .Update
+    
+  End With
+  
+  hTable = hConn.Tables.Add("videoalbumplayhistory")
   
   With hTable
     
@@ -282,6 +308,18 @@ Public Sub KaraokeCreateDatabaseTables(hConn As Connection)
   With hTable
     
       .Fields.Add("id", db.Integer)
+      .Fields.Add("N", db.Integer)
+      .Fields.Add("Contador", db.Integer)
+      .PrimaryKey = ["id"]
+      .Update
+    
+  End With
+  
+    hTable = hConn.Tables.Add("karaokealbumplayhistory")
+  
+  With hTable
+    
+      .Fields.Add("id", db.Integer)
       .Fields.Add("Contador", db.Integer)
       .PrimaryKey = ["id"]
       .Update
@@ -300,6 +338,8 @@ Public Sub PlayListCreateDatabaseTables(hConn As Connection)
     
     .Fields.Add("id", db.Integer)
     .Fields.Add("Key", db.Integer)
+    .Fields.Add("IDVideo", db.String, 50)
+    .Fields.Add("URLImage", db.String, 50)
     .Fields.Add("Album", db.String, 50)
     .Fields.Add("Nombre", db.String, 50)
     .Fields.Add("Genero", db.String, 50)

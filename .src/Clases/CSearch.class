@@ -23,24 +23,39 @@
 Inherits Panel
 
 Event ReturnMain
+Event addPlay(sSong As Song)
 
 Private DataControl As New CData
 Private SingleKey As CKey
 Private TextSearch As TextBox
+Private STextSearch As String
+Private suggesMenu As ListBox
 Private CursorDelay As Timer
 Private MainReturn As Timer
-Private SecReturn As Integer = 40 'Segundos que se tarda la ventana de busqueda en regresar al main
+Private SecReturn As Integer = 200 ''Segundos que se tarda la ventana de busqueda en regresar al main
 Private CursorShow As Boolean
 Private CursorCont As Byte
 Private ReturnCont As Byte
 Private hSkinPath As String
 Private hSkinTheme As Settings
 Private ListResult As ScrollView
-Private ResultAlbum As CAlbum
+Private ResultSearch As CResult
 Private $ListAlbum As New Object[]
 Private $Keyboard As New Object[]
+Private TypeSearch As Byte = 1 ''Establece el tipo de busqueda 1=Por título 2=Por Album
+Private ModeSearch As Byte = 1 ''Establece el Modo de busqueda 1=Musica 2=Videos 3=Karaokes 4=Todos 5=Internet
+Private navObject As New Object[]
+Private bttnObject As New Object[]
+Private SearchLabel As TextLabel
 
-Private Navigator As CKey
+Private hAsyncClient As New HttpClient As "hAsyncClient"
+Private sDownloadBuffer As String
+Private dataInfo As Variant
+Private ResultInfo As Variant
+Private hProcess As Process
+Private $buff As String
+Private $reintentos As Integer
+Private LoadAnimation As MovieBox
 
 Public Sub _new()
   
@@ -58,6 +73,8 @@ Public Sub _new()
   
   TextSearch = New TextBox(Me)
   With TextSearch
+    .X = hSkinTheme["TextSearch/X"]
+    .Y = hSkinTheme["TextSearch/Y"]
     .H = hSkinTheme["TextSearch/H"]
     .W = hSkinTheme["TextSearch/W"]
     .Font.Bold = False
@@ -65,28 +82,60 @@ Public Sub _new()
     .ReadOnly = True
   End With
   
+  suggesMenu = New ListBox(Me) As "suggesMenu"
+  With suggesMenu
+    .X = TextSearch.X
+    .Y = TextSearch.Y + TextSearch.H
+    .H = TextSearch.H * 5
+    .W = TextSearch.W
+    .Hide
+    .Font.Name = "Ubuntu"
+    .Font.Size = 16
+    .Foreground = &H000040&
+  End With
+  
+  LoadAnimation = New MovieBox(Me)
+  With LoadAnimation
+    .X = hSkinTheme["LoadingAni/X"]
+    .Y = hSkinTheme["LoadingAni/Y"]
+    .H = hSkinTheme["LoadingAni/H"]
+    .W = hSkinTheme["LoadingAni/W"]
+    .Path = hSkinPath &/ hSkinTheme["Images/LAnimation"]
+    .Playing = False
+    .Hide
+  End With
+  
+  SearchLabel = New TextLabel(Me)
+  With SearchLabel
+    .X = hSkinTheme["SearchLabel/X"]
+    .Y = hSkinTheme["SearchLabel/Y"]
+    .H = hSkinTheme["SearchLabel/H"]
+    .W = hSkinTheme["SearchLabel/W"]
+    .Font.Name = hSkinTheme["SearchLabel/Font"]
+    .Font.Size = hSkinTheme["SearchLabel/FontSize"]
+    .Foreground = hSkinTheme["SearchLabel/Foreground"]
+    .Font.Bold = True
+    .Alignment = Align.Center
+    .Text = "Buscar Por Título en Música"
+  End With
+  
+  CreateKeys
+  CreateList
+  
+End
+
+Private Sub CreateList()
+  
   ListResult = New ScrollView(Me)
-  'To Do
   With ListResult
     
     .X = hSkinTheme["ListResult/X"]
     .Y = hSkinTheme["ListResult/Y"]
     .H = hSkinTheme["ListResult/H"]
     .W = hSkinTheme["ListResult/W"]
+    .ScrollBar = 2
     
   End With
-  
-  Navigator = New CKey(Me) As "Navigator"
-  With Navigator
-    .X = hSkinTheme["Navigator3/X"]
-    .Y = hSkinTheme["Navigator3/Y"]
-    .Hkey = hSkinTheme["Navigator3/H"]
-    .Wkey = hSkinTheme["Navigator3/W"]
-    .$idKey = "Nav2"
-    .imgResPath = hSkinPath &/ hSkinTheme["Images/Nav2"]
-  End With
-  
-  CreateKeys
   
 End
 
@@ -100,21 +149,19 @@ Private Sub CreateKeys()
   Hkey = hSkinTheme["KeyboardSearch/H"]
   Wkey = hSkinTheme["KeyboardSearch/W"]
   
-  TextSearch.X = hSkinTheme["TextSearch/X"]
-  TextSearch.Y = hSkinTheme["TextSearch/Y"]
-  
   'Arreglo para botones
   For i = 0 To 4
     SingleKey = New CKey(Me) As "SingleKey"
      Select i
       Case 0
-        char = "Por Nombre"
+        char = "Por Título"
       Case 1
         char = "Por Álbum"
       Case 2
         char = "Borrar"
       Case 3
         char = "←"
+        SingleKey.MultiSend = True
       Case 4
         char = "Buscar"
         Xpos = TextSearch.X + TextSearch.W + 3
@@ -264,31 +311,117 @@ Private Sub CreateKeys()
     $Keyboard.Add(SingleKey)
   Next
   
+  'Navegadores
+  For i = 3 To 5
+    SingleKey = New CKey(Me) As "Navigator"
+    With SingleKey
+      .X = hSkinTheme["Navigator" & i & "/X"]
+      .Y = hSkinTheme["Navigator" & i & "/Y"]
+      .Hkey = hSkinTheme["Navigator" & i & "/H"]
+      .Wkey = hSkinTheme["Navigator" & i & "/W"]
+      .$idKey = "Nav" & i
+      .imgResPath = hSkinPath &/ hSkinTheme["Images/Nav" & (i - 1)]
+    End With
+    navObject.Add(SingleKey)
+  Next
+  
+  'Botones
+  For i = 0 To 5
+    SingleKey = New CKey(Me) As "BttnSearch"
+    Select i
+      Case 0
+        char = "PopularBttn"
+      Case 1
+        char = "AllBttn"
+      Case 2
+        char = "VOnlineBttn"
+      Case 3
+        char = "MusicaBttn"
+      Case 4
+        char = "VideosBttn"
+      Case 5
+        char = "KaraokeBttn"
+        
+    End Select
+    With SingleKey
+      .X = hSkinTheme[char & "/X"]
+      .Y = hSkinTheme[char & "/Y"]
+      .Hkey = hSkinTheme[char & "/H"]
+      .Wkey = hSkinTheme[char & "/W"]
+      .$idKey = char
+      .imgResPath = hSkinPath &/ hSkinTheme["Images/" & char]
+    End With
+    bttnObject.Add(SingleKey)
+  Next
+  
 End
 
 Public Sub SingleKey_PulseKey()
   
+  Dim sMess, webstring As String
+  
   'Si el cursor esta visible, borrarlo primero.
   If CursorShow Then 
-    TextSearch.Text = Left(TextSearch.Text, -1)
+    TextSearch.Text = STextSearch
   Endif
   If Last.$idKey = "Single" Or Last.$idKey = "Space" Then 
+    If STextSearch & Last.LetterKey = " " Then Return
     TextSearch.Text = TextSearch.Text & Last.LetterKey & "|"
+    STextSearch = STextSearch & Last.LetterKey
+    If ModeSearch = 5 Then
+      webstring = Trim(STextSearch)
+      DownloadAsync(webstring)
+    Endif
   Else
+    Select ModeSearch
+      Case 1
+        sMess = " en Música"
+      Case 2
+        sMess = " en Vídeos"
+      Case 3
+        sMess = " en Karaokes"
+      Case 4
+        sMess = " en Todos"
+    End Select
     Select Last.LetterKey
+      Case "Por Título"
+        TypeSearch = 1
+        If ModeSearch < 5 Then
+          SearchLabel.Text = "Buscar " & Last.LetterKey & sMess
+        Endif
+        Buscar
+        TextSearch.Text = STextSearch
+      Case "Por Álbum"
+        TypeSearch = 2
+        If ModeSearch < 5 Then
+          SearchLabel.Text = "Buscar " & Last.LetterKey & sMess
+        Endif
+        Buscar
+        TextSearch.Text = STextSearch
       Case "Borrar"
-        TextSearch.Text = "|"
+        ClearSearch
+        CleanResult
       Case "←"
-        If Right$(TextSearch.Text, 2) = "Ñ" Then
-          TextSearch.Text = Left$(TextSearch.Text, -2) & "|"
+        If Right$(STextSearch, 2) = "Ñ" Then
+          TextSearch.Text = Left$(STextSearch, -2) & "|"
+          STextSearch = Left$(STextSearch, -2)
+          If ModeSearch = 5 And Len(STextSearch) > 0 Then
+            webstring = Trim(STextSearch)
+            DownloadAsync(webstring)
+          Endif
         Else
-          TextSearch.Text = Left$(TextSearch.Text, -1) & "|"
+          TextSearch.Text = Left$(STextSearch, -1) & "|"
+          STextSearch = Left$(STextSearch, -1)
+          If ModeSearch = 5 And Len(STextSearch) > 0 Then
+            webstring = Trim(STextSearch)
+            DownloadAsync(webstring)
+          Endif
         Endif
       Case "Buscar"
-        TextSearch.Text = TextSearch.Text & "|"
         Buscar
+        TextSearch.Text = STextSearch & "|"
       Case Else
-        TextSearch.Text = TextSearch.Text & "|"
+        TextSearch.Text = STextSearch & "|"
     End Select
   Endif
   CursorShow = True
@@ -299,14 +432,185 @@ End
 
 Private Sub Buscar()
   
-  ' Dim i As Integer
-  ' 
-  ' For i = 0 To 10
-  '   ResultAlbum = New CAlbum As "ResultAlbum"
-  '   With ResultAlbum
-  '     .
-  '   End With
-  ' Next
+  Dim i, b As Integer, $ids As New Integer[], hResult As Result, sText, sTab, sAlb As String
+  
+  If STextSearch.Len = 0 Then Return
+  
+  CleanResult
+  
+  Select ModeSearch
+    Case 1
+      sTab = "mp3"
+      sAlb = "album_id"
+    Case 2
+      sTab = "video"
+      sAlb = "video_album_id"
+    Case 3
+      sTab = "karaoke"
+      sAlb = "karaoke_album_id"
+    Case 4
+      sTab = "mp3"
+      sAlb = "album_id"
+    Case 5
+      suggesMenu.Hide
+      YTSearch
+      Return
+  End Select
+  
+  sText = Replace(STextSearch, "Ñ", "ñ")
+  
+  If sText = "" Then Return
+  hResult = DataControl.getDataSearch(ModeSearch, TypeSearch, sText)
+  If hResult.Count = 0 Then Return
+  
+  For i = 0 To hResult.Max
+    If TypeSearch = 1 Then 'Buscar en modo Por Titulos
+      ResultSearch = New CResult(ListResult) As "ResultSong"
+      DataControl.Skm_Modo = hResult["Tipo"]
+      With ResultSearch
+        .IDAlbum = hResult["id"]
+        .Nombre = Left(hResult[sTab & ".N1"], -4)
+        .Filename = hResult[sTab & ".N1"]
+        .Genre = hResult[sAlb & ".Genero"]
+        .Album = hResult[sAlb & ".Album"]
+        .Duration_Video = hResult[sAlb & ".Album"]
+        .sType = hResult["Tipo"]
+        .Cover = hResult[sAlb & ".Cover_name"]
+        If hResult[sAlb & ".Cover_name"] = "0" Then
+          .CoverLoad("0")
+        Else
+          .CoverLoad(DataControl.getWorkDir() &/ hResult[sAlb & ".Genero"] &/ hResult[sAlb & ".Album"] &/ hResult[sAlb & ".Cover_name"])
+        Endif
+        .X = 0
+        .Y = hSkinTheme["ResultItem/H"] * i + 5
+        .H = hSkinTheme["ResultItem/H"]
+        .W = hSkinTheme["ResultItem/W"]
+      End With
+    Else 'Buscar en modo Por Album
+      ResultSearch = New CResult(ListResult) As "ResultAlbum"
+      DataControl.Skm_Modo = hResult["Tipo"]
+      With ResultSearch
+          .IDAlbum = hResult["id"]
+          .Nombre = hResult["Album"]
+          .Genre = hResult["Genero"]
+          .Duration_Video = hResult["Total_songs"] & " canciones en " & UCase(hResult["Tipo"])
+          .sType = hResult["Tipo"]
+          .Cover = hResult["Cover_name"]
+        If hResult["Cover_name"] = "0" Then
+          .CoverLoad("0")
+        Else
+          .CoverLoad(DataControl.getWorkDir() &/ hResult["Genero"] &/ hResult["Album"] &/ hResult["Cover_name"])
+        Endif
+        For b = 1 To 4
+          $ids.Add(hResult["Songsid" & b])
+        Next
+        .$idsongs($ids)
+        $ids.Clear
+        .X = 0
+        .Y = hSkinTheme["ResultItem/H"] * i + 5
+        .H = hSkinTheme["ResultItem/H"]
+        .W = hSkinTheme["ResultItem/W"]
+      End With
+    Endif
+    
+    $ListAlbum.Add(ResultSearch)
+    hResult.MoveNext
+  Next
+  
+  CursorCont = 0
+  ReturnCont = 0
+  
+End
+
+Private Sub CleanResult()
+  
+  Dim i As Byte
+  
+  If $ListAlbum.Count > 0 Then
+    For i = 0 To $ListAlbum.Max
+      Try $ListAlbum[i].CleanMiniCover
+      Try $ListAlbum[i] = Null
+    Next
+    Debug
+    $ListAlbum.Clear
+    $ListAlbum = Null
+    ListResult.Delete
+    ListResult = Null
+    $ListAlbum = New Object[]
+    CreateList
+  Endif
+  
+  Catch
+    Debug Error.Text
+    
+End
+
+Public Sub ResultSong_Click(sSong As Song)
+  
+  If sSong.id = -1 Then
+    Buscar
+  Else
+    Raise addPlay(sSong)
+  Endif
+  
+End
+
+Public Sub ResultAlbum_Click(tAlbum As Song)
+  
+  Dim i, b, c As Integer, hResult As Result, sAlbum As Song
+  Dim idArray As New Integer[]
+  
+  sAlbum = tAlbum
+  CleanResult
+  DataControl.Skm_Modo = sAlbum.type
+  
+  idArray.Add(sAlbum.ids1)
+  idArray.Add(sAlbum.ids2)
+  idArray.Add(sAlbum.ids3)
+  idArray.Add(sAlbum.ids4)
+  
+  'Elemento para regresar a la lista de album
+  ResultSearch = New CResult(ListResult) As "ResultSong"
+  With ResultSearch
+    .IDAlbum = -1
+    .CoverLoad(hSkinPath &/ hSkinTheme["Images/BackIcon"])
+    .X = 0
+    .Y = 4
+    .H = hSkinTheme["ResultItem/H"]
+    .W = hSkinTheme["ResultItem/W"]
+  End With
+  $ListAlbum.Add(ResultSearch)
+  
+  For i = 0 To 3
+    If idArray[i] = 0 Then Break
+    hResult = DataControl.getDataSongs(idArray[i])
+    For b = 1 To 25
+      Inc c
+      If hResult["N" & b] = "" Then Break
+      ResultSearch = New CResult(ListResult) As "ResultSong"
+      With ResultSearch
+        .IDAlbum = sAlbum.id
+        .Nombre = Left(hResult["N" & b], -4)
+        .Filename = hResult["N" & b]
+        .Genre = sAlbum.genre
+        .Album = sAlbum.name
+        .Duration_Video = sAlbum.name
+        .sType = sAlbum.type
+        .Cover = sAlbum.cover
+        If sAlbum.cover = "0" Then
+          .CoverLoad("0")
+        Else
+          .CoverLoad(DataControl.getWorkDir() &/ sAlbum.genre &/ sAlbum.name &/ sAlbum.cover)
+        Endif
+        .X = 0
+        .Y = hSkinTheme["ResultItem/H"] * c + 4
+        .H = hSkinTheme["ResultItem/H"]
+        .W = hSkinTheme["ResultItem/W"]
+      End With
+      $ListAlbum.Add(ResultSearch)
+    Next
+  
+  Next
   
 End
 
@@ -314,10 +618,10 @@ Public Sub CursorDelay_Timer()
   
   If CursorCont > 1 Then
     If CursorShow = False Then
-      TextSearch.Text = TextSearch.Text & "|"
+      TextSearch.Text = STextSearch & "|"
       CursorShow = True
     Else
-      TextSearch.Text = Left(TextSearch.Text, -1)
+      TextSearch.Text = STextSearch
       CursorShow = False
     Endif
   Else
@@ -338,7 +642,13 @@ Public Sub HideSearch()
   
   CursorDelay.Stop
   ClearSearch
+  ListResult.Delete
+  CreateList
   MainReturn.Stop
+  CleanResult
+  TypeSearch = 1
+  ModeSearch = 1
+  SearchLabel.Text = "Buscar Por Título en Música"
   
 End
 
@@ -347,21 +657,287 @@ Private Sub ClearSearch()
   'limpiar la busqueda
   
   TextSearch.text = "|"
+  STextSearch = ""
+  suggesMenu.Clear
+  suggesMenu.Hide
+  
   CursorShow = True
   
 End
 
 Public Sub Navigator_PulseKey()
   
-  Raise ReturnMain
-  HideSearch
+  Select Last.$idKey
+    Case "Nav3"
+      Raise ReturnMain
+      HideSearch
+    Case "Nav4"
+      ListResult.Scroll(0, ListResult.ScrollY - ListResult.H - 2)
+    Case "Nav5"
+      ListResult.Scroll(0, ListResult.ScrollY + ListResult.H - 2)
+  End Select
+  
+  CursorCont = 0
+  ReturnCont = 0
+  
+End
+
+Private Sub PopularSearch()
+  
+  
+  
+End
+
+Private Sub YTSearch()
+  
+  If Object.IsValid(hProcess) Then
+    If hProcess.State = Process.Running Then
+      hProcess.Kill
+      $buff = ""
+    Endif
+  Endif
+  CleanResult
+  With LoadAnimation
+    .Show
+    .Playing = True
+  End With
+  
+  ' hProcess = Exec ["youtube-dl", "--get-title", "--get-id", "--get-duration", "--get-thumbnail", "--max-filesize", "50m", "--no-color", "--no-playlist", "--skip-download", "ytsearch20:'" & STextSearch & "'"] For Read As "hProcess"
+  
+  hProcess = Exec ["python3", "/usr/bin/ysearch.py", STextSearch] For Read As "hProcess"
+  $buff = ""
+  
+End
+
+Public Sub hProcess_Read()
+  
+  Dim sBuffer As String ', tmp As String[], i As Integer
+
+  sBuffer = Read #Last, Lof(Last)
+  $buff &= sBuffer
+  ' Print sBuffer
+  ' If $buff.Count = 0 Then
+  '   $buff = Split(sBuffer, "\n", "", True)
+  ' Else
+  '   ' $buff.Add(sBuffer)
+  '   tmp = Split(sBuffer, "\n", "", True)
+  '   For i = 0 To tmp.Max
+  '     $buff.Add(tmp[i])
+  '   Next
+  ' Endif
+  
+  ' Print $buff[0]
+  
+End
+
+Public Sub hProcess_Kill()
+  
+  Dim i, b As Short, timLen As String
+  
+  If ModeSearch <> 5 Then Return
+  
+  If $buff = "" Then Return
+  
+  ResultInfo = Null
+  ResultInfo = JSON.Decode(Conv($buff, "ISO-8859-1", "utf-8"))
+  
+  If ResultInfo["result"].Length > 0 Then
+    For i = 0 To ResultInfo["result"].max
+      If Len(ResultInfo["result"][i]["duration"]) > 3 Then 'ignorar videos menores a 1 min
+        timLen = Left(ResultInfo["result"][i]["duration"], -3)
+        If Len(timLen) < 2 And CInt(Right(timLen, 1)) < 9 Then
+          ResultSearch = New CResult(ListResult) As "ResultSong"
+          With ResultSearch
+            .Nombre = ResultInfo["result"][i]["title"]
+            .ID_Video = ResultInfo["result"][i]["id"]
+            .URL_Image = ResultInfo["result"][i]["thumbnails"][0]["url"]
+            .Duration_Video = ResultInfo["result"][i]["duration"]
+            .sType = "vonline"
+            .X = 0
+            .Y = hSkinTheme["ResultItem/H"] * b + 5
+            .H = hSkinTheme["ResultItem/H"]
+            .W = hSkinTheme["ResultItem/W"]
+          End With
+          Inc b
+          $ListAlbum.Add(ResultSearch)
+        Endif
+      Endif
+    Next
+  Endif
+  
+  ' If $buff.Count > 1 Then
+  '     For i = 0 To $buff.Max Step 4
+  '       If Len($buff[i + 3]) > 3 Then 'ignorar videos menores a 1 min
+  '         stime = Left($buff[i + 3], -3)
+  '         If Len(stime) < 2 And CInt(Right(stime, 1)) < 9 Then
+  '           ResultSearch = New CResult(ListResult) As "ResultSong"
+  '           With ResultSearch
+  '             .Nombre = $buff[i]
+  '             .ID_Video = $buff[i + 1]
+  '             .URL_Image = $buff[i + 2]
+  '             .Duration_Video = $buff[i + 3]
+  '             .sType = "vonline"
+  '             .X = 0
+  '             .Y = hSkinTheme["ResultItem/H"] * b + 5
+  '             .H = hSkinTheme["ResultItem/H"]
+  '             .W = hSkinTheme["ResultItem/W"]
+  '           End With
+  '           Inc b
+  '           $ListAlbum.Add(ResultSearch)
+  '         Endif
+  '       Endif
+  '     Next
+  ' 
+  ' Else
+  '   If $buff.Count = 1 Then
+  '     'En caso de error, reintentar busqueda
+  '     If Left($buff[0], 5) = "ERROR" Then
+  '       Debug "Error en JSON"
+  '     Endif
+  '   Endif
+  '   If $reintentos < 2 Then
+  '     Inc $reintentos
+  '     
+  '     YTSearch
+  '     
+  '   Else
+  '     $reintentos = 0
+  ' 
+  '     Return
+  '   Endif
+  ' Endif
+  
+  With LoadAnimation
+    .Hide
+    .Playing = False
+  End With
+  
+End
+
+Private Sub DownloadAsync(search As String)
+  
+  search = Replace(search, " ", "+")
+  sDownloadBuffer = ""
+  hAsyncClient.URL = "http://suggestqueries.google.com/complete/search?q=" & search & "&ds=yt&client=firefox&hl=es"
+  hAsyncClient.TimeOut = 20
+  hAsyncClient.Async = True
+  ' hAsyncClient.Debug = True
+  ' hAsyncClient.Encoding = "utf-8"
+  Try hAsyncClient.Get()
+  
+  Catch
+    Debug Error.Text
+
+End
+
+Public Sub hAsyncClient_Read()
+
+  Dim sBuffer As String
+
+  sBuffer = Read #Last, Lof(Last)
+  sDownloadBuffer &= sBuffer
+
+End
+
+Public Sub hAsyncClient_Finished()
+
+  Dim c As Byte
+  If sDownloadBuffer = "" Then Return
+  dataInfo = Null
+  Try dataInfo = JSON.Decode(Conv(sDownloadBuffer, "ISO-8859-1", "utf-8"))
+  suggesMenu.Clear
+  If dataInfo[1].max > 0 Then
+    For c = 0 To dataInfo[1].max
+      suggesMenu.Add(dataInfo[1][c], c)
+    Next
+    suggesMenu.Show
+    suggesMenu.Raise
+  Endif
+  
+  Catch
+    Debug Error.Text
+
+End
+
+Public Sub suggesMenu_Select()
+
+  CursorShow = False
+  TextSearch.text = UCase(Last.text)
+  STextSearch = UCase(Last.text)
+  suggesMenu.Visible = False
+  If ModeSearch = 5 Then Buscar
+
+End
+
+Public Sub TextSearch_Change()
+
+  suggesMenu.Hide
+
+End
+
+Public Sub BttnSearch_PulseKey()
+  
+  Dim sMess As String
+  If CursorShow = True
+    CursorShow = False
+    CursorDelay.Stop
+    TextSearch.Text = STextSearch
+  Endif
+  
+  If TypeSearch = 1 Then
+     sMess = "Por Título"
+  Else
+     sMess = "Por Álbum"
+  Endif
+  
+  Select Last.$idKey
+    Case "PopularBttn"
+      SearchLabel.Text = "Mostrando los Más Tocados"
+      PopularSearch
+      CursorCont = 0
+      ReturnCont = 0
+      Return
+    Case "AllBttn"
+      ModeSearch = 4
+      SearchLabel.Text = "Buscar " & sMess & " en Todos"
+    Case "VOnlineBttn"
+      ModeSearch = 5
+      SearchLabel.Text = "Buscar Vídeos en Línea"
+    Case "MusicaBttn"
+      ModeSearch = 1
+      SearchLabel.Text = "Buscar " & sMess & " en Música"
+    Case "VideosBttn"
+      ModeSearch = 2
+      SearchLabel.Text = "Buscar " & sMess & " en Vídeos"
+    Case "KaraokeBttn"
+      ModeSearch = 3
+      SearchLabel.Text = "Buscar " & sMess & " en Karaokes"
+  End Select
+  With LoadAnimation
+    .Hide
+    .Playing = False
+  End With
+  Buscar
+  CursorShow = True
+  CursorDelay.Start
+  CursorCont = 0
+  ReturnCont = 0
   
 End
 
 Public Sub MainReturn_Timer()
   
   If ReturnCont > SecReturn Then
-    Navigator_PulseKey
+    Raise ReturnMain
+    HideSearch
+    TextSearch.Clear
+    With LoadAnimation
+    .Hide
+    .Playing = False
+    End With
+    TypeSearch = 1
+    ModeSearch = 1
+    SearchLabel.Text = "Buscar Por Título en Música"
   Else
     Inc ReturnCont
   Endif

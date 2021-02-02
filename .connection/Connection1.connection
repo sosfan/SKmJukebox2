@@ -7,5 +7,5 @@ IgnoreCharset=False
 DisplayMetadata=False
 RememberTemplate=False
 Database="music_db.sqlite"
-Requests=["select id from \"album_id\" where \"Genero\" like \"musica septiembre 2018\"\n"]
+Requests=["select * from album_id where replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(Album,'Á','A'),'á','a'),'É','E'), 'é','e'),'Í','I'),'í','i'),'Ó','O'),'ó','o'),'Ú','U'),'ú','u'),'Ñ','N'),'ñ','n') like '%cancion%'\n","/* Nueva consulta */\nSelect Album, Cover_name, Genero, Tipo, N1\nFrom album_id C, mp3 O Where (C.Songsid1 = O.id Or C.Songsid2 = O.id Or C.Songsid3 = O.id Or C.Songsid4 = O.id) and N1 Like 'a%'\nunion all\nSelect Album, Cover_name, Genero, Tipo, N2\nFrom album_id C, mp3 O Where (C.Songsid1 = O.id Or C.Songsid2 = O.id Or C.Songsid3 = O.id Or C.Songsid4 = O.id) and N2 Like 'a%'\nlimit 10"]
 

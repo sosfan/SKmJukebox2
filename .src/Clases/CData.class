@@ -116,6 +116,7 @@ Public Sub UpMusicTb()
       .Exec("drop table album_id")
       .Exec("drop table mp3")
       .Exec("drop table mp3playhistory")
+      .Exec("drop table mp3albumplayhistory")
     End With
     
     MDatabase.MusicaCreateDatabaseTables(hConn)
@@ -138,6 +139,7 @@ Public Sub UpVideoTb()
       .Exec("drop table video_abc_data")
       .Exec("drop table video_album_id")
       .Exec("drop table video")
+      .Exec("drop table videoalbumplayhistory")
       .Exec("drop table videoplayhistory")
     End With
     
@@ -161,6 +163,7 @@ Public Sub UpKaraokeTb()
       .Exec("drop table karaoke_abc_data")
       .Exec("drop table karaoke_album_id")
       .Exec("drop table karaoke")
+      .Exec("drop table karaokealbumplayhistory")
       .Exec("drop table karaokeplayhistory")
     End With
     
@@ -514,23 +517,113 @@ End
 ' 
 ' End
 
-' Public Sub getDataAlbums(Contador As Short) As Result ''Devuelve 10 busquedas
-' 
-'   Dim hResult As Result
-'   
-'   Select Modo
-'     Case "Musica"
-'       hResult = hConn.Exec("select * from album_id where id=" & contador & " limit 10")
-'     Case "Video"
-'       hResult = hConn.EXEC("select * from video_album_id where id=" & contador & " limit 10")
-'     Case "Karaoke"
-'       hResult = hConn.EXEC("select * from karaoke_album_id where id=" & contador & " limit 10")
-'     'Case "MasTocado"
-'     'Case "Nuevos"
-'   End Select
-'   Return hResult
-' 
-' End
+Private Sub delAccents(Value As String) As String
+  
+  Dim sVal As String
+  
+  sVal = "replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(" & Value & ",'Á','A'),'á','a'),'É','E')," &
+         "'é','e'),'Í','I'),'í','i'),'Ó','O'),'ó','o'),'Ú','U'),'ú','u')"
+  
+  Return sVal
+  
+End
+
+Public Sub getDataSearch($Modo As Byte, tSearch As Byte, sSearch As String) As Result ''Devuelve 30 busquedas 1=Musica 2=Videos 3=Karaokes 4=Todos 6=Mas tocados
+
+  Dim hResult As Result, i, b As Byte, sCons, sTab, sAlb As String
+  
+  Select $Modo
+    Case 1
+      If tSearch = 1 Then
+        For i = 1 To 25
+          sCons = sCons & "Select C.id, Album, Cover_name, Genero, Tipo, N" & i & " " &
+                  "From album_id C, mp3 O Where(C.Songsid1 = O.id Or C.Songsid2 = O.id Or C.Songsid3 = O.id Or C.Songsid4 = O.id) And " &
+                  "" & delAccents("N" & i) & "  Like '%" & sSearch & "%' "
+          If i = 25 Then
+            sCons = sCons & "limit 50"
+            Break
+          Endif
+          sCons = sCons & "union all "
+        Next
+        hResult = hConn.Exec(sCons)
+      Else
+        hResult = hConn.Exec("select * from album_id where " & delAccents("Album") & " Like '%" & sSearch & "%' limit 50")
+      Endif
+      
+    Case 2
+      If tSearch = 1 Then
+      For i = 1 To 25
+          sCons = sCons & "Select C.id, Album, Cover_name, Genero, Tipo, N" & i & " " &
+                  "From video_album_id C, video O Where(C.Songsid1 = O.id Or C.Songsid2 = O.id Or C.Songsid3 = O.id Or C.Songsid4 = O.id) And " &
+                  "" & delAccents("N" & i) & "  Like '%" & sSearch & "%' "
+          If i = 25 Then
+            sCons = sCons & "limit 50"
+            Break
+          Endif
+          sCons = sCons & "union all "
+        Next
+        hResult = hConn.Exec(sCons)
+      Else
+        hResult = hConn.EXEC("select * from video_album_id where " & delAccents("Album") & " Like '%" & sSearch & "%' limit 50")
+      Endif
+    Case 3
+      If tSearch = 1 Then
+      For i = 1 To 25
+          sCons = sCons & "Select C.id, Album, Cover_name, Genero, Tipo, N" & i & " " &
+                  "From karaoke_album_id C, karaoke O Where(C.Songsid1 = O.id Or C.Songsid2 = O.id Or C.Songsid3 = O.id Or C.Songsid4 = O.id) And " &
+                  "" & delAccents("N" & i) & "  Like '%" & sSearch & "%' "
+          If i = 25 Then
+            sCons = sCons & "limit 50"
+            Break
+          Endif
+          sCons = sCons & "union all "
+        Next
+        hResult = hConn.Exec(sCons)
+      Else
+        hResult = hConn.EXEC("select * from karaoke_album_id where " & delAccents("Album") & " Like '%" & sSearch & "%' limit 50")
+      Endif
+    Case 4
+      If tSearch = 1 Then
+        For b = 1 To 3
+          Select b
+            Case 1
+              sTab = "mp3"
+              sAlb = "album_id"
+            Case 2
+              sTab = "video"
+              sAlb = "video_album_id"
+            Case 3
+              sTab = "karaoke"
+              sAlb = "karaoke_album_id"
+          End Select
+          For i = 1 To 25
+              sCons = sCons & "Select C.id, Album, Cover_name, Genero, Tipo, N" & i & " " &
+                      "From " & sAlb & " C, " & sTab & " O Where(C.Songsid1 = O.id Or C.Songsid2 = O.id Or C.Songsid3 = O.id Or C.Songsid4 = O.id) And " &
+                      "" & delAccents("N" & i) & "  Like '%" & sSearch & "%' "
+              If i = 25 Then
+                Break
+              Endif
+              sCons = sCons & "union all "
+          Next
+          If b = 3 Then
+            sCons = sCons & " limit 50 "
+            Break
+          Else
+            sCons = sCons & "union all "
+          Endif
+        Next
+        hResult = hConn.Exec(sCons)
+      Else
+        hResult = hConn.EXEC("select * from album_id where " & delAccents("Album") & " like '%" & sSearch & "%' union " &
+        "select * From video_album_id where " & delAccents("Album") & " Like '%" & sSearch & "%' union " &
+        "select * From karaoke_album_id where " & delAccents("Album") & " Like '%" & sSearch & "%' limit 50")
+      Endif
+    'Case "MasTocado"
+    'Case "Nuevos"
+  End Select
+  Return hResult
+
+End
 ' Select * From "album_id" where "Genero" Like "Vocaloid"
 Public Sub getAllIDInfo(sGenre As String) As Result
   
@@ -661,9 +754,11 @@ Private Function DBPlayList_Read() As Song
   
   If hResult.Length > 0 Then
     With sData
+      .ID_video = hResult["IDVideo"]
+      .URL_image = hResult["URLImage"]
       .album = hResult["Album"]
       .name = hResult["Nombre"]
-      .genere = hResult["Genero"]
+      .genre = hResult["Genero"]
       .type = hResult["Tipo"]
       .cover = hResult["Cover"]
     End With
@@ -679,9 +774,9 @@ Private Sub DBPlayList_Write(sData As Song)
   
   hResult = hConn.Exec("select max(id) from playlist")
   If hResult["max(id)"] = Null Then
-    hConn.Exec("insert into playlist values (&1,&2,&3,&4,&5,&6,&7)", 1, Null, sData.album, sData.name, sData.genere, sData.type, sData.cover)
+    hConn.Exec("insert into playlist values (&1,&2,&3,&4,&5,&6,&7,&8,&9)", 1, Null, sData.ID_video, sData.URL_image, sData.album, sData.name, sData.genre, sData.type, sData.cover)
   Else
-    hConn.Exec("insert into playlist values (&1,&2,&3,&4,&5,&6,&7)", hResult["max(id)"] + 1, Null, sData.album, sData.name, sData.genere, sData.type, sData.cover)
+    hConn.Exec("insert into playlist values (&1,&2,&3,&4,&5,&6,&7,&8,&9)", hResult["max(id)"] + 1, Null, sData.ID_video, sData.URL_image, sData.album, sData.name, sData.genre, sData.type, sData.cover)
   Endif
 
 End
@@ -718,7 +813,8 @@ Private Function Skm_Modo_Read() As String
 End
 
 Private Sub Skm_Modo_Write(Value As String)
-
+  
+  Value = UCase(Left(Value)) & Right(Value, -1)
   Modo = Value
 
 End
@@ -771,13 +867,13 @@ Public Sub setPlayHistory(Value As Integer)
       nModo = "karaoke"
   End Select
 
-  hResult = hConn.Exec("select * from " & nModo & "playhistory where id=" & Value)
+  hResult = hConn.Exec("select * from " & nModo & "albumplayhistory where id=" & Value)
   If hResult.Available = False Then
-    hConn.Exec("insert into " & nModo & "playhistory values (&1,&2)", Value, 1)
+    hConn.Exec("insert into " & nModo & "albumplayhistory values (&1,&2)", Value, 1)
   Else
     i = hResult["Contador"]
     Inc i
-    hConn.Exec("update " & nModo & "playhistory set Contador=" & i & " where id=" & Value)
+    hConn.Exec("update " & nModo & "albumplayhistory set Contador=" & i & " where id=" & Value)
   Endif
 
 End
@@ -807,7 +903,7 @@ End
 
 Private Sub SkinPath_Write(Value As String)
   
-  Debug "Read only"
+  Debug Value
   
 End
 

@@ -120,7 +120,7 @@ Public Sub ConTimer_Timer()
     Inc SecTimeOut
     If SecTimeOut = 5 Then
       FTPCon.Stop
-      FTPCon_Error
+      ' FTPCon_Error
     Endif
   Endif
   
@@ -149,13 +149,13 @@ End
 
 Public Sub FTPCon_Error()
   
-  Raise Send_Error
   FtpIcon.Visible = False
   UpdBar.Hide
   ConTimer.Stop
   FTPCon.Close
-  Debug FTPCon.ErrorText
+  Debug "Error al enviar el archivo"
   WaitUpload = False
+  Raise Send_Error
   
 End
 
@@ -267,6 +267,6 @@ End
 
 Private Sub ConStatus_Write(Value As Boolean)
 
-  Debug "Read only"
+  Debug Value
 
 End

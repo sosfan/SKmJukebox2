@@ -2,7 +2,7 @@
 Title=SKm Jukebox
 Startup=MStart
 Icon=resource/icon.png
-Version=2.0.37
+Version=2.0.44
 Component=gb.image
 Component=gb.gui.qt
 Component=gb.form
@@ -13,6 +13,7 @@ Component=gb.settings
 Component=gb.net
 Component=gb.net.curl
 Component=gb.panel_led
+Component=gb.web
 Description="Aplicación para gestión de rockola digital (sínfonola).\n\nLa interfaz de usuario para mplayer le permite ordenar y navegar entre su \nlibreria multimedia de manera rapida, permite el uso de créditos por monedas\ny una rápida actualización a la hora de la carga de archivos, enfocado principalmente\npara Ubuntu y derivados, puede usarse en distintos tipos de equipos y arquitecturas\nlimitadas como RapsberryPi u OrangePi."
 Authors="José Francisco Facundo <sos.sempai@gmail.com>"
 TabSize=2

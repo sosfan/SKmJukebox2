@@ -90,11 +90,11 @@
     Picture = Picture["icon:/32/screen"]
     { tvOutCheck CheckBox
       Move(35,63,371,21)
-      Text = ("Activar la salida de video a TV.")
+      Text = ("Activar salida a TV (Via Escritorio extendido/HDMI out)")
     }
     { ftpSendCheck CheckBox
       Move(35,98,371,49)
-      Text = ("Enviar los archivos por red en lugar de reproducirlos\npor conexión HDMI.")
+      Text = ("Activar envío de archivos a dispositivo remoto (FTP)")
     }
     { displayCheck CheckBox
       Move(35,161,301,21)

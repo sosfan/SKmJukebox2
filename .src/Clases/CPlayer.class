@@ -48,11 +48,12 @@ Private fifofile As File
 Private fifopath As String
 Private WaitFTP As Boolean
 Private FileIgnore As Boolean
+Private $mpv As Boolean
 
 Public Sub _new()
   
   $pMonitor = New Timer As "$pMonitor"
-  $pMonitor.Delay = 1000
+  $pMonitor.Delay = 100
   
   ReconSocket = New Timer As "ReconSocket"
   ReconSocket.Delay = 120000
@@ -90,7 +91,7 @@ Public Sub _new()
   
 End
 
-Public Sub Play(FileName As String, Path As String, tSong As String, SendFile As Boolean, CoverName As String, AlbumName As String)
+Public Sub Play(FileName As String, Path As String, tSong As String, SendFile As Boolean, CoverName As String)
   Dim FilePath, CoverPath As String
   
   FilePath = Conv(Path &/ FileName, Desktop.Charset, System.Charset)
@@ -119,6 +120,7 @@ Public Sub Play(FileName As String, Path As String, tSong As String, SendFile As
       Try RmtSender.OpenConConnect
       Wait 0.5
       If RmtSender.ConStatus = False Then
+        Raise UploadFailed
         Goto recnormal
       Endif
       
@@ -178,28 +180,25 @@ Private Sub PlayAudio(sFilePath As String)
   If Object.IsValid($hProcess) Then 
     If $hProcess.State = $hProcess.Running Then Return
   Endif
-  
+  $mpv = True
   HideMovieBox
-  $hProcess = Exec ["mplayer", "-ao", "alsa", "-vo", "null", "-input", "file=" & fifopath, "-really-quiet", sFilePath] For Read Write As "Process"
-  
+  ' $hProcess = Exec ["mplayer", "-ao", "alsa", "-vo", "null", "-input", "file=" & fifopath, "-really-quiet", sFilePath] For Read Write As "Process"
+  $hProcess = Exec ["mpv", "--pause", "--vo=null", "--ao=alsa", "--input-file=" & fifopath, sFilePath] For Read Write As "Process"
   If WaitFTP Then
-    PlayerPause
+    ' PlayerPause
     WaitFTP = False
     ' If $rType = "Musica" Then 
     '   Wait 2
     ' Else
     '   Wait 2
     ' Endif
-    Wait 1.5
+    Wait 1
     
     ' If Right(sFilePath, 3) = "m4a" Then
-    PlayerSeek
+    ' PlayerSeek
     RmtSender.ConSendSocket("<PAUSE>")
-    
-    
-    
   Endif
-  
+  PlayerPause
   $pMonitor.Enabled = True
   
 End
@@ -250,13 +249,12 @@ Public Sub RmtSender_Send_Error()
   Raise UploadFailed
   $upProcess = False
   'En caso de error, repoducir normalmente
-  Debug Error.Text
   If WaitFTP = False Then Return
   ' WaitFTP = False
   RmtSender.ConSendSocket("<RESTART>")
   ' RmtSender.ConSendSocket("<RESTARTFTP>")
   ' RmtSender.ConSendSocket("<RESETNET>")
-
+  
   ResCount.Start
   ResState = True
   
@@ -298,26 +296,28 @@ Public Sub PlayerStop()
   If Not $hProcess Then Return
   If Not $hProcess.State = Process.Running Then Return
   
-  Try Print #$hProcess, "q";
-  
   RmtSender.ConSendSocket("<CANCEL>")
   Wait 0.2
-  ' Print #fifofile, "stop"
+  If $mpv = True Then
+    Print #fifofile, "stop"
+  Else
+    Try Print #$hProcess, "q";
+  Endif
   
   Catch
     Debug Error.Text
   
 End
 
-Private Sub PlayerSeek()
-  
-  Print #fifofile, "seek -3 0"
-  
-End
+' Private Sub PlayerSeek()
+'   
+'   Print #fifofile, "seek -3 0"
+'   
+' End
 
 Public Sub PlayerPause()
   
-  Print #fifofile, "pause"
+  Print #fifofile, "cycle pause"
   
 End
 
@@ -377,7 +377,7 @@ End
 
 Private Sub upProcess_Write(Value As Boolean)
   
-  Debug "Read only"
+  Debug Value
   
 End
 

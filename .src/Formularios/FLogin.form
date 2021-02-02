@@ -1,0 +1,71 @@
+# Gambas Form File 3.0
+
+{ Form Form
+  MoveScaled(0,0,41,59)
+  Visible = False
+  { siete Button
+    MoveScaled(1.4286,14,12,10)
+    Font = Font["Monospace,Bold,20"]
+    Text = ("7")
+  }
+  { ocho Button
+    MoveScaled(14.4286,14,12,10)
+    Font = Font["Monospace,Bold,20"]
+    Text = ("8")
+  }
+  { nueve Button
+    MoveScaled(27.4286,14,12,10)
+    Font = Font["Monospace,Bold,20"]
+    Text = ("9")
+  }
+  { cuatro Button
+    MoveScaled(1.4286,25,12,10)
+    Font = Font["Monospace,Bold,20"]
+    Text = ("4")
+  }
+  { cinco Button
+    MoveScaled(14.4286,25,12,10)
+    Font = Font["Monospace,Bold,20"]
+    Text = ("5")
+  }
+  { seis Button
+    MoveScaled(27.4286,25,12,10)
+    Font = Font["Monospace,Bold,20"]
+    Text = ("6")
+  }
+  { uno Button
+    MoveScaled(1.4286,36,12,10)
+    Font = Font["Monospace,Bold,20"]
+    Text = ("1")
+  }
+  { dos Button
+    MoveScaled(14.4286,36,12,10)
+    Font = Font["Monospace,Bold,20"]
+    Text = ("2")
+  }
+  { tres Button
+    MoveScaled(27.4286,36,12,10)
+    Font = Font["Monospace,Bold,20"]
+    Text = ("3")
+  }
+  { limpiar Button
+    MoveScaled(1.4286,47,12,10)
+    Font = Font["Monospace,Bold,20"]
+    Text = ("C")
+  }
+  { cero Button
+    MoveScaled(14.4286,47,12,10)
+    Font = Font["Monospace,Bold,20"]
+    Text = ("0")
+  }
+  { enter Button
+    MoveScaled(27.4286,47,12,10)
+    Font = Font["Monospace,Bold,20"]
+    Text = ("E")
+  }
+  { passbox TextBox
+    MoveScaled(7,4,28,6)
+    ReadOnly = True
+    Password = True
+  }
+}

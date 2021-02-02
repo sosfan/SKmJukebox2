@@ -20,6 +20,7 @@
 Private DataControl As New CData
 ' Private ConfigData As Result
 Private Functions As CFunctions
+Private LoginWin As FLogin
 Private hKey As String
 Private keysd As Timer
 
@@ -123,12 +124,27 @@ Private Sub KeyDetect()
     ' Case "s"
     '   Functions.PanelSearchKey
     Case DataControl.ConfigKey
-      FConfig.Show
-      Me.Hide
+      If Object.IsValid(LoginWin) Then
+        LoginWin.Show
+      Else
+        LoginWin = New FLogin As "LoginWin"
+        LoginWin.Show
+      Endif
+      
+      ' FConfig.Show
+      ' Me.Hide
       
   End Select
   
 End
+
+Public Sub LoginWin_ShowConf()
+  
+  FConfig.Show
+  Me.Hide
+  
+End
+
 
 Public Sub Form_Close()
 

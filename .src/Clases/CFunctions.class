@@ -302,6 +302,7 @@ Public Sub DecCredito(Value As Integer)
   
   Dim i As Integer
   i = DataControl.Credito - Value
+  If i < 0 Then Return
   DataControl.Credito = i
   $CMain.SetLblCredito(i)
   
