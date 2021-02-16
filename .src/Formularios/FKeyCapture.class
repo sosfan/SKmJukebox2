@@ -1,0 +1,56 @@
+' Gambas class file
+
+'
+' Authors:
+'  J. Francisco Facundo <sos.sempai@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; version 3.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+' details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc.,
+' 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+Private DataControl As New CData
+Public keytype As String
+Public Sub Form_Open()
+
+  Me.Center
+
+End
+
+Public Sub Form_KeyPress()
+  
+  Select keytype
+    Case "CancelKey"
+      DataControl.CancelKey = Key.Text
+    Case "MaxCreditKey"
+      DataControl.MaxCreditKey = Key.Text
+    Case "MinCreditKey"
+      DataControl.MinCreditKey = Key.Text
+    Case "MaxVolKey"
+      DataControl.MaxVolKey = Key.Text
+    Case "MinVolKey"
+      DataControl.MinVolKey = Key.Text
+    Case "ConfigKey"
+      DataControl.ConfigKey = Key.Text
+  End Select
+  FConfig.LoadKeysText
+  Me.Close
+  
+End
+
+Public Sub Timer1_Timer()
+
+  If InfoLabel.Foreground = &0000000& Then 
+    InfoLabel.Foreground = &HFF0000&
+  Else 
+    InfoLabel.Foreground = &0000000&
+  Endif 
+  
+End

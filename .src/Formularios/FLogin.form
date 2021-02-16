@@ -1,0 +1,80 @@
+# Gambas Form File 3.0
+
+{ Form Form
+  Move(0,0,328,472)
+  #Scaled = False
+  Visible = False
+  Background = Color.TooltipBackground
+  Mouse = Mouse.Cross
+  Text = ("Contraseña")
+  Icon = Picture["resource/icon.png"]
+  Resizable = False
+  SkipTaskbar = True
+  Opacity = 90
+  Transparent = True
+  { siete Button
+    Move(11,288,96,80)
+    Font = Font["Monospace,Bold,20"]
+    Text = ("7")
+  }
+  { ocho Button
+    Move(115,288,96,80)
+    Font = Font["Monospace,Bold,20"]
+    Text = ("8")
+  }
+  { nueve Button
+    Move(219,288,96,80)
+    Font = Font["Monospace,Bold,20"]
+    Text = ("9")
+  }
+  { cuatro Button
+    Move(11,200,96,80)
+    Font = Font["Monospace,Bold,20"]
+    Text = ("4")
+  }
+  { cinco Button
+    Move(115,200,96,80)
+    Font = Font["Monospace,Bold,20"]
+    Text = ("5")
+  }
+  { seis Button
+    Move(219,200,96,80)
+    Font = Font["Monospace,Bold,20"]
+    Text = ("6")
+  }
+  { uno Button
+    Move(11,112,96,80)
+    Font = Font["Monospace,Bold,20"]
+    Text = ("1")
+  }
+  { dos Button
+    Move(115,112,96,80)
+    Font = Font["Monospace,Bold,20"]
+    Text = ("2")
+  }
+  { tres Button
+    Move(219,112,96,80)
+    Font = Font["Monospace,Bold,20"]
+    Text = ("3")
+  }
+  { limpiar Button
+    Move(11,376,96,80)
+    Font = Font["Monospace,Bold,20"]
+    Text = ("C")
+  }
+  { cero Button
+    Move(115,376,96,80)
+    Font = Font["Monospace,Bold,20"]
+    Text = ("0")
+  }
+  { enter Button
+    Move(219,376,96,80)
+    Font = Font["Monospace,Bold,20"]
+    Text = ("E")
+  }
+  { passbox TextBox
+    Move(56,32,224,48)
+    ReadOnly = True
+    Password = True
+  }
+}

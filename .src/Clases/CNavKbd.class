@@ -1,0 +1,56 @@
+' Gambas class file
+
+Inherits Panel
+
+Event PulseKey(Value As String)
+
+Private $Key As CKey
+Private mKeys As New Object[]
+
+Private DataControl As New CData
+Private hSkinPath As String
+Private hSkinTheme As Settings
+
+Public Sub _new()
+  
+  Dim i, c As Integer
+  'Leer configuracion del tema
+  hSkinPath = DataControl.SkinPath & DataControl.SkinTheme
+  hSkinTheme = New Settings(hSkinPath &/ "theme.conf")
+  
+  For i = 35 To 78
+    $Key = New CKey(Me) As "$Key"
+    With $Key
+      .X = (hSkinTheme["NavKbdKey/W"] * c)
+      .Y = 0
+      .HKey = hSkinTheme["NavKbdKey/H"]
+      .WKey = hSkinTheme["NavKbdKey/W"]
+      .LetterKey = Chr(i)
+      .imgResPath = hSkinPath &/ hSkinTheme["Images/NavKbdKey"]
+    End With
+    If i = 35 Then i = 64
+    Inc c
+    mKeys.Add($Key)
+  Next
+  c = 0
+  For i = 79 To 90
+    $Key = New CKey(Me) As "$Key"
+    With $Key
+      .X = (hSkinTheme["NavKbdKey/W"] * c) + CInt((hSkinTheme["NavKbdKey/W"] * 1.5))
+      .Y = hSkinTheme["NavKbdKey/H"] + 3
+      .HKey = hSkinTheme["NavKbdKey/H"]
+      .WKey = hSkinTheme["NavKbdKey/W"]
+      .LetterKey = Chr(i)
+      .imgResPath = hSkinPath &/ hSkinTheme["Images/NavKbdKey"]
+    End With
+    Inc c
+    mKeys.Add($Key)
+  Next
+  
+End
+
+Public Sub $Key_PulseKey()
+  
+  Raise PulseKey(Last.LetterKey)
+  
+End

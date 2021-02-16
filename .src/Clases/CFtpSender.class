@@ -27,6 +27,7 @@ Private DataControl As New CData
 Private TotalTimeFTP As Integer
 Private PercentUpd As Integer
 Private SecTimeOut As Byte
+Private WaitUpload As Boolean
 
 Public UpdBar As ProgressBar
 Public FtpIcon As PictureBox
@@ -71,7 +72,7 @@ Public Sub _new()
   
 End
 
-Public Sub SendFTPFile(sFileName As String, sDataFileName As String)
+Public Function SendFTPFile(sFileName As String, sDataFileName As String) As Boolean
   
   FTPCon = New FtpClient As "FTPCon"
   FTPCon.Timeout = 60
@@ -81,14 +82,13 @@ Public Sub SendFTPFile(sFileName As String, sDataFileName As String)
   ' Endif
   
   With FTPCon
-    
     .URL = "ftp://" & DataControl.FTPHost & "/tmp/" & sFileName
     .User = DataControl.FTPUser
     .Password = DataControl.FTPPassword
     Debug "Enviando al dispositivo."
     .Put(sDataFileName)
-    
   End With
+  
   FtpIcon.Visible = True
   ConTimer.Start
   SecTimeOut = 0
@@ -97,6 +97,13 @@ Public Sub SendFTPFile(sFileName As String, sDataFileName As String)
   UpdBar.Value = 0
   Updbar.show
   UpdBar.Raise
+  WaitUpload = True
+  
+  While WaitUpload
+    Wait 0.1
+  Wend
+  
+  Return True
   
 End
 
@@ -113,7 +120,7 @@ Public Sub ConTimer_Timer()
     Inc SecTimeOut
     If SecTimeOut = 5 Then
       FTPCon.Stop
-      FTPCon_Error
+      ' FTPCon_Error
     Endif
   Endif
   
@@ -136,17 +143,19 @@ Public Sub FTPCon_Finished()
   Raise Send_Finish
   Updbar.Hide
   FTPCon.Close
+  WaitUpload = False
   
 End
 
 Public Sub FTPCon_Error()
   
-  Raise Send_Error
   FtpIcon.Visible = False
   UpdBar.Hide
   ConTimer.Stop
   FTPCon.Close
-  Debug FTPCon.ErrorText
+  Debug "Error al enviar el archivo"
+  WaitUpload = False
+  Raise Send_Error
   
 End
 
@@ -258,6 +267,6 @@ End
 
 Private Sub ConStatus_Write(Value As Boolean)
 
-  Debug "Read only"
+  Debug Value
 
 End

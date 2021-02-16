@@ -1,0 +1,6 @@
+[Component]
+Key=panel-led
+Version=0.0.15
+State=1
+Authors=José Francisco < sos.sempai@gmail.com >
+Requires=gb.form,gb.image,gb.gui.qt

@@ -57,10 +57,10 @@ Public Sub _new()
   With LabelKey
     .X = 0
     .Y = 0
-    .Alignment = 3
-    .Font.Name = "FreeSans"
+    .Alignment = Align.Center
+    ' .Font.Name = "FreeSans"
     .Font.Bold = True
-    .Font.Size = 14
+    .Font.Size = 12
     .Foreground = &00FFFFFF&
   End With
   

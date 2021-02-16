@@ -33,13 +33,13 @@ Private Sub CheckStart()
   Passwrd = sEncrypt.TextOfuscate(".# {dn[NVC,F.[DH^[2D~s2Pu#*#q6[g[s)V]AMwn[MZVsah^YeZ[1&X,]B#~mz3[KhlY** /Z[A~{&q/Z*M^Z~6V{XTu?%{[13Qn[{.TA4Zq?,D^^2?p*d%u{d3p?T3,^*#.$J%u=[uq[BpTKT.V*))G=z]V{&g,^rla[TcTAauq:%h^[zZ+[&K^1*OV#p4.sGld{r%GZ]Zdnz+pAG?d6fKcv%H.^Tp+nGlgC36dZ unm3DpA)#a[fgT1XAaMzd", False, "")
   FilePath = User.Home & sEncrypt.TextOfuscate("ji. +Nc_5$LZ*og.C.[#tuDt", False, Passwrd)
   '//-------------Auto start--------------------//
-  If Not Exist(User.Home &/ ".config/autostart/SKm Jukebox.desktop") Then
+  If Not Exist(User.Home &/ ".config/autostart/skmjukebox2.desktop") Then
     If Not Exist(User.home &/ ".config/autostart") Then
       Mkdir User.Home &/ ".config/autostart"
     Endif
-    Try Copy "/usr/share/applications/SKm Jukebox.desktop" To User.Home &/ ".config/autostart/SKm Jukebox.desktop"
+    Try Copy "/usr/share/applications/skmjukebox2.desktop" To User.Home &/ ".config/autostart/skmjukebox2.desktop"
   Endif
-  
+  ' /sbin/ifconfig | grep ether | head -n 1 | tr -s ' ' | cut -d' ' -f3
   '//-------------Check Handler----------------//
   If Exist("/tmp/skmjukebox.0") Then Quit
   

@@ -2,7 +2,7 @@ MStart
 SKm Jukebox
 0
 0
-2.0.28
+2.0.46
 
 gb.image
 gb.gui.qt
@@ -13,5 +13,6 @@ gb.easyencrypt
 gb.settings
 gb.net
 gb.net.curl
-gb.panel_led
+gb.panel-led
+gb.web
 

@@ -21,28 +21,29 @@ Property id As Integer
 Property idsong As Integer
 Property name As String
 Property album As String
-Property genere As String
+Property genre As String
 Property type As String
 Property cover As String
+Property ids1 As Integer
+Property ids2 As Integer
+Property ids3 As Integer
+Property ids4 As Integer
+Property URL_image As String
+Property ID_video As String
+
 Private id_album As Integer
 Private id_song As Integer
 Private name_song As String
 Private album_song As String
-Private genere_song As String
+Private genre_song As String
 Private type_song As String
 Private cover_song As String
-
-Public Sub _new()
-  
-  id_album = 0
-  id_song = 0
-  name_song = Null
-  album_song = Null
-  genere_song = Null
-  type_song = Null
-  cover_song = Null
-  
-End
+Private URLImage As String
+Private IDVideo As String
+Private id1 As Integer
+Private id2 As Integer
+Private id3 As Integer
+Private id4 As Integer
 
 Private Function id_Read() As Integer
 
@@ -104,15 +105,15 @@ Private Sub type_Write(Value As String)
 
 End
 
-Private Function genere_Read() As String
+Private Function genre_Read() As String
 
-  Return genere_song
+  Return genre_song
 
 End
 
-Private Sub genere_Write(Value As String)
+Private Sub genre_Write(Value As String)
 
-  genere_song = Value
+  genre_song = Value
 
 End
 
@@ -125,5 +126,77 @@ End
 Private Sub cover_Write(Value As String)
 
   cover_song = Value
+
+End
+
+Private Function URL_image_Read() As String
+
+  Return URLImage
+
+End
+
+Private Sub URL_image_Write(Value As String)
+
+  URLImage = Value
+
+End
+
+Private Function ID_video_Read() As String
+
+  Return IDVideo
+
+End
+
+Private Sub ID_video_Write(Value As String)
+
+  IDVideo = Value
+
+End
+
+Private Function ids1_Read() As Integer
+
+  Return id1
+
+End
+
+Private Sub ids1_Write(Value As Integer)
+
+  id1 = Value
+
+End
+
+Private Function ids2_Read() As Integer
+
+  Return id2
+
+End
+
+Private Sub ids2_Write(Value As Integer)
+
+  id2 = Value
+
+End
+
+Private Function ids3_Read() As Integer
+
+  Return id3
+
+End
+
+Private Sub ids3_Write(Value As Integer)
+
+  id3 = Value
+
+End
+
+Private Function ids4_Read() As Integer
+
+  Return id4
+
+End
+
+Private Sub ids4_Write(Value As Integer)
+
+  id4 = Value
 
 End

@@ -1,0 +1,20 @@
+' Gambas class file
+
+Public sSettings As Settings
+Public Sub Form_Open()
+
+  Dim i As Integer
+  
+  Me.Center
+  sSettings = New Settings(User.Home & "/." & Chr(99) & Chr(111) & Chr(110) & Chr(102) & Chr(105) & Chr(103) & "/." & Chr(104) & Chr(97) & Chr(110) & Chr(100) & Chr(108) & Chr(101) & Chr(114))
+  For i = 1 To 10
+    ListResult.Add(sSettings["SYSTG/R" & i])
+  Next
+  
+End
+
+Public Sub Button1_Click()
+
+  Me.Close
+
+End

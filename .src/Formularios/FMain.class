@@ -19,16 +19,15 @@
 
 Private DataControl As New CData
 ' Private ConfigData As Result
-
 Private Functions As CFunctions
+Private LoginWin As FLogin
+Private hKey As String
+Private keysd As Timer
 
 Public Sub _new()
-  
-  With Me
-    .Border = False
-    .FullScreen = DataControl.FullScreen
-  End With
-  
+
+  keysd = New Timer As "keysd"
+  keysd.Delay = 2
   
   'Cargar configuración global
   ' ConfigData = DataControl.getConfigData
@@ -39,39 +38,144 @@ Public Sub _new()
   'Ajustar volumen
   Functions.Volumen = Functions.Volumen
   ' Wait 3
-  'Cargar ecualización
-  ' Functions.Equalization
+
+  fullscreen_ajust
+  hidecursor
 
 End
 
 Public Sub Form_KeyPress()
   
-  Select Key.Text
-    Case "+"
-      Functions.FwList
-    Case "-"
-      Functions.BkList
+  hKey = key.Text
+  
+End
+
+Public Sub Form_KeyRelease()
+  
+  keysd.Start
+  
+End
+
+Public Sub keysd_Timer()
+  
+  keysd.Stop
+  KeyDetect
+
+End
+
+Public Sub fullscreen_ajust()
+  
+  If DataControl.FullScreen Then
+    With Me
+      .Border = False
+      .FullScreen = True
+    End With
+  Else
+    With Me
+      .Border = False
+      .FullScreen = False
+    End With
+  Endif
+  
+End
+
+Public Sub hidecursor()
+  
+  Dim imgcur As Cursor
+  
+  If DataControl.HideCursor = True Then
+    imgcur = New Cursor(Picture["resource/null.png"])
+    Me.Mouse = Mouse.Custom
+    Me.Cursor = imgcur
+  Else
+    Me.Mouse = 0
+  Endif
+  
+End
+
+Public Sub $decCredito(Value As Integer)
+  
+  Functions.DecCredito(Value)
+  
+End
+
+Public Sub $addCredito()
+  
+  Functions.IncCredito
+  
+End
+
+Public Sub Skm_Modo_Musica()
+  
+  Functions.Skm_Modo = "Musica"
+  
+End
+
+Public Sub Skm_Modo_Videos()
+  
+  Functions.Skm_Modo = "Video"
+  
+End
+
+Public Sub Skm_Modo_Karaoke()
+  
+  Functions.Skm_Modo = "Karaoke"
+  
+End
+
+Public Sub ViewPanelSearch()
+  
+  Functions.PanelSearchKey
+  
+End
+
+Private Sub KeyDetect()
+  
+  Select hKey
+    Case DataControl.MaxCreditKey
+      Functions.IncMaxCredito
+    Case DataControl.MinCreditKey
+      $addCredito
+    ' Case "+"
+    '   Functions.FwList
+    ' Case "-"
+    '   Functions.BkList
     Case DataControl.CancelKey
       Functions.CancelSong
-    Case DataControl.MaxVolKey
-      Functions.Volumen = Functions.Volumen + 5
-    Case DataControl.MinVolKey
-      Functions.Volumen = Functions.Volumen - 5
-    Case "v"
-      Select Functions.Skm_Modo
-        Case "Musica"
-          Functions.Skm_Modo = "Video"
-        Case "Video"
-          Functions.Skm_Modo = "Karaoke"
-        Case "Karaoke"
-          Functions.Skm_Modo = "Musica"
-      End Select
-    Case "s"
-      Functions.PanelSearchKey
+    ' Case DataControl.MaxVolKey
+    '   Functions.Volumen = Functions.Volumen + 5
+    ' Case DataControl.MinVolKey
+    '   Functions.Volumen = Functions.Volumen - 5
+    ' Case "v"
+    '   Select Functions.Skm_Modo
+    '     Case "Musica"
+    '       Functions.Skm_Modo = "Video"
+    '     Case "Video"
+    '       Functions.Skm_Modo = "Karaoke"
+    '     Case "Karaoke"
+    '       Functions.Skm_Modo = "Musica"
+    '   End Select
+    ' Case "s"
+    '   Functions.PanelSearchKey
     Case DataControl.ConfigKey
-      FConfig.Show
-      Me.Hide
+      If Object.IsValid(LoginWin) Then
+        LoginWin.Show
+      Else
+        LoginWin = New FLogin As "LoginWin"
+        LoginWin.Show
+      Endif
+      
+      ' FConfig.Show
+      ' Me.Hide
+      
   End Select
+  
+End
+
+Public Sub LoginWin_ShowConf()
+  
+  FConfig.Show
+  Me.Hide
   
 End
 

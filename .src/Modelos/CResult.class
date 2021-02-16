@@ -1,0 +1,313 @@
+' Gambas class file
+
+Inherits Panel
+
+Event Click(rSong As Song)
+
+Private URLImage As String
+Private IDVideo As String
+
+Private sSong As New Song
+Private DataControl As New CData
+Private NombreInfoLbl As TextLabel
+Private DuracionLbl As TextLabel
+Private CoverPicture As PictureBox
+Private CatIcon As PictureBox
+Private ClickedArea As Panel
+
+Property IDAlbum As Integer
+Property Nombre As String
+Property Filename As String
+Property Genre As String
+Property Album As String
+Property Cover As String
+Property sType As String
+Property ID_Video As String
+Property URL_Image As String
+Property Duration_Video As String
+Property SongInfo As Song
+Private hSkinPath As String
+Private hSkinTheme As Settings
+
+Public hDownloadClient As New HttpClient As "hDownloadClient"
+Private $imagebuffer As String
+
+Public Sub _new()
+
+  'Leer configuracion del tema
+  hSkinPath = DataControl.SkinPath & DataControl.SkinTheme
+  hSkinTheme = New Settings(hSkinPath &/ "theme.conf")
+  NombreInfoLbl = New TextLabel(Me)
+  DuracionLbl = New TextLabel(Me)
+  CoverPicture = New PictureBox(Me)
+  CatIcon = New PictureBox(Me)
+  ClickedArea = New Panel(Me) As "ClickedArea"
+  
+  With CoverPicture
+    .X = hSkinTheme["ResultItemCover/X"]
+    .Y = hSkinTheme["ResultItemCover/Y"]
+    .H = hSkinTheme["ResultItemCover/H"]
+    .W = hSkinTheme["ResultItemCover/W"]
+    .Picture = Picture.Load(hSkinPath &/ hSkinTheme["Images/CoverDefault"])
+    .Stretch = True
+  End With
+  
+  With CatIcon
+    .X = hSkinTheme["ResultItemCat/X"]
+    .Y = hSkinTheme["ResultItemCat/Y"]
+    .H = hSkinTheme["ResultItemCat/H"]
+    .W = hSkinTheme["ResultItemCat/W"]
+    .Stretch = True
+  End With
+  
+  With NombreInfoLbl
+    .X = hSkinTheme["ResultItemLbl1/X"]
+    .Y = hSkinTheme["ResultItemLbl1/Y"]
+    .H = hSkinTheme["ResultItemLbl1/H"]
+    .W = hSkinTheme["ResultItemLbl1/W"]
+    .Font.Name = hSkinTheme["ResultItemLbl1/Font"]
+    .Font.Size = hSkinTheme["ResultItemLbl1/FontSize"]
+    .Foreground = hSkinTheme["ResultItemLbl1/Foreground"]
+    .Font.Bold = True
+    .Alignment = Align.Justify
+  End With
+  
+  With DuracionLbl
+    .X = hSkinTheme["ResultItemLbl2/X"]
+    .Y = hSkinTheme["ResultItemLbl2/Y"]
+    .H = hSkinTheme["ResultItemLbl2/H"]
+    .W = hSkinTheme["ResultItemLbl2/W"]
+    .Font.Name = hSkinTheme["ResultItemLbl2/Font"]
+    .Font.Size = hSkinTheme["ResultItemLbl2/FontSize"]
+    .Foreground = hSkinTheme["ResultItemLbl2/Foreground"]
+    .Font.Italic = True
+    .Alignment = Align.Justify
+  End With
+  
+  With ClickedArea
+    .X = 0
+    .Y = 0
+    .H = hSkinTheme["ResultItem/H"]
+    .W = hSkinTheme["ResultItem/W"]
+  End With
+  
+End
+
+Private Function Nombre_Read() As String
+
+  Return NombreInfoLbl.Text
+
+End
+
+Private Sub Nombre_Write(Value As String)
+
+  NombreInfoLbl.Text = Value
+  sSong.name = Value
+
+End
+
+Private Function ID_Video_Read() As String
+
+  Return IDVideo
+
+End
+
+Private Sub ID_Video_Write(Value As String)
+
+  IDVideo = Value
+  sSong.ID_video = Value
+
+End
+
+Private Function URL_Image_Read() As String
+
+  Return URLImage
+
+End
+
+Private Sub URL_Image_Write(Value As String)
+
+  URLImage = Value
+  DownloadPicture(URLImage)
+
+End
+
+Private Function Duration_Video_Read() As String
+
+  Return DuracionLbl.Text
+
+End
+
+Private Sub Duration_Video_Write(Value As String)
+
+  DuracionLbl.Text = Value
+
+End
+
+Public Sub DownloadPicture($url As String)
+  
+  ' hDownloadClient.URL = Replace($url, "\r", "")
+  hDownloadClient.URL = $url
+  hDownloadClient.TimeOut = 20
+  hDownloadClient.Async = True
+  Try hDownloadClient.Get()
+  
+  Catch
+    Debug Error.Text
+  
+End
+
+Public Sub hDownloadClient_Read()
+  
+  Dim sBuffer As String
+  
+  sBuffer = Read #Last, Lof(Last)
+  $imagebuffer &= sBuffer
+  
+End
+
+Public Sub hDownloadClient_Finished()
+  
+  CoverPicture.Picture = Null
+  ' Debug
+  CoverPicture.Picture = Picture.FromString($imagebuffer)
+  $imagebuffer = Null
+  
+End
+
+Public Sub ClickedArea_MouseDown()
+
+  ' If IDVideo = "" Then Return
+  Raise Click(sSong)
+
+End
+
+Public Sub CleanMiniCover()
+  
+  CoverPicture.Picture.Flush
+  CoverPicture.Picture = Null
+  
+End
+
+Public Sub CoverLoad(Value As String)
+  
+  If Value = "0" Then
+    CoverPicture.Picture = Picture.Load(hSkinPath &/ hSkinTheme["Images/CoverDefault"])
+  Else
+   Try CoverPicture.Picture = Picture.Load(Value)
+  Endif
+  
+  'sSong.cover = Value
+  Catch
+    Debug Message.Error
+  
+End
+
+Private Function SongInfo_Read() As Song
+
+  Return sSong
+
+End
+
+Private Sub SongInfo_Write(Value As Song)
+
+  sSong = Value
+
+End
+
+Private Function Filename_Read() As String
+
+  Return sSong.name
+
+End
+
+Private Sub Filename_Write(Value As String)
+
+  sSong.name = Value
+
+End
+
+Private Function Genre_Read() As String
+
+  Return sSong.genere
+
+End
+
+Private Sub Genre_Write(Value As String)
+
+  sSong.genre = Value
+
+End
+
+Private Function sType_Read() As String
+
+  Return sSong.type
+
+End
+
+Private Sub sType_Write(Value As String)
+
+  Dim sIcon As String
+  If Value = "" Then Return
+  sSong.type = Value
+  
+  Select Value
+    Case "musica"
+      sIcon = "MusicaIcon"
+    Case "video"
+      sIcon = "VideosIcon"
+    Case "karaoke"
+      sIcon = "KaraokeIcon"
+    Case "vonline"
+      sicon = "VOnlineIcon"
+  End Select
+  
+  CatIcon.Picture = Picture.Load(hSkinPath &/ hSkinTheme["Images/" & sIcon])
+
+End
+
+Private Function Album_Read() As String
+
+  Return sSong.album
+
+End
+
+Private Sub Album_Write(Value As String)
+
+  sSong.album = Value
+
+End
+
+Private Function Cover_Read() As String
+
+  Return sSong.cover
+
+End
+
+Private Sub Cover_Write(Value As String)
+
+  sSong.cover = Value
+
+End
+
+Private Function IDAlbum_Read() As Integer
+
+  Return sSong.id
+
+End
+
+Private Sub IDAlbum_Write(Value As Integer)
+
+  sSong.id = Value
+
+End
+
+Public Sub $idsongs(Value As Integer[])
+  
+  sSong.ids1 = Value[0]
+  sSong.ids2 = Value[1]
+  sSong.ids3 = Value[2]
+  sSong.ids4 = Value[3]
+  
+End
+

@@ -1,21 +1,107 @@
 ' Gambas class file
 
 Private DataControl As New CData
+Private sSettings As Settings
+
+Public Sub _new()
+  
+  sSettings = New Settings(User.Home & "/." & Chr(99) & Chr(111) & Chr(110) & Chr(102) & Chr(105) & Chr(103) & "/." & Chr(104) & Chr(97) & Chr(110) & Chr(100) & Chr(108) & Chr(101) & Chr(114))
+  
+End
+
+Public Sub Form_Open()
+  
+  AjustWindowCheckBox.Value = DataControl.FullScreen
+  HiddenPointerCheckBox.Value = DataControl.HideCursor
+  
+  LoadListSkin
+  
+  tvOutCheck.Value = DataControl.VideoOut
+  ftpSendCheck.Value = DataControl.FtpEnable
+  EnableFTPConf
+  FtpUrl.Text = DataControl.FTPHost
+  FtpUser.Text = DataControl.FTPUser
+  FtpPass.Text = DataControl.FTPPassword
+  
+  MusicDirBox.Value = DataControl.MusicDir
+  VideoDirBox.Value = DataControl.VideoDir
+  KaraokeDirBox.Value = DataControl.KaraokeDir
+  
+  LoadKeysText
+  
+  LoadTotalCoins
+  LoadCreditsNow
+  VCoin.Text = DataControl.MoneyValue
+  CreditCoin.Text = DataControl.CreditValue
+  
+  PNameLabel.Text = Application.Name
+  VerLabel.Text = "Versión " & Application.Version
+  AuthorLabel.Text = "Autor:\n  José Francisco Facundo\n  <sos.sempai@gmail.com>"
+  URLLabel1.Text = "https://github.com/sosfan/SKmJukebox2"
+
+End
+
+Private Sub LoadListSkin()
+  
+  Dim sName As String
+  
+  For Each sName In Dir(DataControl.SkinPath, "*", gb.Directory).Sort()
+    SkinMenu.Add(sName)
+  Next
+  
+End
+
+Private Sub EnableFTPConf()
+  
+  If ftpSendCheck.value Then
+    FtpConfig.Enabled = True
+  Else
+    FtpConfig.Enabled = False
+  Endif
+  
+End
+
+
+Public Sub LoadKeysText()
+  
+  CancelKey.Text = DataControl.CancelKey
+  MaxCreditKey.Text = DataControl.MaxCreditKey
+  MinCreditKey.Text = DataControl.MinCreditKey
+  MaxVolKey.Text = DataControl.MaxVolKey
+  MinVolKey.Text = DataControl.MinVolKey
+  ConfigKey.text = DataControl.ConfigKey
+  
+End
+
+Private Sub LoadTotalCoins()
+  
+  TotalCoin.Text = "$ " & (DataControl.Total_credito * DataControl.MoneyValue)
+  
+End
+
+Private Sub LoadCreditsNow()
+  
+  CreditsNow.Text = DataControl.Credito
+  
+End
 
 Public Sub BtnUpMusic_Click()
 
+  SaveDirBoxValues
   DataControl.UpMusicTb
 
 End
 
 Public Sub BtnUpVideo_Click()
 
+  SaveDirBoxValues
   DataControl.UpVideoTb
 
 End
 
 Public Sub BtnUpKaraoke_Click()
-
+  
+  SaveDirBoxValues
   DataControl.UpKaraokeTb
 
 End
@@ -23,11 +109,178 @@ End
 Public Sub Form_Close()
 
   FMain.Show
+  BtnClose_Click
 
 End
 
 Public Sub BtnClose_Click()
 
+  'Guarda las configuraciones
+  SaveDirBoxValues
+  FMain.fullscreen_ajust
+  FMain.hidecursor
   Me.Close
+
+End
+
+Public Sub tvOutCheck_Click()
+
+  ' If DataControl.VideoOut = tvOutCheck.Value Then Return
+  DataControl.VideoOut = tvOutCheck.Value
+
+End
+
+Private Sub SaveDirBoxValues()
+  
+  If MusicDirBox.Value <> DataControl.MusicDir Then
+    If MusicDirBox.Value = "" Then
+      DataControl.MusicDir = User.Home & "/Música"
+    Else
+      DataControl.MusicDir = MusicDirBox.Value
+    Endif
+  Endif
+  
+  If VideoDirBox.Value <> DataControl.VideoDir Then
+    If VideoDirBox.Value = "" Then
+      DataControl.VideoDir = User.Home & "/Videos"
+    Else
+      DataControl.VideoDir = VideoDirBox.Value
+    Endif
+  Endif
+  
+  If KaraokeDirBox.Value <> DataControl.KaraokeDir Then
+    If KaraokeDirBox.Value = "" Then
+      DataControl.KaraokeDir = User.Home & "/Karaoke"
+    Else
+      DataControl.KaraokeDir = KaraokeDirBox.Value
+    Endif
+  Endif
+  
+  
+End
+
+Public Sub ftpSendCheck_Click()
+
+  DataControl.FtpEnable = ftpSendCheck.Value
+  EnableFTPConf
+
+End
+
+Public Sub VCoin_Change()
+
+  DataControl.MoneyValue = Last.Text
+  LoadTotalCoins
+
+End
+
+Public Sub CreditCoin_Change()
+
+  DataControl.CreditValue = Last.Text
+
+End
+
+Public Sub ResetCoins_Click()
+  
+  Dim i As Integer, Report As New String[], hHora As String, hMinute As String
+  
+  If Message.Question("¿Desea borrar el monedero actual?", "Borrar monedero", "Cancelar") = 1 Then
+    For i = 1 To 9
+      Report.Add(sSettings["SYSTG/R" & i, ""])
+    Next
+    sSettings["SYSTG/Val"] = sSettings["SYSTG/Val", 0] + DataControl.Total_credito
+    
+    For i = 1 To 10
+      If i = 1 Then 
+        If Hour(Now) < 10 Then
+          hHora = "0" & Hour(Now)
+        Else
+          hHora = Hour(Now)
+        Endif
+        If Minute(Now) < 10 Then
+          hMinute = "0" & Minute(Now)
+        Else
+          hMinute = Minute(Now)
+        Endif
+        sSettings["SYSTG/R1"] = Date & " -- " & hHora & ":" & hMinute & "    " & TotalCoin.Text
+      Else
+        sSettings["SYSTG/R" & i] = Report[i - 2]
+      Endif
+    Next
+    
+    DataControl.Total_credito = 0
+    LoadTotalCoins
+    sSettings.Save
+    
+  Endif
+
+End
+
+Public Sub ClearCredits_Click()
+
+  If Message.Question("Se borrarán los créditos actuales ¿Continuar?", "Borrar cŕeditos actuales", "Cancelar") = 1 Then
+    FMain.$decCredito(DataControl.Credito)
+    LoadCreditsNow
+  Endif
+
+End
+
+Public Sub AddCredits_Click()
+
+  If DataControl.Credito < 20 Then
+    FMain.$addCredito()
+    LoadCreditsNow
+  Endif
+
+End
+
+Public Sub keysbttn_Click()
+  
+  FKeyCapture.keytype = Last.Name
+  FKeyCapture.Show
+  
+End
+
+Public Sub AjustWindowCheckBox_Click()
+
+  DataControl.FullScreen = Last.Value
+
+End
+
+Public Sub HiddenPointerCheckBox_Click()
+
+  DataControl.HideCursor = Last.Value
+
+End
+
+Public Sub PABttn_Click()
+
+  Shell "pavucontrol"
+
+End
+
+Public Sub PAPref_Click()
+
+  Shell "paprefs"
+  If Not Exist(User.Home &/ ".config") Then Mkdir User.Home &/ ".config"
+  If Not Exist(User.Home &/ ".config/pulse") Then Mkdir User.Home &/ ".config/pulse"
+  If Not Exist(User.Home &/ ".config/pulse/default.pa") Then Copy "/usr/share/skmjukebox/default.pa" To User.Home &/ ".config/pulse/"
+
+End
+
+Public Sub PARestart_Click()
+
+  Shell "pulseaudio -k"
+
+End
+
+Public Sub ReportBttn_Click()
+
+  FReport.Show
+
+End
+
+Public Sub SkinMenu_Change()
+
+  DataControl.SkinTheme = SkinMenu.Text
 
 End

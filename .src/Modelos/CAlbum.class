@@ -18,12 +18,14 @@
 ' 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
 Event Click
+
 Private CoverPicture As PictureBox
 Private CoverPath As String
 Private TitleLabel As TextLabel
 Private SongsLabel As TextLabel
 Private NumberAlbum As TextLabel
 Private GeneroAlbum As String
+Private $ViewList As Boolean
 Property Cover As String ''Establece o retorna el nombre de portada del album
 Property Title As String ''Establece o retorna el nombre de album
 Property Songs As Integer ''Establece o retorna el numero de canciones en el album
@@ -34,6 +36,7 @@ Property XPos As Integer ''Establece la posicion en coordenadas X del control
 Property YPos As Integer ''Establece la posicion en coordenadas Y del control
 Property Visible As Boolean ''Establece la visibilidad del objeto
 Property Genero As String ''Establece el Genero del album
+Property ViewList As Boolean ''Estalece el tipo de ordenamiento para el control
 Property AlbumNameText As TextLabel
 Property AlbumNumText As TextLabel
 Property AlbumSongsText As TextLabel
@@ -138,10 +141,15 @@ End
 
 Private Sub SizeW_Write(Value As Integer)
 
-  CoverPicture.W = Value - 5
-  TitleLabel.W = Value - 2
-  SongsLabel.W = Value - 2
-  NumberAlbum.W = Value - 10 ' / 2
+  If $ViewList = False Then
+    CoverPicture.W = Value - 5
+    TitleLabel.W = Value - 2
+    SongsLabel.W = Value - 2
+    NumberAlbum.W = Value - 10 ' / 2
+  Else
+    
+  Endif
+  
 
 End
 
@@ -153,10 +161,14 @@ End
 
 Private Sub SizeH_Write(Value As Integer)
 
-  CoverPicture.H = Value - 5
-  TitleLabel.H = Value / 10 - 2
-  SongsLabel.H = TitleLabel.H
-  NumberAlbum.H = TitleLabel.H
+  If $ViewList = False Then
+    CoverPicture.H = Value - 5
+    TitleLabel.H = Value / 10 - 2
+    SongsLabel.H = TitleLabel.H
+    NumberAlbum.H = TitleLabel.H
+  Else
+    
+  Endif
 
 End
 
@@ -168,11 +180,15 @@ End
 
 Private Sub XPos_Write(Value As Integer)
 
-  CoverPicture.X = Value
-  TitleLabel.X = Value
-  SongsLabel.X = Value
-  NumberAlbum.X = Value + 5
-
+  If $ViewList = False Then
+    CoverPicture.X = Value
+    TitleLabel.X = Value
+    SongsLabel.X = Value
+    NumberAlbum.X = Value + 5
+  Else
+    
+  Endif
+  
 End
 
 Private Function YPos_Read() As Integer
@@ -183,11 +199,15 @@ End
 
 Private Sub YPos_Write(Value As Integer)
 
-  CoverPicture.Y = Value
-  TitleLabel.Y = CoverPicture.H + Value
-  SongsLabel.Y = TitleLabel.Y + TitleLabel.H
-  NumberAlbum.Y = Value - 15
-
+  If $ViewList = False Then
+    CoverPicture.Y = Value
+    TitleLabel.Y = CoverPicture.H + Value
+    SongsLabel.Y = TitleLabel.Y + TitleLabel.H
+    NumberAlbum.Y = Value - 15
+  Else
+  
+  Endif
+  
 End
 
 Public Sub ImgClear()
@@ -258,5 +278,17 @@ End
 Private Sub AlbumSongsText_Write(Value As TextLabel)
 
   SongsLabel = Value
+
+End
+
+Private Function ViewList_Read() As Boolean
+
+  Return $ViewList
+
+End
+
+Private Sub ViewList_Write(Value As Boolean)
+
+  $ViewList = Value
 
 End
