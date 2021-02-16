@@ -30,7 +30,7 @@ Public Sub ConfigCreateDatabaseTables(hConn As Connection)
     .Fields.Add("CreditValue", db.Integer, 1)
     .Fields.Add("MasterVol", db.Integer, 3)
     .Fields.Add("FullScreen", db.Boolean)
-    .Fields.Add("ShowCursor", db.Boolean)
+    .Fields.Add("HideCursor", db.Boolean)
     .Fields.Add("ScreenSaver", db.Boolean)
     .Fields.Add("VideoOut", db.Boolean)
     .Fields.Add("RmtDelay", db.Float)
@@ -43,6 +43,7 @@ Public Sub ConfigCreateDatabaseTables(hConn As Connection)
     .Fields.Add("MaxVolKey", db.String, 1)
     .Fields.Add("MinVolKey", db.String, 1)
     .Fields.Add("Theme", db.String)
+    .Fields.Add("FtpEnable", db.Boolean)
     .Fields.Add("FtpHost", db.String)
     .Fields.Add("FtpUser", db.String)
     .Fields.Add("FtpPassword", db.String)
@@ -61,8 +62,8 @@ Public Sub ConfigCreateDatabaseTables(hConn As Connection)
   hResult["MoneyValue"] = 10
   hResult["CreditValue"] = 3
   hResult["MasterVol"] = 100
-  hResult["FullScreen"] = False
-  hResult["ShowCursor"] = False
+  hResult["FullScreen"] = True
+  hResult["HideCursor"] = True
   hResult["ScreenSaver"] = True
   hResult["VideoOut"] = True
   hResult["RmtDelay"] = 1
@@ -75,11 +76,12 @@ Public Sub ConfigCreateDatabaseTables(hConn As Connection)
   hResult["MaxVolKey"] = "*"
   hResult["MinVolKey"] = "/"
   hResult["Theme"] = "default"
+  hResult["FtpEnable"] = False
   hResult["FtpHost"] = "192.168.1.104"
   hResult["FtpUser"] = "pi"
   hResult["FtpPassword"] = "GFas5ctR6uY/2-:@"
   hResult["MusicDir"] = User.Home &/ "Música"
-  hResult["VideoDir"] = User.Home &/ "VideosTest"
+  hResult["VideoDir"] = User.Home &/ "Vídeos"
   hResult["KaraokeDir"] = User.Home &/ "Karaokes"
   hResult.Update
   hConn.Commit

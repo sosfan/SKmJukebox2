@@ -17,6 +17,9 @@
 '  this program; If Not, Write To the Free Software Foundation, Inc.,
 '  51 Franklin Street, Fifth Floor, Boston, MA 02110 - 1301 USA
 
+Event hMovie
+Event sMovie
+
 Private MatrizLed As PanelLed
 Private DataControl As New CData
 Private $bState As Boolean ''Estado del la reproducción
@@ -26,6 +29,7 @@ Private mPlayer As CPlayer
 Private hSkinPath As String
 Private hSkinTheme As Settings
 Private ResMovieBox As Timer
+Private sMovieBox As Boolean
 Private iCont As Short
 Private UploadSong As String
 Private UploadTimer As Timer
@@ -38,6 +42,8 @@ Property MatrizShow As Boolean
 Private hProcess As Process
 Private procStatus As Boolean
 Private VideoRes As String = "480"
+
+Property MovieBoxState As Boolean
 
  
 Public Sub _new()
@@ -64,7 +70,7 @@ Public Sub _new()
   UploadTimer.Delay = 10000
   
   AutoPlay = New Timer As "AutoPlay"
-  AutoPlay.Delay = 60000
+  AutoPlay.Delay = 1000
   AutoPlay.Start
 
   MessageText = "Bienvenidos a su lugar preferido"
@@ -73,34 +79,28 @@ Public Sub _new()
   $bState = False
   upFailed = False
   PlayListSongs = DataControl.getAllPlaylist()
-  If PlayListSongs > 0 Then
-    Wait 3
-    mPlayer_ProcessEnd
-    $bState = True
-  Endif
   
 End
 
 Private Sub StopMatrizLed()
   
-  If DataControl.VideoOut = True Then MatrizLed.Stop
+  If DataControl.FtpEnable = True Then MatrizLed.Stop
   
 End
 
 Public Function AddPlay(sSong As Song)
   
-  If PlayListSongs = 0 And $bState = False And UploadState = False Then
+  If PlayListSongs = 0 And $bState = False And UploadState = False And procStatus = False Then
     If sSong.type = "vonline" Then
-      While procStatus = True
-        Wait 1
-      Wend
       procStatus = True
       hProcess = Exec ["youtube-dl", "-o", "/tmp/" & sSong.ID_video & ".mp4", "-f", "best[height<=?" & VideoRes & "]", "--no-check-certificate", "http://www.youtube.com/watch?v=" & sSong.ID_video] For Read As "hProcess"
       While procStatus = True
         Wait 1
+        Debug "Esperando..."
       Wend
+      Debug
       StopMatrizLed
-      If DataControl.VideoOut = True Then UploadState = True
+      If DataControl.FtpEnable = True Then UploadState = True
       mPlayer.Play(sSong.ID_video & ".mp4", "/tmp", "Video", True, "0")
       addMatrizLed("** Ahora sonando - " & Left$(sSong.name, -4) & "  **")
       SongPlaying = sSong.name
@@ -108,7 +108,7 @@ Public Function AddPlay(sSong As Song)
     Else
       StopMatrizLed
       DataControl.Skm_Modo = sSong.type
-      If DataControl.VideoOut = True Then UploadState = True
+      If DataControl.FtpEnable = True Then UploadState = True
       mPlayer.Play(sSong.name, DataControl.getWorkDir() &/ sSong.genre &/ sSong.album, DataControl.Skm_Modo, True, sSong.cover)
       addMatrizLed("** Ahora sonando - " & Left$(sSong.name, -4) & " - " & sSong.album & " **")
       SongPlaying = sSong.name
@@ -118,7 +118,7 @@ Public Function AddPlay(sSong As Song)
     Inc PlayListSongs
     Debug
     DataControl.DBPlayList = sSong
-    If PlayListSongs = 1 And DataControl.VideoOut Then UploadTimer.Start
+    If PlayListSongs = 1 And DataControl.FtpEnable Then UploadTimer.Start
   Endif
   AutoPlay.Stop
   
@@ -170,12 +170,13 @@ Public Sub mPlayer_ProcessEnd()
     'Si el archivo esta en proceso de envio al servidor, esperar hasta que termine el proceso.
     While UploadState = True
       Wait 1
+      Debug "1"
     Wend
     
     'Si el archivo ya esta en el servidor se ignora el flag upState
     If sSong.name = UploadSong And upFailed = False Then upState = False
     StopMatrizLed
-    If DataControl.VideoOut = True Then UploadState = True
+    If DataControl.FtpEnable = True Then UploadState = True
     If sSong.type <> "vonline" Then
       mPlayer.Play(sSong.name, DataControl.getWorkDir() &/ sSong.genre &/ sSong.album, sSong.type, upState, sSong.cover)
       addMatrizLed("** Ahora sonando - " & sSong.album & " - " & Left$(sSong.name, -4) & " **")
@@ -185,9 +186,11 @@ Public Sub mPlayer_ProcessEnd()
         hProcess = Exec ["youtube-dl", "-o", "/tmp/" & sSong.ID_video & ".mp4", "-f", "best[height<=?" & VideoRes & "]", "--no-check-certificate", "http://www.youtube.com/watch?v=" & sSong.ID_video] For Read As "hProcess"
         While procStatus = True
           Wait 1
+          Debug "Esperando... "
         Wend
       Endif
       mPlayer.Play(sSong.ID_video & ".mp4", "/tmp", "Video", upState, "0")
+      Debug "ok"
       addMatrizLed("** Ahora sonando - " & Left$(sSong.name, -4) & " **")
     Endif
     If sSong.type = "Musica" Then 
@@ -196,7 +199,7 @@ Public Sub mPlayer_ProcessEnd()
     Endif
     SongPlaying = sSong.name
     Dec PlayListSongs
-    If PlayListSongs >= 1 And DataControl.VideoOut Then UploadTimer.Start
+    If PlayListSongs >= 1 And DataControl.FtpEnable Then UploadTimer.Start
   Else
     $bState = False
     HideMovie
@@ -217,9 +220,10 @@ Public Sub UploadTimer_Timer()
   Dim sSong As Song
   
   'Si la salida de video está desactivado entonces lo ignora.
-  If DataControl.VideoOut = False Then Return
+  If DataControl.FtpEnable = False Then Return
   If UploadState = True Then Return
-  
+  If procStatus = True Then Return
+    
   'Si el servidor se encuentra en proceso de reinicio, ignorar el envio automático.
   If mPlayer.ResProcess Then Return
   UploadTimer.Stop
@@ -268,6 +272,17 @@ Public Sub AutoPlay_Timer()
   Dim hResult As Result
   Dim sSong As New Song
   Dim skmodo As String
+  
+  '//Load Playlist
+  If AutoPlay.Delay = 1000 Then
+    If PlayListSongs > 0 Then
+      mPlayer_ProcessEnd
+      $bState = True
+    Endif
+    AutoPlay.Delay = 60000
+    Return
+  Endif
+  
   '//Automatic Play
   If TimeCont = 15 Then
     
@@ -358,6 +373,9 @@ Public Sub HideMovie()
   If SearchBoxShow = False Then MatrizLed.Show
   ResMovieBox.Start
   ResetResMovie
+  If SearchBoxShow = True Then
+    Raise hMovie
+  Endif
   
 End
 
@@ -366,6 +384,9 @@ Public Sub ResMovie()
   If mPlayer.VisibleMovieBox = False Then mPlayer.VisibleMovieBox = True
   MatrizLed.Hide
   ResMovieBox.Stop
+  If SearchBoxShow = True Then
+    Raise sMovie
+  Endif
   
 End
 
@@ -384,12 +405,17 @@ End
 Public Sub mPlayer_MovieBoxVisible()
   
   MatrizLed.Hide
+  sMovieBox = True
+  If SearchBoxShow = True Then
+    Raise sMovie
+  Endif
   
 End
 
 Public Sub mPlayer_MovieBoxHide()
   
   MatrizLed.Show
+  sMovieBox = False
   
 End
 
@@ -403,7 +429,7 @@ Public Sub ResMovieBox_Timer()
   
   Inc iCont
   
-  If iCont = 5 Then ResMovie
+  If iCont = 10 Then ResMovie
   
 End
 
@@ -422,5 +448,18 @@ End
 Private Sub MatrizShow_Write(Value As Boolean)
 
   MatrizLed.Visible = Value
+  Debug
+
+End
+
+Private Function MovieBoxState_Read() As Boolean
+
+  Return sMovieBox
+
+End
+
+Private Sub MovieBoxState_Write(Value As Boolean)
+
+  Debug Value
 
 End

@@ -32,7 +32,7 @@ Private STextSearch As String
 Private suggesMenu As ListBox
 Private CursorDelay As Timer
 Private MainReturn As Timer
-Private SecReturn As Integer = 200 ''Segundos que se tarda la ventana de busqueda en regresar al main
+Private SecReturn As Integer = 50 ''Segundos que se tarda la ventana de busqueda en regresar al main
 Private CursorShow As Boolean
 Private CursorCont As Byte
 Private ReturnCont As Byte
@@ -54,8 +54,11 @@ Private dataInfo As Variant
 Private ResultInfo As Variant
 Private hProcess As Process
 Private $buff As String
-Private $reintentos As Integer
+' Private $reintentos As Integer
 Private LoadAnimation As MovieBox
+
+Property CursorTimer As Boolean
+
 
 Public Sub _new()
   
@@ -552,6 +555,7 @@ Public Sub ResultSong_Click(sSong As Song)
   Else
     Raise addPlay(sSong)
   Endif
+  ReturnCont = 0
   
 End
 
@@ -611,6 +615,7 @@ Public Sub ResultAlbum_Click(tAlbum As Song)
     Next
   
   Next
+  ReturnCont = 0
   
 End
 
@@ -649,6 +654,10 @@ Public Sub HideSearch()
   TypeSearch = 1
   ModeSearch = 1
   SearchLabel.Text = "Buscar Por Título en Música"
+  With LoadAnimation
+    .Hide
+    .Playing = False
+  End With
   
 End
 
@@ -865,6 +874,7 @@ Public Sub suggesMenu_Select()
   TextSearch.text = UCase(Last.text)
   STextSearch = UCase(Last.text)
   suggesMenu.Visible = False
+  ReturnCont = 0
   If ModeSearch = 5 Then Buscar
 
 End
@@ -872,6 +882,7 @@ End
 Public Sub TextSearch_Change()
 
   suggesMenu.Hide
+  ReturnCont = 0
 
 End
 
@@ -944,3 +955,14 @@ Public Sub MainReturn_Timer()
   
 End
 
+Private Function CursorTimer_Read() As Boolean
+
+  Return CursorDelay.Enabled
+
+End
+
+Private Sub CursorTimer_Write(Value As Boolean)
+
+  CursorDelay.Enabled = Value
+
+End

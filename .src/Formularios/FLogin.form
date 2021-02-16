@@ -1,70 +1,79 @@
 # Gambas Form File 3.0
 
 { Form Form
-  MoveScaled(0,0,41,59)
+  Move(0,0,328,472)
+  #Scaled = False
   Visible = False
+  Background = Color.TooltipBackground
+  Mouse = Mouse.Cross
+  Text = ("Contraseña")
+  Icon = Picture["resource/icon.png"]
+  Resizable = False
+  SkipTaskbar = True
+  Opacity = 90
+  Transparent = True
   { siete Button
-    MoveScaled(1.4286,14,12,10)
+    Move(11,288,96,80)
     Font = Font["Monospace,Bold,20"]
     Text = ("7")
   }
   { ocho Button
-    MoveScaled(14.4286,14,12,10)
+    Move(115,288,96,80)
     Font = Font["Monospace,Bold,20"]
     Text = ("8")
   }
   { nueve Button
-    MoveScaled(27.4286,14,12,10)
+    Move(219,288,96,80)
     Font = Font["Monospace,Bold,20"]
     Text = ("9")
   }
   { cuatro Button
-    MoveScaled(1.4286,25,12,10)
+    Move(11,200,96,80)
     Font = Font["Monospace,Bold,20"]
     Text = ("4")
   }
   { cinco Button
-    MoveScaled(14.4286,25,12,10)
+    Move(115,200,96,80)
     Font = Font["Monospace,Bold,20"]
     Text = ("5")
   }
   { seis Button
-    MoveScaled(27.4286,25,12,10)
+    Move(219,200,96,80)
     Font = Font["Monospace,Bold,20"]
     Text = ("6")
   }
   { uno Button
-    MoveScaled(1.4286,36,12,10)
+    Move(11,112,96,80)
     Font = Font["Monospace,Bold,20"]
     Text = ("1")
   }
   { dos Button
-    MoveScaled(14.4286,36,12,10)
+    Move(115,112,96,80)
     Font = Font["Monospace,Bold,20"]
     Text = ("2")
   }
   { tres Button
-    MoveScaled(27.4286,36,12,10)
+    Move(219,112,96,80)
     Font = Font["Monospace,Bold,20"]
     Text = ("3")
   }
   { limpiar Button
-    MoveScaled(1.4286,47,12,10)
+    Move(11,376,96,80)
     Font = Font["Monospace,Bold,20"]
     Text = ("C")
   }
   { cero Button
-    MoveScaled(14.4286,47,12,10)
+    Move(115,376,96,80)
     Font = Font["Monospace,Bold,20"]
     Text = ("0")
   }
   { enter Button
-    MoveScaled(27.4286,47,12,10)
+    Move(219,376,96,80)
     Font = Font["Monospace,Bold,20"]
     Text = ("E")
   }
   { passbox TextBox
-    MoveScaled(7,4,28,6)
+    Move(56,32,224,48)
     ReadOnly = True
     Password = True
   }

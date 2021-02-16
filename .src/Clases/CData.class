@@ -22,7 +22,7 @@ Property MoneyValue As Integer
 Property CreditValue As Integer
 Property MasterVol As Integer
 Property FullScreen As Boolean
-Property ShowCursor As Boolean
+Property HideCursor As Boolean
 Property ScreenSaver As Boolean
 Property VideoOut As Boolean
 Property AutoPlay As Boolean
@@ -43,6 +43,7 @@ Property Skm_Modo As String ''Establece o retorna el modo de busqueda.
 Property DBPlayList As Song ''Establece o retorna un elemento a la PlayList en la base de datos.
 Property SkinTheme As String ''Establece o retorna el nombre de piel seleccionada.
 Property SkinPath As String ''Retorna el path de skins
+Property FtpEnable As Boolean
 Property FTPHost As String ''Retorna o establece la dirección del FTPServer cuando es usado para el envio de vídeos en TVOUT.
 Property FTPUser As String ''Retorna o establece el usuario establecido para la conexión en el FTPServer.
 Property FTPPassword As String '' Retorna o establece la contraseña para la conexión en el FTPerver.
@@ -256,18 +257,18 @@ Private Sub FullScreen_Write(Value As Boolean)
 
 End
 
-Private Function ShowCursor_Read() As Boolean
+Private Function HideCursor_Read() As Boolean
 
   Dim hResult As Result
   
-  hResult = hConn.Exec("select ShowCursor from config_data where id=1")
-  Return hResult["ShowCursor"]
+  hResult = hConn.Exec("select HideCursor from config_data where id=1")
+  Return hResult["HideCursor"]
 
 End
 
-Private Sub ShowCursor_Write(Value As Boolean)
+Private Sub HideCursor_Write(Value As Boolean)
 
-  hConn.Exec("update config_data set ShowCursor='" & Value & "' where id=1")
+  hConn.Exec("update config_data set HideCursor='" & Value & "' where id=1")
 
 End
 
@@ -342,7 +343,7 @@ End
 
 Private Sub MaxCreditKey_Write(Value As String)
 
-  hConn.Exec("update config_data set MaxCreditKey=" & Value & " where id=1")
+  hConn.Exec("update config_data set MaxCreditKey='" & Value & "' where id=1")
 
 End
 
@@ -357,7 +358,7 @@ End
 
 Private Sub MinCreditKey_Write(Value As String)
 
-  hConn.Exec("update config_data set MinCreditKey=" & Value & " where id=1")
+  hConn.Exec("update config_data set MinCreditKey='" & Value & "' where id=1")
 
 End
 
@@ -372,7 +373,7 @@ End
 
 Private Sub ConfigKey_Write(Value As String)
 
-  hConn.Exec("update config_data set ConfigKey=" & Value & " where id=1")
+  hConn.Exec("update config_data set ConfigKey='" & Value & "' where id=1")
 
 End
 
@@ -387,7 +388,7 @@ End
 
 Private Sub CancelKey_Write(Value As String)
 
-  hConn.Exec("update config_data set CancelKey=" & Value & " where id=1")
+  hConn.Exec("update config_data set CancelKey='" & Value & "' where id=1")
 
 End
 
@@ -402,7 +403,7 @@ End
 
 Private Sub MaxVolKey_Write(Value As String)
 
-  hConn.Exec("update config_data set MaxVolKey=" & Value & " where id=1")
+  hConn.Exec("update config_data set MaxVolKey='" & Value & "' where id=1")
 
 End
 
@@ -417,7 +418,7 @@ End
 
 Private Sub MinVolKey_Write(Value As String)
 
-  hConn.Exec("update config_data set MinVolKey=" & Value & " where id=1")
+  hConn.Exec("update config_data set MinVolKey='" & Value & "' where id=1")
 
 End
 
@@ -889,14 +890,14 @@ End
 
 Private Sub SkinTheme_Write(Value As String)
 
-  hConn.Exec("update config_data set Theme=" & Value & " where id=1")
+  hConn.Exec("update config_data set Theme='" & Value & "' where id=1")
 
 End
 
 Private Function SkinPath_Read() As String
   
   Dim path As String
-  path = User.Home &/ "Skins/"
+  path = "/usr/share/skmjukebox/skins/"
   Return path
   
 End
@@ -905,6 +906,21 @@ Private Sub SkinPath_Write(Value As String)
   
   Debug Value
   
+End
+
+Private Function FtpEnable_Read() As Boolean
+
+  Dim hResult As Result
+  
+  hResult = hConn.Exec("select FtpEnable from config_data where id=1")
+  Return hResult["FtpEnable"]
+
+End
+
+Private Sub FtpEnable_Write(Value As Boolean)
+
+  hConn.Exec("update config_data set FtpEnable='" & Value & "' where id=1")
+
 End
 
 Private Function FTPHost_Read() As String
@@ -918,7 +934,7 @@ End
 
 Private Sub FTPHost_Write(Value As String)
 
-  hConn.Exec("update config_data set FtpHost=" & Value & " where id=1")
+  hConn.Exec("update config_data set FtpHost='" & Value & "' where id=1")
 
 End
 
@@ -949,6 +965,6 @@ End
 
 Private Sub FTPPassword_Write(Value As String)
 
-  hConn.Exec("update config_data set FtpPassword=" & sEncrypt.TextOfuscate(Value, True, "") & " where id=1")
+  hConn.Exec("update config_data set FtpPassword='" & sEncrypt.TextOfuscate(Value, True, "") & "' where id=1")
 
 End

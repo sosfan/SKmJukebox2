@@ -1,0 +1,21 @@
+# Gambas Form File 3.0
+
+{ Form Form
+  MoveScaled(0,0,64,68)
+  Resizable = False
+  { Button1 Button
+    MoveScaled(48,63,15,4)
+    Text = ("Cerrar")
+  }
+  { Panel1 Panel
+    MoveScaled(0.5,1,63,61)
+    Border = Border.Plain
+    { Label1 Label
+      MoveScaled(2,0,59,7)
+      Text = ("En esta lista se muestran los 10 ultimos movimientos.")
+    }
+    { ListResult ListBox
+      MoveScaled(2,7,59,52)
+    }
+  }
+}

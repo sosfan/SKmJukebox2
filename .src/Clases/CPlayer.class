@@ -46,6 +46,7 @@ Private hSkinPath As String
 Private hSkinTheme As Settings
 Private fifofile As File
 Private fifopath As String
+Private socketpath As String
 Private WaitFTP As Boolean
 Private FileIgnore As Boolean
 Private $mpv As Boolean
@@ -76,10 +77,12 @@ Public Sub _new()
   End With
   
   RmtSender = New CFtpSender As "RmtSender" 
-  If DataControl.VideoOut Then RmtSender.OpenConConnect
+  If DataControl.FtpEnable Then RmtSender.OpenConConnect
   '-----------Controlar MPlayer mediante fifo----------------
   ' Ruta del fifo
   fifopath = "/tmp/mplayerfifo"
+  
+  socketpath = "/tmp/mpvsocket"
   
   'Crear el fifo si no existe
   If Not Exist(fifopath) Then Exec ["mkfifo", fifopath] Wait
@@ -96,7 +99,7 @@ Public Sub Play(FileName As String, Path As String, tSong As String, SendFile As
   
   FilePath = Conv(Path &/ FileName, Desktop.Charset, System.Charset)
   
-  If DataControl.VideoOut Then
+  If DataControl.FtpEnable Then
     
     'Reproducción remota en TVOUT
     'Hay que esperar el tiempo para subir el archivo
@@ -183,7 +186,7 @@ Private Sub PlayAudio(sFilePath As String)
   $mpv = True
   HideMovieBox
   ' $hProcess = Exec ["mplayer", "-ao", "alsa", "-vo", "null", "-input", "file=" & fifopath, "-really-quiet", sFilePath] For Read Write As "Process"
-  $hProcess = Exec ["mpv", "--pause", "--vo=null", "--ao=alsa", "--input-file=" & fifopath, sFilePath] For Read Write As "Process"
+  $hProcess = Exec ["mpv", "--pause", "--vo=null", "--ao=alsa", "--input-ipc-server=" & socketpath, sFilePath] For Read Write As "Process"
   If WaitFTP Then
     ' PlayerPause
     WaitFTP = False
@@ -205,12 +208,24 @@ End
 
 Private Sub PlayVideo(sFilePath As String)
   
-  If $MovieBox.Visible = False Then $MovieBox.Visible = True
   WaitFTP = False
-  $hProcess = Exec ["mplayer", "-cache", "2048", "-ao", "alsa", "-vo", "x11", "-zoom", "-x", $MovieBox.W, "-y", $MovieBox.H, "-input", "file=" & fifopath, "-really-quiet", "-wid", $MovieBox.Handle, sFilePath] For Read Write As "Process"
+  If DataControl.VideoOut = True Then
+    HideMovieBox
+    $mpv = True
+    $hProcess = Exec ["mpv", "--pause", "--ao=alsa", "--fs", "--input-ipc-server=" & socketpath, "--geometry=1280x720+801+350", sFilePath] For Read Write As "Process"
+  Else
+    If $MovieBox.Visible = False Then $MovieBox.Visible = True
+    $mpv = False
+    $hProcess = Exec ["mplayer", "-cache", "2048", "-ao", "alsa", "-vo", "x11", "-zoom", "-x", $MovieBox.W, "-y", $MovieBox.H, "-input", "file=" & fifopath, "-really-quiet", "-wid", $MovieBox.Handle, sFilePath] For Read Write As "Process"
+    $MovieBox.Raise
+    Raise MovieBoxVisible
+  Endif
+  If DataControl.FtpEnable = True Then
+    Wait 2
+    RmtSender.ConSendSocket("<PAUSE>")
+    PlayerPause
+  Endif
   $pMonitor.Enabled = True
-  $MovieBox.Raise
-  Raise MovieBoxVisible
   
 End
 
@@ -236,7 +251,11 @@ Public Sub RmtSender_Send_Finish()
     RmtSender.ConSendSocket($rCover)
     Wait 0.3
   Endif
-  PlayAudio($rPath)
+  If DataControl.VideoOut = True Then
+    PlayVideo($rPath)
+  Else
+    PlayAudio($rPath)
+  Endif
   
 End
 
@@ -281,7 +300,7 @@ End
 
 Public Sub ReconSocket_Timer()
   
-  If DataControl.VideoOut = False Then Return
+  If DataControl.FtpEnable = False Then Return
   If ResState = True Then Return
   If RmtSender.ConStatus = False Then 
     Try RmtSender.OpenConConnect
@@ -299,7 +318,8 @@ Public Sub PlayerStop()
   RmtSender.ConSendSocket("<CANCEL>")
   Wait 0.2
   If $mpv = True Then
-    Print #fifofile, "stop"
+    ' Print #fifofile, "stop"
+    Shell "echo 'stop' | socat - " & socketpath
   Else
     Try Print #$hProcess, "q";
   Endif
@@ -317,7 +337,8 @@ End
 
 Public Sub PlayerPause()
   
-  Print #fifofile, "cycle pause"
+  ' Print #fifofile, "cycle pause"
+  Shell "echo 'cycle pause' | socat - " & socketpath
   
 End
 

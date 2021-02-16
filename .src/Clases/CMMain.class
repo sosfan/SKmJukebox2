@@ -32,7 +32,7 @@ Private Cover As CAlbum
 Private CoverDefault As String
 Private CoverList As CAlbum
 Private AlbumNameList As TextLabel
-Private Playlist As New CPlaylist
+Private Playlist As New CPlaylist As "Playlist"
 Private CSongList As Panel
 Private Song As TextLabel
 Private sSong As Song
@@ -56,6 +56,7 @@ Private hSkinTheme As Settings
 Private SelectAlbum As String
 Private SelectGenre As String
 Private SearchBox As CSearch
+Private SearchBoxShow As Boolean
 Private PageList As TextLabel
 Private GenreLabel As TextLabel
 Private CreditLbl As TextLabel
@@ -807,19 +808,23 @@ End
 Public Sub PanelSearchRaise()
   
   With SearchBox
-    Select .Visible
+    Select SearchBoxShow
       Case True
         HidePanelSearch
         VolMinusBttn.Show
         VolPlusBttn.Show
         Playlist.setPSearch(False)
-        Playlist.MatrizShow = True
+        If Playlist.MovieBoxState = False Then Playlist.MatrizShow = True
+        Debug Playlist.MovieBoxState
+        Debug SearchBoxShow
+        SearchBoxShow = False
       Case False
         ShowPanelSearch
         VolMinusBttn.Hide
         VolPlusBttn.Hide
         Playlist.setPSearch(True)
         Playlist.MatrizShow = False
+        SearchBoxShow = True
     End Select
   End With
   Debug
@@ -827,8 +832,9 @@ End
 
 Public Sub SearchBox_ReturnMain()
   
+  Playlist.setPSearch(False)
   PanelSearchRaise
-  Playlist.MatrizShow = True
+  SearchBoxShow = False
   InfoBox.Hide
   
 End
@@ -950,3 +956,16 @@ Public Sub NavKbd_PulseKey(Value As String)
   
 End
 
+Public Sub Playlist_hMovie()
+  
+  SearchBox.Visible = True
+  SearchBox.CursorTimer = True
+  
+End
+
+Public Sub Playlist_sMovie()
+  
+  SearchBox.Visible = False
+  SearchBox.CursorTimer = False
+  
+End

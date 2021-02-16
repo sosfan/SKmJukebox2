@@ -25,12 +25,7 @@ Private hKey As String
 Private keysd As Timer
 
 Public Sub _new()
-  
-  With Me
-    .Border = False
-    .FullScreen = DataControl.FullScreen
-  End With
-  
+
   keysd = New Timer As "keysd"
   keysd.Delay = 2
   
@@ -43,6 +38,9 @@ Public Sub _new()
   'Ajustar volumen
   Functions.Volumen = Functions.Volumen
   ' Wait 3
+
+  fullscreen_ajust
+  hidecursor
 
 End
 
@@ -65,9 +63,45 @@ Public Sub keysd_Timer()
 
 End
 
+Public Sub fullscreen_ajust()
+  
+  If DataControl.FullScreen Then
+    With Me
+      .Border = False
+      .FullScreen = True
+    End With
+  Else
+    With Me
+      .Border = False
+      .FullScreen = False
+    End With
+  Endif
+  
+End
+
+Public Sub hidecursor()
+  
+  Dim imgcur As Cursor
+  
+  If DataControl.HideCursor = True Then
+    imgcur = New Cursor(Picture["resource/null.png"])
+    Me.Mouse = Mouse.Custom
+    Me.Cursor = imgcur
+  Else
+    Me.Mouse = 0
+  Endif
+  
+End
+
 Public Sub $decCredito(Value As Integer)
   
   Functions.DecCredito(Value)
+  
+End
+
+Public Sub $addCredito()
+  
+  Functions.IncCredito
   
 End
 
@@ -101,7 +135,7 @@ Private Sub KeyDetect()
     Case DataControl.MaxCreditKey
       Functions.IncMaxCredito
     Case DataControl.MinCreditKey
-      Functions.IncCredito
+      $addCredito
     ' Case "+"
     '   Functions.FwList
     ' Case "-"
@@ -144,7 +178,6 @@ Public Sub LoginWin_ShowConf()
   Me.Hide
   
 End
-
 
 Public Sub Form_Close()
 

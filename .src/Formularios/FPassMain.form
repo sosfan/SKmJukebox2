@@ -3,6 +3,7 @@
 { Form Form
   MoveScaled(0,0,63,22)
   Visible = False
+  Icon = Picture["icon:/32/key"]
   { LabelMess Label
     MoveScaled(3,2,58,6)
     Font = Font["Droid Sans,9"]
