@@ -150,7 +150,6 @@ Private Sub SizeW_Write(Value As Integer)
     
   Endif
   
-
 End
 
 Private Function SizeH_Read() As Integer

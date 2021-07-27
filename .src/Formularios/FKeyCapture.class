@@ -31,6 +31,8 @@ Public Sub Form_KeyPress()
       DataControl.CancelKey = Key.Text
     Case "MaxCreditKey"
       DataControl.MaxCreditKey = Key.Text
+    Case "MaxCreditKey2"
+      DataControl.MaxCreditKey2 = Key.Text
     Case "MinCreditKey"
       DataControl.MinCreditKey = Key.Text
     Case "MaxVolKey"

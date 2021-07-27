@@ -23,6 +23,7 @@ Private $NumberPos As New Integer[10]
 Private $hResult As Result
 Private PageView As Integer ''Contador de pagina
 Private rslCont As Integer ''Contador de posicion
+Private Mon2 As Short ''Contador de moneda Monedero 2
 Property Skm_Modo As String ''Establece o retorna el modo seleccionado.
 Property Volumen As Integer ''Establece o retorna el valor de volumen.
 
@@ -55,7 +56,11 @@ Private Sub SetVolMaster(PercentVol As Integer)
   
   'Modo Raspberry Pi se utiliza amixer en lugar de pulseaudio
   If Application.Args[1] = "-pimode" Then
-    Shell "amixer -q set PCM " & PercentVol & "%"
+    ' Shell "amixer -q set PCM " & PercentVol & "%"
+    'armbian ubuntu usa DAC en vez de PCM
+    Shell "amixer -q set DAC " & PercentVol & "%"
+    'raspbian usa Master en vez de PCM
+    Shell "amixer -q set Master " & PercentVol & "%"
   Else
     'Script para pulseaudio
     Shell "pavol percent " & PercentVol & "%"
@@ -157,6 +162,13 @@ Public Sub BkList()
     Else
       PageView = 1
       $hResult.MoveFirst
+    Endif
+    Debug PageView
+    
+    If PageView = 1 Then 
+      PageView = CInt(TotalAlbums / 10)
+      rslCont = rslCont - 10
+      $hResult.MoveTo(rslCont)
     Endif
     
   Endif
@@ -285,6 +297,53 @@ Public Sub IncMaxCredito()
   i = DataControl.Credito + DataControl.CreditValue
   DataControl.Credito = i
   DataControl.Total_credito = DataControl.Total_credito + 1
+  $CMain.SetLblCredito(i)
+  
+End
+
+Public Sub IncMaxCredito2()
+  
+  Dim i As Integer
+  Inc Mon2
+  
+  Select Mon2
+  
+  Case 1
+    i = DataControl.Credito + DataControl.CreditValue2
+  Case 2
+    If DataControl.CreditValue2_2 = 0 Then 
+      Mon2 = 0
+      i = DataControl.Credito + DataControl.CreditValue2
+    Else 
+      i = DataControl.Credito + DataControl.CreditValue2_2
+    Endif 
+  Case 3
+    If DataControl.CreditValue2_3 = 0 Then 
+      Mon2 = 1
+      i = DataControl.Credito + DataControl.CreditValue2
+    Else 
+      i = DataControl.Credito + DataControl.CreditValue2_3
+    Endif 
+  Case 4
+    If DataControl.CreditValue2_4 = 0 Then 
+      Mon2 = 1
+      i = DataControl.Credito + DataControl.CreditValue2
+    Else 
+      i = DataControl.Credito + DataControl.CreditValue2_4
+    Endif 
+  Case 5
+    If DataControl.CreditValue2_5 = 0 Then 
+      Mon2 = 1
+      i = DataControl.Credito + DataControl.CreditValue2
+    Else 
+      Mon2 = 0
+      i = DataControl.Credito + DataControl.CreditValue2_5
+    Endif 
+  End Select
+  
+  
+  DataControl.Credito = i
+  DataControl.Total_credito2 = DataControl.Total_credito2 + 1
   $CMain.SetLblCredito(i)
   
 End

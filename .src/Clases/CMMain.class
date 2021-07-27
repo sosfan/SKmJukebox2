@@ -16,7 +16,7 @@
 ' You should have received a copy of the GNU General Public License along with
 ' this program; if not, write to the Free Software Foundation, Inc.,
 ' 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
-Fast
+' Fast
 Inherits Panel
 
 Event ForwardKey
@@ -42,9 +42,11 @@ Private Navigator As CKey
 Private SearchBttn As CKey
 Private ChangeBttn As CKey
 Private GenreBttn As CKey
+Private CancelSongBttn As CKey
 Private VolPlusBttn As CKey
 Private VolMinusBttn As CKey
 Private Navigators As New Object[]
+Private ListNavigators As New Object[]
 Private sAlbums As New Integer[10]
 Private idAlbum As Integer
 Private TotalAlbums As Integer
@@ -60,10 +62,13 @@ Private SearchBoxShow As Boolean
 Private PageList As TextLabel
 Private GenreLabel As TextLabel
 Private CreditLbl As TextLabel
+Private VolPercentBar As TextLabel
 Private PlayAllSongs As PictureBox
 Private InfoBox As CPanel
 Private NavKbd As CNavKbd
 Private ReturnCovers As Timer
+Private HideVolPercentVar As Timer
+Private HideCont As Integer
 Private ReturnCont As Integer
 
 Property Skm_Modo As String ''Establece la cadena para identificar el modo de visualización del objeto. (Musica, Video, Karaoke)
@@ -100,10 +105,26 @@ Public Sub _new()
     Navigators.Add(Navigator)
   Next
   
+  'List Navigator
+  For i = 0 To 1
+    Navigator = New CKey(Me) As "ListNavigator"
+    With Navigator
+      .X = hSkinTheme["ListNav" & i & "/X"]
+      .Y = hSkinTheme["ListNav" & i & "/Y"]
+      .HKey = hSkinTheme["ListNav" & i & "/H"]
+      .WKey = hSkinTheme["ListNav" & i & "/W"]
+      .imgResPath = hSkinPath &/ hSkinTheme["Images/ListNav" & i]
+      .$idKey = "ListNav" & i
+      .Hide
+    End With
+    ListNavigators.Add(Navigator)
+  Next
+  
   'Botones
   SearchBttn = New CKey(Me) As "SearchBttn"
   ChangeBttn = New CKey(Me) As "ChangeBttn"
   GenreBttn = New CKey(Me) As "GenreBttn"
+  CancelSongBttn = New CKey(Me) As "CancelSongBttn"
   VolMinusBttn = New CKey(Me) As "VolMinusBttn"
   VolPlusBttn = New CKey(Me) As "VolPlusBttn"
   
@@ -140,6 +161,22 @@ Public Sub _new()
     
     SongList.Add(Song)
   Next
+  
+  VolPercentBar = New TextLabel(Me)
+  With VolPercentBar
+    .X = hSkinTheme["VolPercentBar/X"]
+    .Y = hSkinTheme["VolPercentBar/Y"]
+    .H = hSkinTheme["VolPercentBar/H"]
+    .W = hSkinTheme["VolPercentBar/W"]
+    .Font.Name = hSkinTheme["VolPercentBar/Font"]
+    .Font.Size = hSkinTheme["VolPercentBar/FontSize"]
+    .Foreground = CInt(hSkinTheme["VolPercentBar/Foreground"])
+    .Font.Bold = True
+    .Visible = False
+  End With
+  
+  HideVolPercentVar = New Timer As "HideVolPercentVar"
+  HideVolPercentVar.Delay = 1000
   
   PlayAllSongs = New PictureBox(Me) As "PlayAllSongs"
   'Timer para volver a Main principal de covers
@@ -208,6 +245,14 @@ Private Sub LoadThemeConfiguration()
     .imgResPath = hSkinPath &/ hSkinTheme["Images/GenreBttn"]
   End With
   
+  With CancelSongBttn
+    .X = hSkinTheme["CancelSongBttn/X"]
+    .Y = hSkinTheme["CancelSongBttn/Y"]
+    .WKey = hSkinTheme["CancelSongBttn/W"]
+    .HKey = hSkinTheme["CancelSongBttn/H"]
+    .imgResPath = hSkinPath &/ hSkinTheme["Images/CancelSongBttn"]
+  End With
+  
   With VolMinusBttn
     .X = hSkinTheme["VolMinusBttn/X"]
     .Y = hSkinTheme["VolMinusBttn/Y"]
@@ -257,6 +302,7 @@ Private Sub LoadThemeConfiguration()
     .W = hSkinTheme["PlayAllSongs/W"]
     .H = hSkinTheme["PlayAllSongs/H"]
     .Picture = Picture[hSkinPath &/ hSkinTheme["Images/PlayAllBttn"]]
+    .Stretch = True
     .Hide
   End With
 
@@ -362,7 +408,9 @@ End
 
 Private Sub AlbumShow()
   
-  Dim hResult As Result, i As Byte
+  Dim hResult As Result, i As Byte, workdir As String
+  
+  workdir = DataControl.getWorkDir()
   
   'Si llega al final de los albumnes hace el calculo de cuanto mostrar.
   For i = 0 To 9
@@ -372,7 +420,7 @@ Private Sub AlbumShow()
           If hResult["Cover_name"] = "0" Then
             .cover = CoverDefault
           Else
-            .Cover = DataControl.getWorkDir() &/ hResult["Genero"] &/ hResult["Album"] &/ hResult["Cover_name"]
+            .Cover = workdir &/ hResult["Genero"] &/ hResult["Album"] &/ hResult["Cover_name"]
           Endif
           .Title = hResult["Album"]
           .Songs = hResult["Total_songs"]
@@ -437,7 +485,7 @@ Private Sub PlayAll()
     For i = 1 To 4
       Select idPos
         Case jmpPos + 1 To i * 25
-          Debug
+          ' Debug
           SongID = hResult["Songsid" & i]
           jmpPos = (i * 25) - 25
           Break
@@ -449,10 +497,10 @@ Private Sub PlayAll()
       .id = $Result["id"]
       Debug
       .idsong = idPos - jmpPos
-      .name = $Result["N" & sSong.idsong]
+      .name = $Result["N" & $sSong.idsong]
     End With
-    ' Playlist.addPlay($sSong)
-    ' Print "id= " & $sSong.idsong & " --- " & sSong.name
+    Playlist.addPlay($sSong)
+    Print "id= " & $sSong.idsong & " --- " & $sSong.name
     Wait 0.3
   Next
   ' DataControl.setPlayHistory(idAlbum)
@@ -538,8 +586,9 @@ Public Sub Song_MouseDown()
   sSong = New Song
   With sSong
     .album = hResult["Album"]
+    .idalbum = hResult["id"]
     .genre = hResult["Genero"]
-    .type = DataControl.Skm_Modo
+    .type = LCase(DataControl.Skm_Modo)
     .cover = hResult["Cover_name"]
   End With
   
@@ -562,6 +611,7 @@ Public Sub Song_MouseDown()
   
   ReturnCont = 0
   InfoBox.MessageType("1")
+  InfoBox.loadMusicInfo(sSong)
   InfoBox.Show
   
 End
@@ -569,7 +619,7 @@ End
 Private Sub PlaySelectSong()
   
   FMain.$decCredito(1)
-  DataControl.setPlayHistory(idAlbum)
+  If sSong.id <> 0 Then DataControl.setPlayHistory(sSong)
   Playlist.addPlay(sSong)
   ResetResMovie
   
@@ -585,6 +635,7 @@ Public Sub SearchBox_addPlay(Value As Song)
   sSong = Value
   idAlbum = Value.id
   InfoBox.MessageType("1")
+  InfoBox.loadMusicInfo(Value)
   InfoBox.Show
   
 End
@@ -691,6 +742,12 @@ Private Sub ShowSelectAlbum()
   CSongList.Show
   Navigators[2].Show
   
+  If TotalSongs > 30 Then 
+    For i = 0 To 1
+      ListNavigators[i].Show
+    Next
+  Endif 
+  
 End
 
 Private Sub HideSelectAlbum()
@@ -707,6 +764,9 @@ Private Sub HideSelectAlbum()
   ' ScrollList.Visible = False
   CSongList.Hide
   Navigators[2].Hide
+  For i = 0 To 1
+    ListNavigators[i].Hide
+  Next
   
 End
 
@@ -780,6 +840,18 @@ Public Sub Navigator_PulseKey()
   
 End
 
+Public Sub ListNavigator_PulseKey()
+  
+  Select Last.$idKey
+    Case "ListNav0"
+      
+    Case "ListNav1"
+    
+  End Select
+  
+End
+
+
 Private Sub ResetResMovie()
   
   'Poner a cero el contador de visibilidad para el MovieBox
@@ -811,6 +883,7 @@ Public Sub PanelSearchRaise()
     Select SearchBoxShow
       Case True
         HidePanelSearch
+        CancelSongBttn.Show
         VolMinusBttn.Show
         VolPlusBttn.Show
         Playlist.setPSearch(False)
@@ -820,6 +893,7 @@ Public Sub PanelSearchRaise()
         SearchBoxShow = False
       Case False
         ShowPanelSearch
+        CancelSongBttn.Hide
         VolMinusBttn.Hide
         VolPlusBttn.Hide
         Playlist.setPSearch(True)
@@ -836,6 +910,7 @@ Public Sub SearchBox_ReturnMain()
   PanelSearchRaise
   SearchBoxShow = False
   InfoBox.Hide
+  Debug 
   
 End
 
@@ -891,15 +966,53 @@ Public Sub GenreBttn_PulseKey()
   
 End
 
+Public Sub CancelSongBttn_PulseKey()
+  
+  CancelSong
+  
+End
+
 Public Sub VolMinusBttn_PulseKey()
   
   Raise VolMinus
+  DrawVolPercentBar(DataControl.MasterVol)
   
 End
 
 Public Sub VolPlusBttn_PulseKey()
   
   Raise VolPlus
+  DrawVolPercentBar(DataControl.MasterVol)
+  
+End
+
+Private Sub DrawVolPercentBar(Value As Integer)
+  
+  Dim i As Integer, Bar As String
+  VolPercentBar.text = ""
+  For i = 0 To Value Step 5
+    If i > 0 Then
+      Bar = Bar & "|||"
+    Endif 
+  Next
+  With VolPercentBar
+    .Text = Bar
+    .Show
+    .Raise
+  End With
+  HideCont = 0
+  HideVolPercentVar.Start
+  
+End
+
+Public Sub HideVolPercentVar_Timer()
+  
+  Inc HideCont
+  If HideCont > 3 Then 
+    VolPercentBar.Hide
+    HideVolPercentVar.Stop 
+    HideCont = 0
+  Endif
   
 End
 

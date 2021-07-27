@@ -37,6 +37,7 @@ Public Sub _new()
   
   'Ajustar volumen
   Functions.Volumen = Functions.Volumen
+  Shell "pavol unmute"
   ' Wait 3
 
   fullscreen_ajust
@@ -46,12 +47,18 @@ End
 
 Public Sub Form_KeyPress()
   
+  If Key.Code = Key.AltKey Then 
+    'Pir module
+    Return 
+  Endif
+  
   hKey = key.Text
   
 End
 
 Public Sub Form_KeyRelease()
   
+  If Key.Code = Key.AltKey Then Return 
   keysd.Start
   
 End
@@ -76,6 +83,8 @@ Public Sub fullscreen_ajust()
       .FullScreen = False
     End With
   Endif
+  
+  Functions.ReloadList
   
 End
 
@@ -134,6 +143,8 @@ Private Sub KeyDetect()
   Select hKey
     Case DataControl.MaxCreditKey
       Functions.IncMaxCredito
+    Case DataControl.MaxCreditKey2
+      Functions.IncMaxCredito2
     Case DataControl.MinCreditKey
       $addCredito
     ' Case "+"
@@ -142,10 +153,10 @@ Private Sub KeyDetect()
     '   Functions.BkList
     Case DataControl.CancelKey
       Functions.CancelSong
-    ' Case DataControl.MaxVolKey
-    '   Functions.Volumen = Functions.Volumen + 5
-    ' Case DataControl.MinVolKey
-    '   Functions.Volumen = Functions.Volumen - 5
+    Case DataControl.MaxVolKey
+      Functions.Volumen = Functions.Volumen + 5
+    Case DataControl.MinVolKey
+      Functions.Volumen = Functions.Volumen - 5
     ' Case "v"
     '   Select Functions.Skm_Modo
     '     Case "Musica"
@@ -183,4 +194,20 @@ Public Sub Form_Close()
 
   Quit
 
+End
+
+Public Sub Form_Deactivate()
+  
+  If Object.IsValid(LoginWin) = False Then 
+    If FMain.Visible = True Then 
+      FMain.Show
+    Endif
+  Else
+    Return
+  Endif
+  
+  If FMain.Visible = True Then 
+    FMain.Show
+  Endif
+  
 End

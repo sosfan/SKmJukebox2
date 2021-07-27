@@ -24,11 +24,43 @@ Event MovieBox_click
 Event UploadFinish
 Event UploadFailed
 
+Private inst As Pointer
+Private mp As Pointer
+Private m As Pointer
+
+Library "libvlc:5"
+
+Private Enum libvlc_NothingSpecial = 0,
+  libvlc_Opening,
+  libvlc_Buffering,
+  libvlc_Playing,
+  libvlc_Paused,
+  libvlc_Stopped,
+  libvlc_Ended,
+  libvlc_Error
+  
+Private Extern libvlc_new(argc As Integer, argv As String) As Pointer
+Private Extern libvlc_media_new_path(p_instance As Pointer, path As String) As Pointer
+Private Extern libvlc_media_player_new_from_media(p_md As Pointer) As Pointer
+Private Extern libvlc_media_player_set_xwindow(p_mi As Pointer, drawable As Integer)
+Private Extern libvlc_media_player_play(p_mi As Pointer) As Integer
+Private Extern libvlc_media_player_stop(p_mi As Pointer)
+' Private Extern libvlc_media_player_get_length(p_mi As Pointer, l_ex As Pointer) As Integer
+' Private Extern libvlc_media_player_get_time(p_mi As Pointer) As Integer
+Private Extern libvlc_media_player_get_state(p_mi As Pointer) As Integer
+' Private Extern libvlc_media_player_release(p_mi As Pointer)
+Private Extern libvlc_release(p_instance As Pointer)
+' Private Extern libvlc_media_player_pause(p_mi As Pointer)
+Private Extern exitus(status As Integer) In "libc:6" Exec "exit"
+
+
 Property VisibleMovieBox As Boolean ''Habilita o deshabilita la visibilidad del MovieBox.
 Property mpControl As Boolean ''Muestra el estado del timer.
 Property upProcess As Boolean ''Muestra el estado del envio ftp.
 Property ResProcess As Boolean ''Muestra si el servidor se encuentra en proceso de reinicio.
+Property PlayProcess As Boolean ''Muestra el estado de la reproducción.
 
+Private $PlayProcess As Boolean
 Private $upProcess As Boolean
 Private DataControl As New CData
 Private RmtSender As CFtpSender
@@ -50,6 +82,7 @@ Private socketpath As String
 Private WaitFTP As Boolean
 Private FileIgnore As Boolean
 Private $mpv As Boolean
+Private $vlc As Boolean
 
 Public Sub _new()
   
@@ -89,6 +122,8 @@ Public Sub _new()
   
   'Abrir fifo de entrada para mplayer
   fifofile = Open fifopath For Write Append
+  
+  Shell "mpv --version" Wait
   
   Wait 1
   
@@ -142,7 +177,7 @@ Public Sub Play(FileName As String, Path As String, tSong As String, SendFile As
     Endif
   Else
     recnormal:
-    If tSong = "Musica" Then
+    If tSong = "musica" Then
       PlayAudio(FilePath)
     Else
       PlayVideo(FilePath)
@@ -183,22 +218,15 @@ Private Sub PlayAudio(sFilePath As String)
   If Object.IsValid($hProcess) Then 
     If $hProcess.State = $hProcess.Running Then Return
   Endif
-  $mpv = True
+  $mpv = False
+  $PlayProcess = True
   HideMovieBox
-  ' $hProcess = Exec ["mplayer", "-ao", "alsa", "-vo", "null", "-input", "file=" & fifopath, "-really-quiet", sFilePath] For Read Write As "Process"
-  $hProcess = Exec ["mpv", "--pause", "--vo=null", "--ao=alsa", "--input-ipc-server=" & socketpath, sFilePath] For Read Write As "Process"
+  $hProcess = Exec ["mplayer", "-vo", "null", "-input", "file=" & fifopath, "-really-quiet", sFilePath] For Read Write As "Process"
+  ' $hProcess = Exec ["mpv", "--pause", "--vo=null", "--ao=alsa", "--input-ipc-server=" & socketpath, sFilePath] For Read Write As "Process"
+  Wait 3
   If WaitFTP Then
-    ' PlayerPause
     WaitFTP = False
-    ' If $rType = "Musica" Then 
-    '   Wait 2
-    ' Else
-    '   Wait 2
-    ' Endif
     Wait 1
-    
-    ' If Right(sFilePath, 3) = "m4a" Then
-    ' PlayerSeek
     RmtSender.ConSendSocket("<PAUSE>")
   Endif
   PlayerPause
@@ -209,6 +237,7 @@ End
 Private Sub PlayVideo(sFilePath As String)
   
   WaitFTP = False
+  $PlayProcess = True
   If DataControl.VideoOut = True Then
     HideMovieBox
     $mpv = True
@@ -216,25 +245,42 @@ Private Sub PlayVideo(sFilePath As String)
   Else
     If $MovieBox.Visible = False Then $MovieBox.Visible = True
     $mpv = False
-    $hProcess = Exec ["mplayer", "-cache", "2048", "-ao", "alsa", "-vo", "x11", "-zoom", "-x", $MovieBox.W, "-y", $MovieBox.H, "-input", "file=" & fifopath, "-really-quiet", "-wid", $MovieBox.Handle, sFilePath] For Read Write As "Process"
-    $MovieBox.Raise
+    ' $hProcess = Exec ["mplayer", "-cache", "2048", "-ao", "alsa", "-vo", "x11", "-zoom", "-x", $MovieBox.W, "-y", $MovieBox.H, "-input", "file=" & fifopath, "-really-quiet", "-wid", $MovieBox.Handle, sFilePath] For Read Write As "Process"
+    ' $MovieBox.Raise
+    
+    'libvlc5
+    $vlc = True
+    inst = libvlc_new(0, Null)
+    
+    m = libvlc_media_new_path(inst, sFilePath)
+    mp = libvlc_media_player_new_from_media(m)
+    libvlc_media_player_set_xwindow(mp, $MovieBox.Handle)
+    libvlc_media_player_play(mp)
+    
     Raise MovieBoxVisible
   Endif
+  Wait 2.5
   If DataControl.FtpEnable = True Then
-    Wait 2
+    Wait 1
     RmtSender.ConSendSocket("<PAUSE>")
-    PlayerPause
   Endif
+  PlayerPause
   $pMonitor.Enabled = True
   
 End
 
-' Public Sub Process_Read()
-'   
-'   Dim sData As String
-'   sData = Read #Last, -250
-'   
-' End
+Public Sub Process_Read()
+  
+  Dim sData As String
+  sData = Read #Last, -250
+  
+End
+
+Public Sub Process_Kill()
+  
+  $PlayProcess = False
+  
+End
 
 Public Sub RmtSender_Send_Finish()
   
@@ -287,14 +333,29 @@ End
 
 Public Sub $pMonitor_Timer()
   
-  If $hProcess.State = Process.Stopped And WaitFTP = False Then
-    'Matar el proceso en el servidor
-    RmtSender.ConSendSocket("<ENDFILE>")
-    Wait 0.5
-    'Dispara el evento
-    Raise ProcessEnd
+  If $vlc = False Then 
     
-  Endif
+    If $hProcess.State = Process.Stopped And WaitFTP = False Then
+      'Matar el proceso en el servidor
+      RmtSender.ConSendSocket("<ENDFILE>")
+      Wait 0.5
+      'Dispara el evento
+      Raise ProcessEnd
+      
+    Endif
+    
+  Else 
+    
+    If libvlc_media_player_get_state(mp) = libvlc_Ended Then 
+      $vlc = False
+      $pMonitor.Stop
+      libvlc_media_player_stop(mp)
+      libvlc_release(inst)
+      Raise ProcessEnd
+      Process_Kill
+    Endif
+    
+  Endif 
   
 End
 
@@ -311,6 +372,15 @@ Public Sub ReconSocket_Timer()
 End
 
 Public Sub PlayerStop()
+  
+  If $vlc = True And $PlayProcess = True Then 
+    $vlc = False
+    $pMonitor.Stop
+    libvlc_media_player_stop(mp)
+    libvlc_release(inst)
+    Raise ProcessEnd
+    Process_Kill
+  Endif
   
   If Not $hProcess Then Return
   If Not $hProcess.State = Process.Running Then Return
@@ -338,7 +408,9 @@ End
 Public Sub PlayerPause()
   
   ' Print #fifofile, "cycle pause"
-  Shell "echo 'cycle pause' | socat - " & socketpath
+  Debug
+  ' Wait 0.5
+  If $mpv Then Shell "echo 'cycle pause' | socat - " & socketpath
   
 End
 
@@ -411,5 +483,17 @@ End
 Private Sub ResProcess_Write(Value As Boolean)
 
   ResState = Value
+
+End
+
+Private Function PlayProcess_Read() As Boolean
+
+  Return $PlayProcess
+
+End
+
+Private Sub PlayProcess_Write(Value As Boolean)
+
+  $PlayProcess = Value
 
 End

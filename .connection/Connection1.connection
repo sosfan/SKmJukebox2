@@ -1,0 +1,11 @@
+[Connection]
+Type="sqlite"
+Path="~"
+NoPassword=False
+RememberPassword=False
+IgnoreCharset=False
+DisplayMetadata=False
+RememberTemplate=False
+Database="music_db.sqlite"
+Requests=["select * from mp3playhistory union select * from videoplayhistory union select * from karaokeplayhistory order by Contador ASC Limit 30","/* Nueva consulta */\nSelect C.id, Album, Cover_name, Genero, Tipo, N1 From album_id C, mp3 O Where(C.Songsid1 = O.id Or C.Songsid2 = O.id Or C.Songsid3 = O.id Or C.Songsid4 = O.id) And replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(N1,'Á','A'),'á','a'),'É','E'),'é','e'),'Í','I'),'í','i'),'Ó','O'),'ó','o'),'Ú','U'),'ú','u')  Like '%LOS%'"]
+
