@@ -5,7 +5,6 @@
   #Scaled = False
   Text = ("Configuración")
   Resizable = False
-  Border = False
   { TopBanner PictureBox
     Move(0,0,602,28)
     Picture = Picture["resource/topbanner.png"]
@@ -14,29 +13,37 @@
   { IconPanel1 IconPanel
     Move(7,7,588,427)
     Font = Font["10"]
-    Count = 7
+    Count = 10
     Border = True
     Index = 0
     Text = ("Opciones")
     Picture = Picture["icon:/32/options"]
     { OptionWinInfoLabel Label
-      Move(14,38,276,18)
+      Move(14,29,276,18)
       Text = ("Opciones de la ventana principal.")
     }
     { AjustWindowCheckBox CheckBox
-      Move(32,64,462,24)
+      Move(32,54,462,24)
       Text = ("Ajustar la ventana a pantalla completa. (Por defecto activo)")
     }
     { HiddenPointerCheckBox CheckBox
-      Move(32,96,462,24)
+      Move(32,86,462,24)
       Text = ("Ocultar la posición del cursor. (Por defecto activo)")
     }
     { SkinMenu ComboBox
-      Move(168,175,147,35)
+      Move(168,119,144,32)
     }
     { Label25 Label
-      Move(35,178,112,28)
+      Move(24,120,112,28)
       Text = ("Skin seleccionada")
+    }
+    { Label29 Label
+      Move(24,156,208,24)
+      Text = ("Mensaje en el Scroll de texto.")
+    }
+    { ScrollStrBox TextArea
+      Move(24,188,376,48)
+      Wrap = True
     }
     Index = 1
     Text = ("Rutas y BD")
@@ -59,18 +66,18 @@
     }
     { Label1 Label
       Move(42,385,98,14)
-      Text = ("Música")
       Alignment = Align.Center
+      Text = ("Música")
     }
     { Label2 Label
       Move(161,385,105,14)
-      Text = ("Vídeos")
       Alignment = Align.Center
+      Text = ("Vídeos")
     }
     { Label3 Label
       Move(287,385,105,14)
-      Text = ("Karaokes")
       Alignment = Align.Center
+      Text = ("Karaokes")
     }
     { MusicDirBox DirBox
       Move(35,147,364,28)
@@ -113,15 +120,15 @@
     }
     { MinCreditKey Button keysbttn
       Name = "MinCreditKey"
-      Move(96,160,40,40)
+      Move(98,213,40,40)
     }
     { MaxVolKey Button keysbttn
       Name = "MaxVolKey"
-      Move(96,216,40,40)
+      Move(97,266,40,40)
     }
     { MinVolKey Button keysbttn
       Name = "MinVolKey"
-      Move(96,272,40,40)
+      Move(97,322,40,40)
     }
     { Label12 Label
       Move(144,52,224,32)
@@ -129,26 +136,34 @@
     }
     { Label13 Label
       Move(144,108,224,32)
-      Text = ("Monedero")
+      Text = ("Monedero 1")
     }
     { Label14 Label
-      Move(144,164,224,32)
+      Move(146,217,224,32)
       Text = ("1 Crédito (depuración)")
     }
     { Label15 Label
-      Move(144,220,224,32)
+      Move(145,270,224,32)
       Text = ("Subir volumen")
     }
     { Label16 Label
-      Move(144,276,224,32)
+      Move(145,326,224,32)
       Text = ("Bajar volumen")
     }
     { ConfigKey Button
-      Move(96,328,40,40)
+      Move(97,378,40,40)
     }
     { Label17 Label
-      Move(144,328,224,40)
+      Move(145,378,224,40)
       Text = ("Abrir ventana de configuración")
+    }
+    { Label28 Label
+      Move(145,165,224,32)
+      Text = ("Monedero 2")
+    }
+    { MaxCreditKey2 Button keysbttn
+      Name = "MaxCreditKey2"
+      Move(97,161,40,40)
     }
     Index = 3
     Text = ("Audio")
@@ -161,8 +176,8 @@
     { Label22 Label
       Move(8,32,400,64)
       Foreground = Color.Blue
-      Text = ("Gestión avanzada del audio. \nUtilice el control de PulseAudio para gestionar los volumenes\ndel sistema así como las diferentes salidas de audio disponibles.")
       Alignment = Align.Justify
+      Text = ("Gestión avanzada del audio. \nUtilice el control de PulseAudio para gestionar los volumenes\ndel sistema así como las diferentes salidas de audio disponibles.")
     }
     { PAPref Button
       Move(128,248,160,48)
@@ -172,8 +187,8 @@
     { Label23 Label
       Move(16,168,384,72)
       Foreground = Color.Blue
-      Text = ("Para habilitar el plugin de normalizado al vuelo, pulse el boton de\nprefencias de PulseAudio y active la opción \"Agregar un \ndispositivo de salida virtual para salida simultanea en todas las\nplacas de salida locales\"")
       Alignment = Align.Justify
+      Text = ("Para habilitar el plugin de normalizado al vuelo, pulse el boton de\nprefencias de PulseAudio y active la opción \"Agregar un \ndispositivo de salida virtual para salida simultanea en todas las\nplacas de salida locales\"")
     }
     { PARestart Button
       Move(128,344,160,48)
@@ -212,18 +227,18 @@
       }
       { Label18 Label
         Move(216,32,104,32)
-        Text = ("IP Servidor")
         Alignment = Align.Left
+        Text = ("IP Servidor")
       }
       { Label19 Label
         Move(216,72,104,32)
-        Text = ("FTP Usuario")
         Alignment = Align.Left
+        Text = ("FTP Usuario")
       }
       { Label20 Label
         Move(216,112,104,32)
-        Text = ("FTP Contraseña")
         Alignment = Align.Left
+        Text = ("FTP Contraseña")
       }
       { FtpPass TextBox
         Move(24,112,176,32)
@@ -231,65 +246,186 @@
       }
     }
     Index = 5
+    Text = ("Descargas")
+    Picture = Picture["icon:/32/download"]
+    { CacheDirBox DirBox
+      Move(24,88,336,32)
+    }
+    { Label34 Label
+      Move(24,64,240,24)
+      Text = ("Ruta a caché de descargas")
+    }
+    { Button1 Button
+      Move(24,392,96,32)
+      Text = ("Vaciar caché")
+    }
+    { CacheGridView GridView
+      Move(24,144,368,240)
+    }
+    { Gridrefresh #Timer
+      #Move(0,120)
+      Delay = 10000
+    }
+    Index = 6
     Text = ("Monedero")
     Picture = Picture["icon:/32/save-as"]
     { TotalCoin TextLabel
-      Move(200,80,192,32)
+      Move(144,109,133,35)
       Font = Font["16"]
       Foreground = Color.Red
       Alignment = Align.Left
     }
     { Label8 Label
-      Move(16,80,168,24)
-      Text = ("Monedero actual")
+      Move(18,116,126,28)
+      Text = ("Total en monedero:")
     }
     { VCoin ComboBox
-      Move(200,128,144,32)
+      Move(208,230,144,32)
       List = [("1"), ("2"), ("5"), ("10"), ("20")]
     }
     { Label9 Label
-      Move(16,128,168,24)
+      Move(24,230,168,24)
       Text = ("Valor del monedero 1   $")
     }
     { CreditCoin ComboBox
-      Move(200,176,144,32)
+      Move(208,265,144,32)
       List = [("1"), ("2"), ("3"), ("4"), ("5"), ("6"), ("7"), ("8"), ("9"), ("10")]
     }
     { Label10 Label
-      Move(16,176,168,24)
+      Move(26,272,168,24)
       Text = ("Creditos por Moneda")
     }
     { ResetCoins Button
-      Move(8,232,128,48)
+      Move(19,157,128,48)
       Text = ("Reset \nMonedero")
       Picture = Picture["icon:/32/error"]
     }
     { CreditsNow TextLabel
-      Move(200,32,168,32)
+      Move(147,21,126,35)
       Font = Font["16"]
       Foreground = Color.Blue
       Alignment = Align.Left
     }
     { Label11 Label
-      Move(16,40,168,24)
-      Text = ("Créditos actual")
+      Move(21,28,119,28)
+      Text = ("Créditos ahora:")
     }
     { ClearCredits Button
-      Move(144,232,128,48)
+      Move(21,63,133,42)
       Text = ("Borrar \nCréditos")
       Picture = Picture["icon:/32/remove"]
     }
     { AddCredits Button
-      Move(280,232,128,48)
+      Move(266,63,133,42)
       Text = ("Dar\nCrédito")
       Picture = Picture["icon:/32/add"]
     }
     { ReportBttn Button
-      Move(136,360,128,48)
+      Move(264,157,128,48)
       Text = ("Mostrar\nregistros")
       Picture = Picture["icon:/32/book"]
     }
-    Index = 6
+    { Separator1 Separator
+      Move(16,217,406,7)
+    }
+    { Separator2 Separator
+      Move(16,304,400,8)
+    }
+    { Label35 Label
+      Move(24,312,176,24)
+      Text = ("Costos en créditos.")
+    }
+    { Label36 Label
+      Move(32,344,80,24)
+      Text = ("Música")
+    }
+    { Label37 Label
+      Move(32,384,80,24)
+      Text = ("Video")
+    }
+    { MusicaCreditosValor ComboBox
+      Move(120,344,72,32)
+      List = [("1"), ("2"), ("3"), ("4"), ("5"), ("6"), ("7"), ("8"), ("9"), ("10")]
+    }
+    { VideosCreditosValor ComboBox
+      Move(120,384,72,32)
+      List = [("1"), ("2"), ("3"), ("4"), ("5"), ("6"), ("7"), ("8"), ("9"), ("10")]
+    }
+    { Label38 Label
+      Move(216,344,80,24)
+      Text = ("Karaoke")
+    }
+    { Label39 Label
+      Move(216,384,80,24)
+      Text = ("Descargas")
+    }
+    { KaraokeCreditosValor ComboBox
+      Move(304,344,72,32)
+      List = [("1"), ("2"), ("3"), ("4"), ("5"), ("6"), ("7"), ("8"), ("9"), ("10")]
+    }
+    { DlCreditosValor ComboBox
+      Move(304,384,72,32)
+      List = [("1"), ("2"), ("3"), ("4"), ("5"), ("6"), ("7"), ("8"), ("9"), ("10")]
+    }
+    Index = 7
+    Text = ("Monedero 2")
+    Picture = Picture["icon:/32/save"]
+    { Label26 Label
+      Move(32,48,168,24)
+      Text = ("Valor del monedero 2   $")
+    }
+    { Label27 Label
+      Move(32,88,168,24)
+      Text = ("Creditos por 1 Moneda")
+    }
+    { VCoin2 ComboBox
+      Move(216,48,144,32)
+      List = [("1"), ("2"), ("5"), ("10"), ("20")]
+    }
+    { CreditCoin2 ComboBox
+      Move(216,88,144,32)
+      List = [("1"), ("2"), ("3"), ("4"), ("5"), ("6"), ("7"), ("8"), ("9"), ("10")]
+    }
+    { CreditCoin3 ComboBox
+      Move(216,128,144,32)
+      List = [("1"), ("2"), ("3"), ("4"), ("5"), ("6"), ("7"), ("8"), ("9"), ("10"), ("0")]
+    }
+    { Label30 Label
+      Move(32,128,168,24)
+      Text = ("Creditos por 2 Monedas")
+    }
+    { CreditCoin4 ComboBox
+      Move(217,168,144,32)
+      List = [("1"), ("2"), ("3"), ("4"), ("5"), ("6"), ("7"), ("8"), ("9"), ("10"), ("0")]
+    }
+    { Label31 Label
+      Move(32,168,168,24)
+      Text = ("Creditos por 3 Monedas")
+    }
+    { CreditCoin5 ComboBox
+      Move(216,208,144,32)
+      List = [("1"), ("2"), ("3"), ("4"), ("5"), ("6"), ("7"), ("8"), ("9"), ("10"), ("0")]
+    }
+    { Label32 Label
+      Move(32,208,168,24)
+      Text = ("Creditos por 4 Monedas")
+    }
+    { CreditCoin6 ComboBox
+      Move(216,248,144,32)
+      List = [("1"), ("2"), ("3"), ("4"), ("5"), ("6"), ("7"), ("8"), ("9"), ("10"), ("0")]
+    }
+    { Label33 Label
+      Move(32,248,168,24)
+      Text = ("Creditos por 5 Monedas")
+    }
+    Index = 8
+    Text = ("Sensor")
+    Picture = Picture["icon:/32/watch"]
+    { PirSensorBox CheckBox
+      Move(32,72,328,32)
+      Text = ("Activar servicios de deteccion de presencia")
+    }
+    Index = 9
     Text = ("Info. Soporte")
     Picture = Picture["icon:/32/star"]
     { PNameLabel TextLabel
@@ -328,7 +464,7 @@
     Index = 0
   }
   { BtnClose Button
-    Move(392,441,196,56)
+    Move(392,448,200,48)
     Text = ("Cerrar configuración")
     Picture = Picture["icon:/32/save"]
   }

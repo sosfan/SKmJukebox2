@@ -18,9 +18,21 @@
 ' 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
 Property getConfigData As Result
+Property SongCost As Integer
+Property VideoCost As Integer
+Property KaraokeCost As Integer
+Property DlCost As Integer
+
 Property MoneyValue As Integer
+Property MoneyValue2 As Integer
 Property CreditValue As Integer
+Property CreditValue2 As Integer
+Property CreditValue2_2 As Integer
+Property CreditValue2_3 As Integer
+Property CreditValue2_4 As Integer
+Property CreditValue2_5 As Integer
 Property MasterVol As Integer
+Property ScrollString As String
 Property FullScreen As Boolean
 Property HideCursor As Boolean
 Property ScreenSaver As Boolean
@@ -28,6 +40,7 @@ Property VideoOut As Boolean
 Property AutoPlay As Boolean
 Property AutoScroll As Boolean
 Property MaxCreditKey As String
+Property MaxCreditKey2 As String
 Property MinCreditKey As String
 Property ConfigKey As String
 Property CancelKey As String
@@ -36,7 +49,9 @@ Property MinVolKey As String
 Property MusicDir As String
 Property VideoDir As String
 Property KaraokeDir As String
+Property CacheVideoDir As String
 Property Total_credito As Integer
+Property Total_credito2 As Integer
 Property Credito As Integer
 ' Property channels As Integer[]
 Property Skm_Modo As String ''Establece o retorna el modo de busqueda.
@@ -47,6 +62,8 @@ Property FtpEnable As Boolean
 Property FTPHost As String ''Retorna o establece la dirección del FTPServer cuando es usado para el envio de vídeos en TVOUT.
 Property FTPUser As String ''Retorna o establece el usuario establecido para la conexión en el FTPServer.
 Property FTPPassword As String '' Retorna o establece la contraseña para la conexión en el FTPerver.
+Property SensorServices As Boolean
+
 Private sEncrypt As New EasyEncrypt
 Private Modo As String
 Private Total_Album As Integer
@@ -56,9 +73,20 @@ Private Function ConectarBase() As Boolean
   
   If hConn Then Return False
   hConn = New Connection
-  hConn.Host = User.Home
+  
   hConn.Name = "music_db.sqlite"
+  If Application.Args[1] = "-pimode" Then 
+    'Si se ejecuta en modo raspberry, la base de datos se encuentra en un disco externo con etiqueta "discos"
+    hConn.Host = "/media/pi/discos"
+    If Not Exist(User.Home &/ hConn.Name) Then 
+      'Creamos un enlace a la BD
+      Shell ("ln -s " & hConn.Host &/ hConn.name & " " & User.Home &/ hConn.Name)
+    Endif
+  Else 
+    hConn.Host = User.Home
+  Endif
   hConn.Type = "sqlite3"
+  
   Try hConn.Open
   If Error Then
     hConn = Null
@@ -81,12 +109,22 @@ End
 
 Public Sub _new()
   
-  If Not Exist(User.Home &/ "music_db.sqlite") Then
-    MDatabase.CreateDatabase
+  Dim dbhost As String
+  
+  If Application.Args[1] = "-pimode" Then 
+    'Si se ejecuta en modo raspberry, la base de datos se encuentra en un disco externo con etiqueta "discos"
+    dbhost = "/media/pi/discos"
+  Else 
+    dbhost = User.Home
+  Endif
+  
+  If Not Exist(dbhost &/ "music_db.sqlite") Then
+    MDatabase.CreateDatabase(dbhost)
     ConectarBase
     With MDatabase
       .ConfigCreateDatabaseTables(hConn)
-      .EQCreateDatabaseTables(hConn)
+      ' .EQCreateDatabaseTables(hConn)
+      .dlCreateDatabaseTables(hConn)
       .MusicaCreateDatabaseTables(hConn)
       .VideoCreateDatabaseTables(hConn)
       .KaraokeCreateDatabaseTables(hConn)
@@ -212,6 +250,21 @@ Private Sub MoneyValue_Write(Value As Integer)
 
 End
 
+Private Function MoneyValue2_Read() As Integer
+
+  Dim hResult As Result
+  
+  hResult = hConn.Exec("select MoneyValue2 from config_data where id=1")
+  Return hResult["MoneyValue2"]
+
+End
+
+Private Sub MoneyValue2_Write(Value As Integer)
+
+  hConn.Exec("update config_data set MoneyValue2=" & Value & " where id=1")
+
+End
+
 Private Function CreditValue_Read() As Integer
 
   Dim hResult As Result
@@ -224,6 +277,81 @@ End
 Private Sub CreditValue_Write(Value As Integer)
 
   hConn.Exec("update config_data set CreditValue=" & Value & " where id=1")
+
+End
+
+Private Function CreditValue2_Read() As Integer
+
+  Dim hResult As Result
+  
+  hResult = hConn.Exec("select CreditValue2 from config_data where id=1")
+  Return hResult["CreditValue2"]
+
+End
+
+Private Sub CreditValue2_Write(Value As Integer)
+
+  hConn.Exec("update config_data set CreditValue2=" & Value & " where id=1")
+
+End
+
+Private Function CreditValue2_2_Read() As Integer
+
+  Dim hResult As Result
+  
+  hResult = hConn.Exec("select CreditValue2_2 from config_data where id=1")
+  Return hResult["CreditValue2_2"]
+
+End
+
+Private Sub CreditValue2_2_Write(Value As Integer)
+
+  hConn.Exec("update config_data set CreditValue2_2=" & Value & " where id=1")
+
+End
+
+Private Function CreditValue2_3_Read() As Integer
+
+  Dim hResult As Result
+  
+  hResult = hConn.Exec("select CreditValue2_3 from config_data where id=1")
+  Return hResult["CreditValue2_3"]
+
+End
+
+Private Sub CreditValue2_3_Write(Value As Integer)
+
+  hConn.Exec("update config_data set CreditValue2_3=" & Value & " where id=1")
+
+End
+
+Private Function CreditValue2_4_Read() As Integer
+
+  Dim hResult As Result
+  
+  hResult = hConn.Exec("select CreditValue2_4 from config_data where id=1")
+  Return hResult["CreditValue2_4"]
+
+End
+
+Private Sub CreditValue2_4_Write(Value As Integer)
+
+  hConn.Exec("update config_data set CreditValue2_4=" & Value & " where id=1")
+
+End
+
+Private Function CreditValue2_5_Read() As Integer
+
+  Dim hResult As Result
+  
+  hResult = hConn.Exec("select CreditValue2_5 from config_data where id=1")
+  Return hResult["CreditValue2_5"]
+
+End
+
+Private Sub CreditValue2_5_Write(Value As Integer)
+
+  hConn.Exec("update config_data set CreditValue2_5=" & Value & " where id=1")
 
 End
 
@@ -344,6 +472,21 @@ End
 Private Sub MaxCreditKey_Write(Value As String)
 
   hConn.Exec("update config_data set MaxCreditKey='" & Value & "' where id=1")
+
+End
+
+Private Function MaxCreditKey2_Read() As String
+
+  Dim hResult As Result
+  
+  hResult = hConn.Exec("select MaxCreditKey2 from config_data where id=1")
+  Return hResult["MaxCreditKey2"]
+
+End
+
+Private Sub MaxCreditKey2_Write(Value As String)
+
+  hConn.Exec("update config_data set MaxCreditKey2='" & Value & "' where id=1")
 
 End
 
@@ -482,6 +625,21 @@ Private Sub Total_credito_Write(Value As Integer)
 
 End
 
+Private Function Total_credito2_Read() As Integer
+
+  Dim hResult As Result
+  
+  hResult = hConn.Exec("select Total_credito2 from monedero where id=1")
+  Return hResult["Total_credito2"]
+
+End
+
+Private Sub Total_credito2_Write(Value As Integer)
+
+  hConn.Exec("update monedero set Total_credito2=" & Value & " where id=1")
+
+End
+
 Private Function Credito_Read() As Integer
 
   Dim hResult As Result
@@ -537,11 +695,11 @@ Public Sub getDataSearch($Modo As Byte, tSearch As Byte, sSearch As String) As R
     Case 1
       If tSearch = 1 Then
         For i = 1 To 25
-          sCons = sCons & "Select C.id, Album, Cover_name, Genero, Tipo, N" & i & " " &
+          sCons = sCons & "Select C.id, Album, Cover_name, Genero, Tipo, O.id, N" & i & " " &
                   "From album_id C, mp3 O Where(C.Songsid1 = O.id Or C.Songsid2 = O.id Or C.Songsid3 = O.id Or C.Songsid4 = O.id) And " &
                   "" & delAccents("N" & i) & "  Like '%" & sSearch & "%' "
           If i = 25 Then
-            sCons = sCons & "limit 50"
+            sCons = sCons & "limit 100"
             Break
           Endif
           sCons = sCons & "union all "
@@ -554,11 +712,11 @@ Public Sub getDataSearch($Modo As Byte, tSearch As Byte, sSearch As String) As R
     Case 2
       If tSearch = 1 Then
       For i = 1 To 25
-          sCons = sCons & "Select C.id, Album, Cover_name, Genero, Tipo, N" & i & " " &
+          sCons = sCons & "Select C.id, Album, Cover_name, Genero, Tipo, O.id, N" & i & " " &
                   "From video_album_id C, video O Where(C.Songsid1 = O.id Or C.Songsid2 = O.id Or C.Songsid3 = O.id Or C.Songsid4 = O.id) And " &
                   "" & delAccents("N" & i) & "  Like '%" & sSearch & "%' "
           If i = 25 Then
-            sCons = sCons & "limit 50"
+            sCons = sCons & "limit 100"
             Break
           Endif
           sCons = sCons & "union all "
@@ -570,11 +728,11 @@ Public Sub getDataSearch($Modo As Byte, tSearch As Byte, sSearch As String) As R
     Case 3
       If tSearch = 1 Then
       For i = 1 To 25
-          sCons = sCons & "Select C.id, Album, Cover_name, Genero, Tipo, N" & i & " " &
+          sCons = sCons & "Select C.id, Album, Cover_name, Genero, Tipo, O.id, N" & i & " " &
                   "From karaoke_album_id C, karaoke O Where(C.Songsid1 = O.id Or C.Songsid2 = O.id Or C.Songsid3 = O.id Or C.Songsid4 = O.id) And " &
                   "" & delAccents("N" & i) & "  Like '%" & sSearch & "%' "
           If i = 25 Then
-            sCons = sCons & "limit 50"
+            sCons = sCons & "limit 100"
             Break
           Endif
           sCons = sCons & "union all "
@@ -598,7 +756,7 @@ Public Sub getDataSearch($Modo As Byte, tSearch As Byte, sSearch As String) As R
               sAlb = "karaoke_album_id"
           End Select
           For i = 1 To 25
-              sCons = sCons & "Select C.id, Album, Cover_name, Genero, Tipo, N" & i & " " &
+              sCons = sCons & "Select C.id, Album, Cover_name, Genero, Tipo, O.id, N" & i & " " &
                       "From " & sAlb & " C, " & sTab & " O Where(C.Songsid1 = O.id Or C.Songsid2 = O.id Or C.Songsid3 = O.id Or C.Songsid4 = O.id) And " &
                       "" & delAccents("N" & i) & "  Like '%" & sSearch & "%' "
               If i = 25 Then
@@ -607,7 +765,7 @@ Public Sub getDataSearch($Modo As Byte, tSearch As Byte, sSearch As String) As R
               sCons = sCons & "union all "
           Next
           If b = 3 Then
-            sCons = sCons & " limit 50 "
+            sCons = sCons & " limit 100 "
             Break
           Else
             sCons = sCons & "union all "
@@ -737,12 +895,21 @@ Public Sub getIdJump(sGenre As String, Value As String) As Integer ''Retorna el 
   
 End
 
-Public Sub getAllPlaylist() As Integer '' Retorna la longitud de la cola de reproducción.
+Public Sub getCountPlaylist() As Integer '' Retorna la longitud de la cola de reproducción.
   
   Dim hResult As Result
   
   hResult = hConn.Exec("select * from playlist")
   Return hResult.Length
+  
+End
+
+Public Sub getPlaylist() As Result '' Retorna todos los elementos en la playlist
+  
+  Dim hResult As Result
+  
+  hResult = hConn.Exec("select * from playlist")
+  Return hResult
   
 End
 
@@ -823,8 +990,12 @@ End
 Private Sub LoadTotalAlbum(sGenre As String)
   
   Dim hResult As Result
+  If Modo = "Top100" Then 
+    Total_Album = 100
+    Return 
+  Endif
   If sGenre = "*" Then
-      Select Case Modo
+      Select Modo
         Case "Musica"
           hResult = hConn.Exec("select id from album_id")
         Case "Video"
@@ -833,7 +1004,7 @@ Private Sub LoadTotalAlbum(sGenre As String)
           hResult = hConn.Exec("select id from karaoke_album_id")
       End Select
   Else
-      Select Case Modo
+      Select Modo
         Case "Musica"
           hResult = hConn.Exec("select id from album_id where Genero Like '" & sGenre & "'")
         Case "Video"
@@ -855,28 +1026,88 @@ Public Sub getTotalAlbums(sGenre As String) As Integer
   
 End
 
-Public Sub setPlayHistory(Value As Integer)
+Public Sub setPlayHistory(sSong As Song)
 
-  Dim hResult As Result, i As Integer, nModo As String
+  Dim hResult As Result, i, id, idAlbum, idSong, nsong As Integer, nModo As String
   
-  Select Modo
-    Case "Musica"
+  idAlbum = sSong.idalbum
+  idSong = sSong.id
+  nsong = sSong.idsong
+  
+  If idAlbum = 0 Then Return
+  
+  Select sSong.type
+    Case "musica"
       nModo = "mp3"
-    Case "Video"
+    Case "video"
       nModo = "video"
-    Case "Karaoke"
+    Case "karaoke"
       nModo = "karaoke"
   End Select
 
-  hResult = hConn.Exec("select * from " & nModo & "albumplayhistory where id=" & Value)
+  hResult = hConn.Exec("select * from " & nModo & "albumplayhistory where id=" & idAlbum)
   If hResult.Available = False Then
-    hConn.Exec("insert into " & nModo & "albumplayhistory values (&1,&2)", Value, 1)
+    hConn.Exec("insert into " & nModo & "albumplayhistory values (&1,&2)", idAlbum, 1)
   Else
     i = hResult["Contador"]
     Inc i
-    hConn.Exec("update " & nModo & "albumplayhistory set Contador=" & i & " where id=" & Value)
+    hConn.Exec("update " & nModo & "albumplayhistory set Contador=" & i & " where id=" & idAlbum)
   Endif
+  
+  hResult = hConn.Exec("select * from " & nModo & "playhistory where idalbum=" & idAlbum & " AND idsong=" & idSong & " AND N=" & nsong)
+  
+  If hResult.Available = False Then 
+    hResult = hConn.Exec("select * from " & nModo & "playhistory")
+    id = hResult.Count + 1
+    hConn.Exec("insert into " & nModo & "playhistory values (&1,&2,&3,&4,&5,&6)",
+    id, idalbum, idsong, sSong.type, nsong, 1)
+  Else
+    id = hResult["id"]
+    i = hResult["Contador"]
+    Inc i
+    hConn.Exec("update " & nModo & "playhistory set Contador=" & i & " where id=" & id)
+  Endif
+  
+End
 
+Public Sub getIdPlayHistory() As Result
+  
+  Dim hResult As Result
+  
+  hResult = hConn.Exec("select * from mp3playhistory union select * from videoplayhistory union select * from karaokeplayhistory" &
+  " order by Contador DESC Limit 100")
+  
+  Return hResult
+  
+End
+
+Public Sub getPlayHistory() As Result
+  
+  Dim idResult, hResult As Result, sCons, sTab, sAlb As String, i As Integer
+  
+  idResult = getIdPlayHistory()
+  
+  For i = 0 To idResult.Max
+    Select idResult["type"]
+      Case "musica"
+        sTab = "mp3"
+        sAlb = "album_id"
+      Case "video"
+        sTab = "video"
+        sAlb = "video_album_id"
+      Case "karaoke"
+        sTab = "karaoke"
+        sAlb = "karaoke_album_id"
+    End Select
+    sCons = sCons & "Select C.id, Album, Cover_name, Genero, Tipo, N" & idResult["N"] & " From " & sAlb & " C, " & sTab & " O " &
+            "Where(C.Songsid1 = O.id Or C.Songsid2 = O.id Or C.Songsid3 = O.id Or C.Songsid4 = O.id) and O.id='" & idResult["idsong"] & "'"
+    idResult.MoveNext
+    If i <> idResult.Max Then sCons = sCons & " Union All "
+  Next
+  If i > 0 Then hResult = hConn.Exec(sCons)
+  
+  Return hResult
+  
 End
 
 Private Function SkinTheme_Read() As String
@@ -898,6 +1129,7 @@ Private Function SkinPath_Read() As String
   
   Dim path As String
   path = "/usr/share/skmjukebox/skins/"
+  ' path = User.Home & "/skins/"
   Return path
   
 End
@@ -949,7 +1181,7 @@ End
 
 Private Sub FTPUser_Write(Value As String)
 
-  hConn.Exec("update config_data set FtpUser=" & Value & " where id=1")
+  hConn.Exec("update config_data set FtpUser='" & Value & "' where id=1")
 
 End
 
@@ -966,5 +1198,199 @@ End
 Private Sub FTPPassword_Write(Value As String)
 
   hConn.Exec("update config_data set FtpPassword='" & sEncrypt.TextOfuscate(Value, True, "") & "' where id=1")
+
+End
+
+Private Function ScrollString_Read() As String
+
+  Dim hResult As Result
+  
+  hResult = hConn.Exec("Select ScrollString from config_data where id=1")
+  
+  Return hResult["ScrollString"]
+
+End
+
+Private Sub ScrollString_Write(Value As String)
+
+  hConn.Exec("Update config_data set ScrollString='" & Value & "' where id=1")
+
+End
+
+Private Function CacheVideoDir_Read() As String
+
+  Dim hResult As Result
+  
+  hResult = hConn.Exec("Select CacheVideoDir from config_data where id=1")
+  
+  Return hResult["CacheVideoDir"]
+
+End
+
+Private Sub CacheVideoDir_Write(Value As String)
+
+  hConn.Exec("Update config_data set CacheVideoDir='" & Value & "' where id=1")
+
+End
+
+Public Sub GetCacheDownload() As Result
+  
+  Dim hResult As Result
+  
+  hResult = hConn.Exec("Select * from ytdl_data")
+  
+  Return hResult
+  
+End
+
+Public Sub SearchCacheID(ytID As String) As Boolean
+  
+  Dim hResult As Result
+  
+  hResult = hConn.Exec("Select * from ytdl_data where ytID='" & ytID & "'")
+  
+  Return hResult.Available
+  
+End
+
+Public Sub setCacheDownload(sSong As Song)
+  
+  Dim hResult As Result, i As Integer
+  
+  hResult = hConn.Exec("Select * from ytdl_data")
+  
+  If hResult.Available = False Then
+    i = 1
+  Else 
+    hResult.MoveLast
+    i = hResult["id"] + 1
+    
+    If hResult.Count > 99 Then
+      If sSong.ID_video <> hResult["ytID"] Then 
+        hResult = hConn.Exec("select * from playlist where IDVideo='" & hResult["ytID"] & "'")
+        If hResult.Available = False Then
+          DelFirstItemCacheDl
+        Endif
+      Endif
+    Endif
+    
+  Endif
+  
+  hConn.Exec("Insert into ytdl_data values (&1,&2,&3)", i, sSong.ID_video, sSong.name)
+  
+End
+
+Public Sub DelFirstItemCacheDl()
+  
+  Dim hResult As Result, CacheDir, ytID As String
+  
+  CacheDir = CacheVideoDir_Read()
+  hResult = hConn.Exec("Select * from ytdl_data")
+  
+  If hResult.Available = True Then 
+    If hResult.Count > 0 Then
+    
+      hResult.MoveFirst
+      ytID = hResult["ytID"]
+      
+      hConn.Exec("Delete from ytdl_data where id=" & hResult["id"])
+      Try Kill CacheDir &/ ytID & ".mp4"
+      Debug CacheDir &/ ytID & ".mp4"
+    Endif 
+  Endif 
+  
+End
+
+Public Sub ClearAllCache()
+  
+  Dim CacheDir As String
+  CacheDir = CacheVideoDir_Read()
+  
+  hConn.Exec("Delete from ytdl_data")
+  
+  Shell "rm -Rf " & CacheDir &/ "*"
+  
+  Catch 
+    Debug Error.Text
+  
+End
+
+Private Function SongCost_Read() As Integer
+
+  Dim hResult As Result
+  
+  hResult = hConn.Exec("Select SongCost from config_data where id=1")
+  
+  Return hResult["SongCost"]
+
+End
+
+Private Sub SongCost_Write(Value As Integer)
+
+  hConn.Exec("Update config_data set SongCost='" & Value & "' where id=1")
+
+End
+
+Private Function VideoCost_Read() As Integer
+
+  Dim hResult As Result
+  
+  hResult = hConn.Exec("Select VideoCost from config_data where id=1")
+  
+  Return hResult["VideoCost"]
+
+End
+
+Private Sub VideoCost_Write(Value As Integer)
+
+  hConn.Exec("Update config_data set VideoCost='" & Value & "' where id=1")
+
+End
+
+Private Function KaraokeCost_Read() As Integer
+
+  Dim hResult As Result
+  
+  hResult = hConn.Exec("Select KaraokeCost from config_data where id=1")
+  
+  Return hResult["KaraokeCost"]
+
+End
+
+Private Sub KaraokeCost_Write(Value As Integer)
+
+  hConn.Exec("Update config_data set KaraokeCost='" & Value & "' where id=1")
+
+End
+
+Private Function DlCost_Read() As Integer
+
+  Dim hResult As Result
+  
+  hResult = hConn.Exec("Select DlCost from config_data where id=1")
+  
+  Return hResult["DlCost"]
+
+End
+
+Private Sub DlCost_Write(Value As Integer)
+
+  hConn.Exec("Update config_data set DlCost='" & Value & "' where id=1")
+
+End
+
+Private Function SensorServices_Read() As Boolean
+
+  Dim hResult As Result
+  
+  hResult = hConn.Exec("Select EnablePirSensor from config_data where id=1")
+  
+  Return hResult["EnablePirSensor"]
+
+End
+
+Private Sub SensorServices_Write(Value As Boolean)
+
+  hConn.Exec("Update config_data set EnablePirSensor='" & Value & "' where id=1")
 
 End

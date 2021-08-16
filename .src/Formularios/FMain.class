@@ -26,6 +26,7 @@ Private keysd As Timer
 
 Public Sub _new()
 
+  Dim i As Short
   keysd = New Timer As "keysd"
   keysd.Delay = 2
   
@@ -37,14 +38,31 @@ Public Sub _new()
   
   'Ajustar volumen
   Functions.Volumen = Functions.Volumen
+  Shell "pavol unmute"
   ' Wait 3
 
   fullscreen_ajust
   hidecursor
+  
+  'Playlist debug window
+  For i = 0 To Application.Args.Count
+    If Application.Args[i] = "-debug" Then
+      FPlaylistDbg.Show
+    Endif 
+  Next 
 
 End
 
 Public Sub Form_KeyPress()
+  
+  If Key.Code = Key.AltKey Then 
+    'Pir module
+    If DataControl.SensorServices = True Then 
+      Debug "SensorServices"
+      Functions.CMHideMovieBox
+    Endif 
+    Return 
+  Endif
   
   hKey = key.Text
   
@@ -52,6 +70,7 @@ End
 
 Public Sub Form_KeyRelease()
   
+  If Key.Code = Key.AltKey Then Return 
   keysd.Start
   
 End
@@ -76,6 +95,8 @@ Public Sub fullscreen_ajust()
       .FullScreen = False
     End With
   Endif
+  
+  Functions.ReloadList
   
 End
 
@@ -123,17 +144,19 @@ Public Sub Skm_Modo_Karaoke()
   
 End
 
-Public Sub ViewPanelSearch()
-  
-  Functions.PanelSearchKey
-  
-End
+' Public Sub ViewPanelSearch()
+'   
+'   Functions.PanelSearchKey
+'   
+' End
 
 Private Sub KeyDetect()
   
   Select hKey
     Case DataControl.MaxCreditKey
       Functions.IncMaxCredito
+    Case DataControl.MaxCreditKey2
+      Functions.IncMaxCredito2
     Case DataControl.MinCreditKey
       $addCredito
     ' Case "+"
@@ -142,10 +165,10 @@ Private Sub KeyDetect()
     '   Functions.BkList
     Case DataControl.CancelKey
       Functions.CancelSong
-    ' Case DataControl.MaxVolKey
-    '   Functions.Volumen = Functions.Volumen + 5
-    ' Case DataControl.MinVolKey
-    '   Functions.Volumen = Functions.Volumen - 5
+    Case DataControl.MaxVolKey
+      Functions.Volumen = Functions.Volumen + 5
+    Case DataControl.MinVolKey
+      Functions.Volumen = Functions.Volumen - 5
     ' Case "v"
     '   Select Functions.Skm_Modo
     '     Case "Musica"
@@ -182,5 +205,29 @@ End
 Public Sub Form_Close()
 
   Quit
+
+End
+
+Public Sub Form_Deactivate()
+  
+  If Object.IsValid(LoginWin) = False Then 
+    If FMain.Visible = True Then 
+      FMain.Show
+    Endif
+  Else
+    Return
+  Endif
+  
+  If FMain.Visible = True Then 
+    FMain.Show
+  Endif
+  
+End
+
+Public Sub Form_Move()
+
+  With FPlaylistDbg
+    .X = FMain.W + FMain.X
+  End With
 
 End

@@ -21,6 +21,7 @@ Property id As Integer
 Property idsong As Integer
 Property name As String
 Property album As String
+Property idalbum As Integer
 Property genre As String
 Property type As String
 Property cover As String
@@ -31,10 +32,11 @@ Property ids4 As Integer
 Property URL_image As String
 Property ID_video As String
 
-Private id_album As Integer
+Private idsong_pos As Integer
 Private id_song As Integer
 Private name_song As String
 Private album_song As String
+Private id_album As Integer
 Private genre_song As String
 Private type_song As String
 Private cover_song As String
@@ -47,13 +49,13 @@ Private id4 As Integer
 
 Private Function id_Read() As Integer
 
-  Return id_album
+  Return idsong_pos
 
 End
 
 Private Sub id_Write(Value As Integer)
 
-  id_album = Value
+  idsong_pos = Value
 
 End
 
@@ -198,5 +200,17 @@ End
 Private Sub ids4_Write(Value As Integer)
 
   id4 = Value
+
+End
+
+Private Function idalbum_Read() As Integer
+
+  Return id_album
+
+End
+
+Private Sub idalbum_Write(Value As Integer)
+
+  id_album = Value
 
 End

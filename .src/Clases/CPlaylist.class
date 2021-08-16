@@ -22,33 +22,44 @@ Event sMovie
 
 Private MatrizLed As PanelLed
 Private DataControl As New CData
-Private $bState As Boolean ''Estado del la reproducción
+Private $PlayProcState As Boolean ''Estado del la reproducción
 Private UploadState As Boolean ''Estado de la carga de archivo
-Private PlayListSongs As Integer
+' Private PlayListSongs As Integer
 Private mPlayer As CPlayer
 Private hSkinPath As String
 Private hSkinTheme As Settings
+Private cacheDir As String
 Private ResMovieBox As Timer
 Private sMovieBox As Boolean
 Private iCont As Short
+Private inputFile As Boolean
 Private UploadSong As String
 Private UploadTimer As Timer
+Private DownloadTimer As Timer
+Private CheckVelocity As Timer
+Private CheckCont As Short
 Private AutoPlay As Timer
+Private VerifyPlay As Timer
 Private TimeCont As Integer
 Private SongPlaying As String
 Private upFailed As Boolean
 Private SearchBoxShow As Boolean
 Property MatrizShow As Boolean
 Private hProcess As Process
-Private procStatus As Boolean
-Private VideoRes As String = "480"
-
+Private DlProcState As Boolean
+Private VideoRes As String = "720"
+Private VideoFormat As String = "mp4"
+Public DownBar As ProgressBar
+Private PercentDl As Short
+Private PercentDltmp As Short
+Private PercentDlCount As Short
+Private PlaySong As New Song
+Private DownloadSong As New Song
+Private tmpFile As File
 Property MovieBoxState As Boolean
 
  
 Public Sub _new()
-
-  Dim MessageText As String
   
   hSkinPath = DataControl.SkinPath & DataControl.SkinTheme
   hSkinTheme = New Settings(hSkinPath &/ "theme.conf")
@@ -66,19 +77,57 @@ Public Sub _new()
   ResMovieBox = New Timer As "ResMovieBox"
   ResMovieBox.Delay = 1000
   
+  VerifyPlay = New Timer As "VerifyPlay"
+  VerifyPlay.Delay = 1000
+  
   UploadTimer = New Timer As "UploadTimer"
   UploadTimer.Delay = 10000
+  
+  DownloadTimer = New Timer As "DownloadTimer"
+  DownloadTimer.Delay = 10000
+  
+  CheckVelocity = New Timer As "CheckVelocity"
+  CheckVelocity.Delay = 1000
   
   AutoPlay = New Timer As "AutoPlay"
   AutoPlay.Delay = 1000
   AutoPlay.Start
 
-  MessageText = "Bienvenidos a su lugar preferido"
-  addMatrizLed(MessageText)
+  UpdateScrollMatrizLed
   mPlayer = New CPlayer As "mPlayer"
-  $bState = False
+  $PlayProcState = False
   upFailed = False
-  PlayListSongs = DataControl.getAllPlaylist()
+  
+  DownBar = New ProgressBar(FMain)
+  With DownBar
+    .X = 42
+    .Y = 7
+    .W = 77
+    .H = 21
+    .Hide
+  End With
+  
+  MkCacheDir
+  
+  ' PlayListSongs = DataControl.getCountPlaylist()
+  
+End
+
+Private Sub MkCacheDir()
+  
+  cacheDir = DataControl.CacheVideoDir
+  If Not Exist(cacheDir) Then
+    Mkdir cachedir
+  Endif
+  
+End
+
+Public Sub UpdateScrollMatrizLed()
+  
+  Dim MessageText As String
+  
+  MessageText = DataControl.ScrollString
+  addMatrizLed(MessageText)
   
 End
 
@@ -90,37 +139,150 @@ End
 
 Public Function AddPlay(sSong As Song)
   
-  If PlayListSongs = 0 And $bState = False And UploadState = False And procStatus = False Then
+  
+  If DataControl.getCountPlaylist() = 0 And $PlayProcState = False And UploadState = False And DlProcState = False And inputFile = False Then
+    inputFile = True
+    
     If sSong.type = "vonline" Then
-      procStatus = True
-      hProcess = Exec ["youtube-dl", "-o", "/tmp/" & sSong.ID_video & ".mp4", "-f", "best[height<=?" & VideoRes & "]", "--no-check-certificate", "http://www.youtube.com/watch?v=" & sSong.ID_video] For Read As "hProcess"
-      While procStatus = True
-        Wait 1
-        Debug "Esperando..."
-      Wend
-      Debug
-      StopMatrizLed
-      If DataControl.FtpEnable = True Then UploadState = True
-      mPlayer.Play(sSong.ID_video & ".mp4", "/tmp", "Video", True, "0")
-      addMatrizLed("** Ahora sonando - " & Left$(sSong.name, -4) & "  **")
-      SongPlaying = sSong.name
-      $bState = True
+      
+        MkCacheDir
+        
+        If DataControl.SearchCacheID(sSong.ID_video) = False Or Not Exist(cacheDir &/ sSong.ID_video & "." & VideoFormat) Then 
+            DownloadFile(sSong)
+            ' If DlProcState = True Then
+            '   Debug 
+            '  Return 
+            ' Endif 
+            ' While DlProcState = True
+            '   If hProcess.State <> Process.Running Then
+            '      DlProcState = False
+            '      Debug 
+            '   Endif 
+            '   Wait 1
+            ' Wend
+            If mPlayer.PlayProcess = True Then 
+                'Si suena una canción mientras descarga, guardo sSong a la playlist
+                DataControl.DBPlayList = sSong
+                Debug 
+                Return
+            Endif  
+        Endif 
+        
+        StopMatrizLed
+        
+        If DataControl.FtpEnable = True Then UploadState = True
+        mPlayer.Play(sSong.ID_video & "." & VideoFormat, cacheDir, "Video", True, "0")
+        addMatrizLed("** Ahora sonando - " & Left$(sSong.name, -4) & "  **")
+        SongPlaying = sSong.name
+        PlaySong = sSong
+        $PlayProcState = True
+        If DataControl.SearchCacheID(sSong.ID_video) = False Then 
+            DataControl.setCacheDownload(sSong)
+        Endif
+      
     Else
+      
+        StopMatrizLed
+        DataControl.Skm_Modo = sSong.type
+        
+        If DataControl.FtpEnable = True Then UploadState = True
+            mPlayer.Play(sSong.name, DataControl.getWorkDir() &/ sSong.genre &/ sSong.album, sSong.type, True, sSong.cover)
+            addMatrizLed("** Ahora sonando - " & Left$(sSong.name, -4) & " - " & sSong.album & " **")
+            SongPlaying = sSong.name
+            PlaySong = sSong
+            $PlayProcState = True
+        Endif
+        
+  Else If DataControl.getCountPlaylist() = 0 And DlProcState = True And $PlayProcState = False
+    
+      $PlayProcState = True
+      
+      If sSong.type = "vonline" Then 
+          If DataControl.SearchCacheID(sSong.ID_video) = False Then 
+            DataControl.DBPlayList = sSong
+            If DataControl.FtpEnable Then 
+              UploadTimer.Start
+            Else 
+              DownloadTimer.Start
+              Debug "DownloadTimer_Start"
+            Endif
+            Return 
+          Else 
+            mPlayer.Play(sSong.ID_video & "." & VideoFormat, cacheDir, "Video", True, "0")
+            addMatrizLed("** Ahora sonando - " & Left$(sSong.name, -4) & "  **")
+            SongPlaying = sSong.name
+            PlaySong = sSong
+            $PlayProcState = True
+            Return 
+          Endif
+      Endif
+      
       StopMatrizLed
       DataControl.Skm_Modo = sSong.type
       If DataControl.FtpEnable = True Then UploadState = True
-      mPlayer.Play(sSong.name, DataControl.getWorkDir() &/ sSong.genre &/ sSong.album, DataControl.Skm_Modo, True, sSong.cover)
+      mPlayer.Play(sSong.name, DataControl.getWorkDir() &/ sSong.genre &/ sSong.album, sSong.type, True, sSong.cover)
       addMatrizLed("** Ahora sonando - " & Left$(sSong.name, -4) & " - " & sSong.album & " **")
       SongPlaying = sSong.name
-      $bState = True
-    Endif
-  Else
-    Inc PlayListSongs
-    Debug
+      PlaySong = sSong
+  Else 
+    ' Inc PlayListSongs
+    Debug 
     DataControl.DBPlayList = sSong
-    If PlayListSongs = 1 And DataControl.FtpEnable Then UploadTimer.Start
+    
+    If DataControl.getCountPlaylist() > 0 Then 
+      Debug
+        If DataControl.FtpEnable Then
+          UploadTimer.Start
+        Else 
+          DownloadTimer.Start
+          Debug "DownloadTimer_Start"
+        Endif 
+    Endif 
+    
   Endif
   AutoPlay.Stop
+  VerifyPlay.Start
+  inputFile = False
+  
+End
+
+Private Sub DownloadFile(sSong As Song)
+  
+  DlProcState = True
+  PercentDl = 0
+  ' DownBar.Show
+  
+  ' hProcess = Exec ["youtube-dl", "--newline", "-o", User.Home &/ ".tmpvideos" &/ sSong.ID_video & ".m4a", "-f", "140/m4a/bestaudio", "--no-check-certificate", "http://www.youtube.com/watch?v=" & sSong.ID_video] For Read As "hProcess"
+  
+  If sSong.ID_video = "" Then Return 
+  MkCacheDir
+  'Salvamos sSong para verificar su estado
+  DownloadSong = sSong
+  hProcess = Exec ["youtube-dl", "--newline", "-o", cacheDir &/ sSong.ID_video & "." & VideoFormat, "-f", "best[height<=?" & VideoRes & "]", "--no-check-certificate", "--prefer-insecure", "http://www.youtube.com/watch?v=" & sSong.ID_video] For Read As "hProcess"
+  
+  While DlProcState = True
+    If hProcess.State <> Process.Running Then
+       DlProcState = False
+       Debug 
+    Endif 
+    Wait 1
+  Wend
+  
+  Debug "Gain"
+  DlProcState = True
+
+  hProcess = Exec ["/usr/bin/gain.sh", cacheDir, sSong.ID_video, VideoFormat] For Output As "fProcess"
+  
+  While DlProcState = True
+    If hProcess.State <> Process.Running Then
+       DlProcState = False
+       Debug 
+    Endif 
+    Wait 1
+  Wend
+  
+  Catch 
+    Debug Error.Text
   
 End
 
@@ -129,35 +291,156 @@ Public Sub hProcess_Read()
   Dim sBuffer As String
 
   sBuffer = Read #Last, Lof(Last)
+  
+  If DownBar.Visible = False Then
+    DownBar.Show
+    'Verifica que la velocidad de descarga sea correcta, de lo contrario reiniciamos el proceso
+    CheckCont = 0
+    PercentDlCount = 0
+    CheckVelocity.Start
+  Endif 
+  
   Print sBuffer
+  
+  If Left(sBuffer, 10) = "[download]" Then
+    If Mid(sBuffer, 12, 1) <> "D" And Mid(sBuffer, 12, 1) <> "R" And If Mid(sBuffer, 12, 1) <> "G" And If Mid(sBuffer, 12, 4) <> Left(cacheDir, 4) Then
+      PercentDl = CInt(LTrim(Mid(sBuffer, 11, 4)))
+      DownBar.Value = PercentDl / 100
+    Endif
+  Endif
+  
+  Catch 
+    Debug Error.Text
+
+End
+
+Public Sub CheckVelocity_Timer()
+  
+  Inc CheckCont
+  If CheckCont = 25 Then
+    If PercentDl < 40 Then 
+      Print "Oh no! la velocidad es muy lenta, reiniciando proceso..."
+      dlProcessRestart
+      CheckCont = 0
+    Endif
+    ' CheckVelocity.Stop
+  Else
+  
+    If PercentDl = PercentDltmp Then
+      Inc PercentDlCount
+    Else 
+      PercentDlCount = 0
+    Endif 
+    If PercentDlCount = 30 And PercentDl < 100 Then 
+      Print "Oh no! Parece que el proceso se detuvo, reiniciando..."
+      dlProcessRestart
+      
+    Endif
+    
+  Endif 
+  
+  PercentDltmp = PercentDl
+  
+  
+  If PercentDl = 100 Then CheckVelocity.Stop
+  Catch 
+    Debug Error.Text
+  
+End
+
+Private Sub dlProcessRestart()
+  
+  'Separamos el observador para no disparar ningun evento y matamos el proceso
+  Object.Detach(hProcess)
+  hProcess.Kill
+  Wait 0.3
+  'Ejecutamos de nuevo el proceso
+  hProcess = Exec ["youtube-dl", "--newline", "-o", cacheDir &/ DownloadSong.ID_video & "." & VideoFormat, "-f", "best[height<=?" & VideoRes & "]", "--no-check-certificate", "--prefer-insecure", "http://www.youtube.com/watch?v=" & DownloadSong.ID_video] For Read As "hProcess"
   
 End
 
 Public Sub hProcess_Kill()
   
   Debug
-  procStatus = False
+  CheckVelocity.stop
+  DlProcState = False
   
 End
 
 Public Sub hProcess_Error(Value As String)
   
   Debug Value
-  procStatus = False
+  CheckVelocity.stop
+  DlProcState = False
+  DownBar.Hide
+  DownBar.Value = 0
+  'Devolvemos el credito
+  FMain.$addCredito(DataControl.DlCost())
+  
+  Catch 
+    Debug Error.Text
   
 End
+
+Public Sub fProcess_Read()
+
+  Dim sLine As String
+
+  sLine = Read #Last, -256
+
+  Print sLine;
+
+End
+
+Public Sub fProcess_kill()
+  
+  DlProcState = False
+  DownBar.Hide
+  DownBar.Value = 0
+  
+End
+
+Public Sub fProcess_Error(Value As String)
+  
+  Debug Value
+  
+  fProcess_kill
+  
+End
+
+Public Sub VerifyPlay_Timer()
+  
+  If $PlayProcState = False And DataControl.getCountPlaylist() > 0 Then 
+    Debug "La reproducción se detuvo inesperadamente..."
+    Debug "DlProcState está en " & Str(DlProcState)
+    mPlayer_ProcessEnd
+  Endif
+  
+  If mPlayer.VisibleMovieBox = True And DataControl.FtpEnable = True Then
+    mPlayer.VisibleMovieBox = False
+    If SearchBoxShow = False Then MatrizLed.Show
+    ResMovieBox.Stop
+    Debug 
+  Endif 
+  
+End
+
 
 Public Sub mPlayer_ProcessEnd()
   
   Dim upState As Boolean = True
   Dim sSong As Song
-  While procStatus = True
+  HideMovie
+  ResMovieBox.Stop
+  sMovieBox = False
+  Debug "End process"
+  While DlProcState = True
     Wait 1
   Wend
-  If PlayListSongs > 0 Then
+  If DataControl.getCountPlaylist() > 0 Then
     sSong = DataControl.DBPlayList
     DataControl.DelFirstItemPL
-    
+    VerifyPlay.Start
     If sSong.type <> "vonline" Then DataControl.Skm_Modo = sSong.type
     
     'Al terminar la reproducción se borra el archivo remoto
@@ -177,41 +460,88 @@ Public Sub mPlayer_ProcessEnd()
     If sSong.name = UploadSong And upFailed = False Then upState = False
     StopMatrizLed
     If DataControl.FtpEnable = True Then UploadState = True
+    
     If sSong.type <> "vonline" Then
-      mPlayer.Play(sSong.name, DataControl.getWorkDir() &/ sSong.genre &/ sSong.album, sSong.type, upState, sSong.cover)
-      addMatrizLed("** Ahora sonando - " & sSong.album & " - " & Left$(sSong.name, -4) & " **")
+        ' Dec PlayListSongs
+        mPlayer.Play(sSong.name, DataControl.getWorkDir() &/ sSong.genre &/ sSong.album, sSong.type, upState, sSong.cover)
+        addMatrizLed("** Ahora sonando - " & sSong.album & " - " & Left$(sSong.name, -4) & " **")
+        Debug "Play Audio"
     Else
-      If upState = True Then
-        procStatus = True
-        hProcess = Exec ["youtube-dl", "-o", "/tmp/" & sSong.ID_video & ".mp4", "-f", "best[height<=?" & VideoRes & "]", "--no-check-certificate", "http://www.youtube.com/watch?v=" & sSong.ID_video] For Read As "hProcess"
-        While procStatus = True
-          Wait 1
-          Debug "Esperando... "
-        Wend
-      Endif
-      mPlayer.Play(sSong.ID_video & ".mp4", "/tmp", "Video", upState, "0")
-      Debug "ok"
-      addMatrizLed("** Ahora sonando - " & Left$(sSong.name, -4) & " **")
+        If DlProcState = True Then Return 
+          cacheDir = DataControl.CacheVideoDir
+          Debug
+          If DataControl.SearchCacheID(sSong.ID_video) = False Or Not Exist(DataControl.CacheVideoDir &/ sSong.ID_video & "." & VideoFormat) Then
+              If upState = True Then
+                DownloadFile(sSong)
+                While DlProcState = True
+                  Wait 0.3
+                Wend
+              Endif
+          Endif 
+          ' Dec PlayListSongs
+          mPlayer.Play(sSong.ID_video & "." & VideoFormat, cacheDir, "Video", upState, "0")
+          Debug "ok"
+          addMatrizLed("** Ahora sonando - " & Left$(sSong.name, -4) & " **")
+          
+          If DataControl.SearchCacheID(sSong.ID_video) = False Then 
+            DataControl.setCacheDownload(sSong)
+          Endif
+          
     Endif
-    If sSong.type = "Musica" Then 
+      
+    If sSong.type = "musica" Then 
       If SearchBoxShow = False Then MatrizLed.Show
+      HideMovie
       Try ResMovieBox.Stop
     Endif
+    
+    PlaySong = sSong
     SongPlaying = sSong.name
-    Dec PlayListSongs
-    If PlayListSongs >= 1 And DataControl.FtpEnable Then UploadTimer.Start
+    
+    Debug DataControl.getCountPlaylist()
+    If DataControl.getCountPlaylist() > 0 Then 
+      If DataControl.FtpEnable Then
+        UploadTimer.Start
+      Else 
+        DownloadTimer.Start
+      Endif 
+    Endif 
+    
   Else
-    $bState = False
+    
+    $PlayProcState = False
     HideMovie
     mPlayer.DeleteFile
     ResMovieBox.Stop
     UploadTimer.Stop
+    DownloadTimer.Stop
     AutoPlay.Start
     TimeCont = 0
     mPlayer.mpControl = False
     If SearchBoxShow = False Then MatrizLed.Show
-    addMatrizLed("Rockola digital - inserte una moneda")
+    UpdateScrollMatrizLed
   Endif
+  
+End
+
+Public Sub DownloadTimer_Timer()
+
+  Dim sSong As Song
+  
+  If DataControl.FtpEnable = True Then Return 
+  
+  If DlProcState = True Then Return
+  DownloadTimer.Stop
+  Debug "DownloadTimer_Stop"
+  sSong = DataControl.DBPlayList
+  
+  If sSong.ID_video = "" Then Return 
+  
+  If DataControl.SearchCacheID(sSong.ID_video) = False Then
+    cacheDir = DataControl.CacheVideoDir
+    DownloadFile(sSong)
+    DataControl.setCacheDownload(sSong)
+  Endif 
   
 End
 
@@ -222,12 +552,12 @@ Public Sub UploadTimer_Timer()
   'Si la salida de video está desactivado entonces lo ignora.
   If DataControl.FtpEnable = False Then Return
   If UploadState = True Then Return
-  If procStatus = True Then Return
+  If DlProcState = True Then Return
     
   'Si el servidor se encuentra en proceso de reinicio, ignorar el envio automático.
   If mPlayer.ResProcess Then Return
   UploadTimer.Stop
-  If mPlayer.upProcess = True Or PlayListSongs = 0 Then Return
+  If mPlayer.upProcess = True Or DataControl.getCountPlaylist() = 0 Then Return
     
   sSong = DataControl.DBPlayList
   If sSong.name = "" Then Return
@@ -248,18 +578,16 @@ Public Sub UploadTimer_Timer()
         upFailed = False
       Endif
     Else
-      While procStatus = True
+      While DlProcState = True
         Wait 1
       Wend
-      UploadState = True
-      hProcess = Exec ["youtube-dl", "-o", "/tmp/" & sSong.ID_video & ".mp4", "-f", "best[height<=?" & VideoRes & "]", "--no-check-certificate", "http://www.youtube.com/watch?v=" & sSong.ID_video] For Read As "hProcess"
-      procStatus = True
-      
-      While procStatus = True
-        Wait 1
+      cacheDir = DataControl.CacheVideoDir
+      DownloadFile(sSong)
+      While DlProcState = True
+        Wait 0.3
       Wend
       StopMatrizLed
-      mPlayer.UploadFile(sSong.ID_video & ".mp4", "/tmp/" & sSong.ID_video & ".mp4")
+      mPlayer.UploadFile(sSong.ID_video & "." & VideoFormat, cacheDir &/ sSong.ID_video & "." & VideoFormat)
     Endif
   UploadSong = sSong.name
   Endif
@@ -275,9 +603,9 @@ Public Sub AutoPlay_Timer()
   
   '//Load Playlist
   If AutoPlay.Delay = 1000 Then
-    If PlayListSongs > 0 Then
+    If DataControl.getCountPlaylist() > 0 Then
+      $PlayProcState = True
       mPlayer_ProcessEnd
-      $bState = True
     Endif
     AutoPlay.Delay = 60000
     Return
@@ -303,7 +631,7 @@ Public Sub AutoPlay_Timer()
       With sSong
         .album = hResult["Album"]
         .genre = hResult["Genero"]
-        .type = DataControl.Skm_Modo
+        .type = LCase(DataControl.Skm_Modo)
         .cover = hResult["Cover_name"]
       End With
       
@@ -342,6 +670,14 @@ Public Sub AutoPlay_Timer()
   
   Endif
   
+  If Application.Args[1] = "-pimode" Then
+    tmpFile = Open DataControl.CacheVideoDir &/ ".inspector" For Write Create
+    Print #tmpFile, TimeCont
+  Endif
+  
+  ' Catch 
+  '   Debug Error.Text
+  
 End
 
 Public Sub mPlayer_UploadFinish()
@@ -369,6 +705,12 @@ End
 
 Public Sub HideMovie()
   
+  If $PlayProcState = False Then Return 
+  
+  If PlaySong.type = "musica" Then
+    ResMovieBox.Stop
+    Return
+  Endif
   If mPlayer.VisibleMovieBox = True Then mPlayer.VisibleMovieBox = False
   If SearchBoxShow = False Then MatrizLed.Show
   ResMovieBox.Start
@@ -387,12 +729,14 @@ Public Sub ResMovie()
   If SearchBoxShow = True Then
     Raise sMovie
   Endif
+  sMovieBox = True
   
 End
 
 Public Sub CancelSong()
   
-  If $bState = True And UploadState = False Then mPlayer.PlayerStop
+  ' If $PlayProcState = True And UploadState = False Then mPlayer.PlayerStop
+  mPlayer.PlayerStop
   
 End
 
@@ -422,6 +766,7 @@ End
 Public Sub mPlayer_MovieBox_click()
   
   HideMovie
+  sMovieBox = False
   
 End
 

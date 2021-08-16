@@ -43,7 +43,7 @@ Private ResultSearch As CResult
 Private $ListAlbum As New Object[]
 Private $Keyboard As New Object[]
 Private TypeSearch As Byte = 1 ''Establece el tipo de busqueda 1=Por título 2=Por Album
-Private ModeSearch As Byte = 1 ''Establece el Modo de busqueda 1=Musica 2=Videos 3=Karaokes 4=Todos 5=Internet
+Private ModeSearch As Byte = 1 ''Establece el Modo de busqueda 1=Musica 2=Videos 3=Karaokes 4=Todos 5=Internet 6=Esp busq Top100
 Private navObject As New Object[]
 Private bttnObject As New Object[]
 Private SearchLabel As TextLabel
@@ -52,6 +52,7 @@ Private hAsyncClient As New HttpClient As "hAsyncClient"
 Private sDownloadBuffer As String
 Private dataInfo As Variant
 Private ResultInfo As Variant
+Private TopResultInfo As Variant
 Private hProcess As Process
 Private $buff As String
 ' Private $reintentos As Integer
@@ -80,6 +81,7 @@ Public Sub _new()
     .Y = hSkinTheme["TextSearch/Y"]
     .H = hSkinTheme["TextSearch/H"]
     .W = hSkinTheme["TextSearch/W"]
+    .Background = Color.White
     .Font.Bold = False
     .Font.Size = 17
     .ReadOnly = True
@@ -103,6 +105,7 @@ Public Sub _new()
     .Y = hSkinTheme["LoadingAni/Y"]
     .H = hSkinTheme["LoadingAni/H"]
     .W = hSkinTheme["LoadingAni/W"]
+    ' .Animation = Animation.Load(hSkinPath &/ hSkinTheme["Images/LAnimation"])
     .Path = hSkinPath &/ hSkinTheme["Images/LAnimation"]
     .Playing = False
     .Hide
@@ -124,6 +127,8 @@ Public Sub _new()
   
   CreateKeys
   CreateList
+  ModeSearch = 6
+  SearchTop100
   
 End
 
@@ -185,8 +190,11 @@ Private Sub CreateKeys()
   
   Xpos = $Keyboard[0].X
   Ypos = $Keyboard[0].Y + Hkey
-  Hkey = 49
-  Wkey = 49
+  
+  Hkey = hSkinTheme["KeyboardSearchSingleKey/H"]
+  Wkey = hSkinTheme["KeyboardSearchSingleKey/W"]
+  ' Hkey = 49
+  ' Wkey = 49
   
   c = 0
   
@@ -196,7 +204,11 @@ Private Sub CreateKeys()
     With SingleKey
       .X = Xpos + Wkey * c
       .Y = Ypos
-      .LetterKey = Chr$(i)
+      If i = 57 Then 
+        .LetterKey = Chr$(48)
+      Else
+        .LetterKey = Chr$(i + 1)
+      Endif
       .HKey = Hkey
       .WKey = Wkey
       .imgResPath = hSkinPath &/ hSkinTheme["Images/SingleKey"]
@@ -292,8 +304,10 @@ Private Sub CreateKeys()
     With SingleKey
       'Define la tecla espaciadora
       If i = 30 Then
-        .HKey = 50
-        .WKey = 273
+        .Hkey = hSkinTheme["KeyboardSearchSpaceKey/H"]
+        .Wkey = hSkinTheme["KeyboardSearchSpaceKey/W"]
+        ' .HKey = 50
+        ' .WKey = 273
         .$idKey = "Space"
         .imgResPath = hSkinPath &/ hSkinTheme["Images/SpaceKey"]
       Else
@@ -329,7 +343,7 @@ Private Sub CreateKeys()
   Next
   
   'Botones
-  For i = 0 To 5
+  For i = 0 To 6
     SingleKey = New CKey(Me) As "BttnSearch"
     Select i
       Case 0
@@ -339,10 +353,12 @@ Private Sub CreateKeys()
       Case 2
         char = "VOnlineBttn"
       Case 3
-        char = "MusicaBttn"
+        char = "Top100Bttn"
       Case 4
-        char = "VideosBttn"
+        char = "MusicaBttn"
       Case 5
+        char = "VideosBttn"
+      Case 6
         char = "KaraokeBttn"
         
     End Select
@@ -435,11 +451,18 @@ End
 
 Private Sub Buscar()
   
-  Dim i, b As Integer, $ids As New Integer[], hResult As Result, sText, sTab, sAlb As String
+  Dim i, b, c As Integer, $ids As New Integer[], sResult, hResult As Result, sText, sTab, sAlb As String
   
   If STextSearch.Len = 0 Then Return
   
   CleanResult
+  
+  With LoadAnimation
+    .Show
+    .Playing = True
+  End With
+  
+  Wait 0.5
   
   Select ModeSearch
     Case 1
@@ -462,9 +485,21 @@ Private Sub Buscar()
   
   sText = Replace(STextSearch, "Ñ", "ñ")
   
-  If sText = "" Then Return
+  If sText = "" Then
+      With LoadAnimation
+        .Hide
+        .Playing = False
+      End With
+     Return
+  Endif 
   hResult = DataControl.getDataSearch(ModeSearch, TypeSearch, sText)
-  If hResult.Count = 0 Then Return
+  If hResult.Count = 0 Then
+     With LoadAnimation
+        .Hide
+        .Playing = False
+     End With
+     Return
+  Endif 
   
   For i = 0 To hResult.Max
     If TypeSearch = 1 Then 'Buscar en modo Por Titulos
@@ -476,6 +511,14 @@ Private Sub Buscar()
         .Filename = hResult[sTab & ".N1"]
         .Genre = hResult[sAlb & ".Genero"]
         .Album = hResult[sAlb & ".Album"]
+        .IDSong = hResult[sTab & ".id"]
+        sResult = DataControl.getDataSongs(hResult[sTab & ".id"])
+        For c = 1 To 25
+          If sResult["N" & c] = hResult[sTab & ".N1"] Then 
+            .Npos = c
+          Endif
+        Next
+        ' .Npos =
         .Duration_Video = hResult[sAlb & ".Album"]
         .sType = hResult["Tipo"]
         .Cover = hResult[sAlb & ".Cover_name"]
@@ -523,6 +566,71 @@ Private Sub Buscar()
   CursorCont = 0
   ReturnCont = 0
   
+  With LoadAnimation
+    .Hide
+    .Playing = False
+  End With
+  
+  Catch 
+    Debug Error.Text
+  
+End
+
+Private Sub PopularSearch()
+  
+  Dim idResult, hResult As Result, i, c As Integer, sTab, sAlb As String
+  
+  CleanResult
+  
+  idResult = DataControl.getIdPlayHistory()
+  hResult = DataControl.getPlayHistory()
+  
+  If Object.IsValid(hResult) = False Then Return 
+  
+  Select hResult["Tipo"]
+      Case "musica"
+        sTab = "mp3"
+        sAlb = "album_id"
+      Case "video"
+        sTab = "video"
+        sAlb = "video_album_id"
+      Case "karaoke"
+        sTab = "karaoke"
+        sAlb = "karaoke_album_id"
+    End Select
+    
+    c = idResult["N"]
+    
+  For i = 0 To hResult.Max
+    DataControl.Skm_Modo = hResult["Tipo"]
+    ResultSearch = New CResult(ListResult) As "ResultSong" 
+    With ResultSearch
+        .IDAlbum = idResult["idalbum"]
+        .Nombre = Left(hResult[sTab & ".N" & c], -4)
+        .Filename = hResult[sTab & ".N" & c]
+        .Genre = hResult[sAlb & ".Genero"]
+        .Album = hResult[sAlb & ".Album"]
+        .IDSong = idResult["idsong"]
+        .Npos = idResult["N"]
+        .Duration_Video = hResult[sAlb & ".Album"]
+        .sType = idResult["type"]
+        .Cover = hResult[sAlb & ".Cover_name"]
+        If hResult[sAlb & ".Cover_name"] = "0" Then
+          .CoverLoad("0")
+        Else
+          .CoverLoad(DataControl.getWorkDir() &/ hResult[sAlb & ".Genero"] &/ hResult[sAlb & ".Album"] &/ hResult[sAlb & ".Cover_name"])
+        Endif
+        .X = 0
+        .Y = hSkinTheme["ResultItem/H"] * i + 5
+        .H = hSkinTheme["ResultItem/H"]
+        .W = hSkinTheme["ResultItem/W"]
+    End With
+    $ListAlbum.Add(ResultSearch)
+    hResult.MoveNext
+    idResult.MoveNext
+  Next
+  
+  
 End
 
 Private Sub CleanResult()
@@ -550,7 +658,7 @@ End
 
 Public Sub ResultSong_Click(sSong As Song)
   
-  If sSong.id = -1 Then
+  If sSong.idalbum = -1 Then
     Buscar
   Else
     Raise addPlay(sSong)
@@ -685,15 +793,9 @@ Public Sub Navigator_PulseKey()
     Case "Nav5"
       ListResult.Scroll(0, ListResult.ScrollY + ListResult.H - 2)
   End Select
-  
+  suggesMenuHide
   CursorCont = 0
   ReturnCont = 0
-  
-End
-
-Private Sub PopularSearch()
-  
-  
   
 End
 
@@ -739,28 +841,68 @@ Public Sub hProcess_Read()
   
 End
 
+Public Sub hProcess_Error(sError As String)
+
+  With LoadAnimation
+    .Hide
+    .Playing = False
+  End With
+  
+  Debug sError
+  
+End
+
+Private Sub jsonDecode() As Variant
+  
+  Return JSON.Decode(Conv($buff, "ISO-8859-1", "utf-8"))
+  
+End
+
 Public Sub hProcess_Kill()
   
-  Dim i, b As Short, timLen As String
+  Dim i, b As Short, timLen, imgUrl As String, CacheInfo, rslName As String
   
-  If ModeSearch <> 5 Then Return
+  If ModeSearch < 5 Then Return
   
   If $buff = "" Then Return
   
   ResultInfo = Null
-  ResultInfo = JSON.Decode(Conv($buff, "ISO-8859-1", "utf-8"))
   
-  If ResultInfo["result"].Length > 0 Then
-    For i = 0 To ResultInfo["result"].max
-      If Len(ResultInfo["result"][i]["duration"]) > 3 Then 'ignorar videos menores a 1 min
-        timLen = Left(ResultInfo["result"][i]["duration"], -3)
+  If ModeSearch = 5 Then
+    rslName = "result"
+    ResultInfo = jsonDecode()
+  Else 
+    rslName = "videos"
+    If TopResultInfo = Null Then
+      ResultInfo = jsonDecode()
+      TopResultInfo = ResultInfo
+      If ModeSearch = 6 Then
+        ModeSearch = 1
+        Return
+      Endif  
+    Else 
+      Debug 
+      ResultInfo = TopResultInfo
+    Endif 
+    ModeSearch = 5
+  Endif
+    
+  If ResultInfo[rslName].Length > 0 Then
+    
+    For i = 0 To ResultInfo[rslName].max
+      If Len(ResultInfo[rslName][i]["duration"]) > 3 Then 'ignorar videos menores a 1 min
+        CacheInfo = ""
+        timLen = Left(ResultInfo[rslName][i]["duration"], -3)
         If Len(timLen) < 2 And CInt(Right(timLen, 1)) < 9 Then
           ResultSearch = New CResult(ListResult) As "ResultSong"
+          imgUrl = ResultInfo[rslName][i]["thumbnails"][0]["url"]
           With ResultSearch
-            .Nombre = ResultInfo["result"][i]["title"]
-            .ID_Video = ResultInfo["result"][i]["id"]
-            .URL_Image = ResultInfo["result"][i]["thumbnails"][0]["url"]
-            .Duration_Video = ResultInfo["result"][i]["duration"]
+            .Nombre = ResultInfo[rslName][i]["title"]
+            .ID_Video = ResultInfo[rslName][i]["id"]
+            .URL_Image = String.Mid(imgUrl, 1, InStr(imgUrl, "?") - 1)
+            ' .URL_Image = imgUrl
+            ' If DataControl.SearchCacheID(.ID_Video) = True Then CacheInfo = " == DESCARGADO =="
+            .Duration_Video = ResultInfo[rslName][i]["duration"] & CacheInfo
             .sType = "vonline"
             .X = 0
             .Y = hSkinTheme["ResultItem/H"] * b + 5
@@ -772,6 +914,7 @@ Public Sub hProcess_Kill()
         Endif
       Endif
     Next
+        
   Endif
   
   ' If $buff.Count > 1 Then
@@ -820,6 +963,9 @@ Public Sub hProcess_Kill()
     .Hide
     .Playing = False
   End With
+  
+  Catch 
+    Debug Error.Text
   
 End
 
@@ -879,6 +1025,13 @@ Public Sub suggesMenu_Select()
 
 End
 
+Public Sub suggesMenuHide()
+  
+  suggesMenu.Visible = False
+  ReturnCont = 0
+  
+End
+
 Public Sub TextSearch_Change()
 
   suggesMenu.Hide
@@ -889,6 +1042,8 @@ End
 Public Sub BttnSearch_PulseKey()
   
   Dim sMess As String
+  
+  suggesMenuHide
   If CursorShow = True
     CursorShow = False
     CursorDelay.Stop
@@ -903,7 +1058,7 @@ Public Sub BttnSearch_PulseKey()
   
   Select Last.$idKey
     Case "PopularBttn"
-      SearchLabel.Text = "Mostrando los Más Tocados"
+      SearchLabel.Text = "Los Más Tocados"
       PopularSearch
       CursorCont = 0
       ReturnCont = 0
@@ -914,6 +1069,9 @@ Public Sub BttnSearch_PulseKey()
     Case "VOnlineBttn"
       ModeSearch = 5
       SearchLabel.Text = "Buscar Vídeos en Línea"
+    Case "Top100Bttn"
+      ModeSearch = 6
+      SearchLabel.Text = "Top 100 Más Tocado en Línea"
     Case "MusicaBttn"
       ModeSearch = 1
       SearchLabel.Text = "Buscar " & sMess & " en Música"
@@ -928,11 +1086,41 @@ Public Sub BttnSearch_PulseKey()
     .Hide
     .Playing = False
   End With
-  Buscar
+  If ModeSearch <> 6 Then
+    Buscar
+  Else 
+    SearchTop100
+  Endif 
   CursorShow = True
   CursorDelay.Start
   CursorCont = 0
   ReturnCont = 0
+  
+End
+
+Private Sub SearchTop100()
+  
+  If Object.IsValid(hProcess) Then
+    If hProcess.State = Process.Running Then
+      hProcess.Kill
+      $buff = ""
+    Endif
+  Endif
+  CleanResult
+  If TopResultInfo = Null Then
+    If ModeSearch < 6 Then
+      With LoadAnimation
+        .Show
+        .Playing = True
+      End With
+    Endif 
+    
+    hProcess = Exec ["python3", "/usr/bin/ytop.py"] For Read As "hProcess"
+    $buff = ""
+    Debug 
+  Else 
+    hProcess_Kill
+  Endif 
   
 End
 

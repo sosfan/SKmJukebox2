@@ -15,7 +15,12 @@ Private CoverPicture As PictureBox
 Private CatIcon As PictureBox
 Private ClickedArea As Panel
 
+Private imgFile As File
+Private filepath As String
+
 Property IDAlbum As Integer
+Property IDSong As Integer
+Property Npos As Integer
 Property Nombre As String
 Property Filename As String
 Property Genre As String
@@ -115,6 +120,9 @@ End
 Private Sub ID_Video_Write(Value As String)
 
   IDVideo = Value
+  If DataControl.SearchCacheID(IDVideo) = True Then 
+    NombreInfoLbl.Foreground = Color.Green
+  Endif
   sSong.ID_video = Value
 
 End
@@ -128,6 +136,7 @@ End
 Private Sub URL_Image_Write(Value As String)
 
   URLImage = Value
+  sSong.URL_image = Value
   DownloadPicture(URLImage)
 
 End
@@ -146,11 +155,24 @@ End
 
 Public Sub DownloadPicture($url As String)
   
+  ' Dim filepath As String
+  
   ' hDownloadClient.URL = Replace($url, "\r", "")
-  hDownloadClient.URL = $url
-  hDownloadClient.TimeOut = 20
-  hDownloadClient.Async = True
-  Try hDownloadClient.Get()
+  filepath = DataControl.CacheVideoDir &/ "covers/"
+  If Not Exist(filepath) Then Mkdir filepath
+  filepath = filepath & IDVideo & ".jpg"
+  
+  If Not Exist(filepath) Then 
+    
+    ' If Right($url, 3) = "web" Then $url = $url & "p"
+    hDownloadClient.URL = $url
+    ' Debug $url
+    hDownloadClient.TimeOut = 20
+    hDownloadClient.Async = True
+    hDownloadClient.Get()
+  Else 
+    CoverPicture.Picture = Picture.Load(filepath)
+  Endif 
   
   Catch
     Debug Error.Text
@@ -160,20 +182,60 @@ End
 Public Sub hDownloadClient_Read()
   
   Dim sBuffer As String
-  
+  ' Debug
   sBuffer = Read #Last, Lof(Last)
   $imagebuffer &= sBuffer
+  
+  Catch 
+    Debug Error.Text
+  
+End
+
+Public Sub hDownloadClient_Error()
+  
+  ' imgFile.Close()
+  $imagebuffer = Null
+  Catch 
+    Debug Error.Text
   
 End
 
 Public Sub hDownloadClient_Finished()
   
+  ' Dim webp As String
+  
   CoverPicture.Picture = Null
-  ' Debug
+  If $imagebuffer = "" Then
+    Return
+  Endif  
+  imgFile = Open filepath For Create 
+  Print #imgFile, $imagebuffer
+  imgFile.Close()
   CoverPicture.Picture = Picture.FromString($imagebuffer)
+  ' webp = $imagebuffer
   $imagebuffer = Null
+  Catch 
+    Debug Error.Text
+    ' Debug "$imagebuffer webp no compatible " & Error.Text
+    ' Shell "echo " & webp & "|dwebp -quiet -o - -- -" For Read As "webpConv"
   
 End
+
+' Public Sub webpConv_Read()
+'   
+'   Dim sBuffer As String
+'   
+'   sBuffer = Read #Last, Lof(Last)
+'   $imagebuffer &= sBuffer
+'   
+' End
+' 
+' Public Sub webpConv_Kill()
+'   
+'   CoverPicture.Picture = Picture.FromString($imagebuffer)
+'   $imagebuffer = Null
+'   
+' End
 
 Public Sub ClickedArea_MouseDown()
 
@@ -292,13 +354,13 @@ End
 
 Private Function IDAlbum_Read() As Integer
 
-  Return sSong.id
+  Return sSong.idalbum
 
 End
 
 Private Sub IDAlbum_Write(Value As Integer)
 
-  sSong.id = Value
+  sSong.idalbum = Value
 
 End
 
@@ -311,3 +373,27 @@ Public Sub $idsongs(Value As Integer[])
   
 End
 
+
+Private Function IDSong_Read() As Integer
+
+  Return sSong.id
+
+End
+
+Private Sub IDSong_Write(Value As Integer)
+
+  sSong.id = Value
+
+End
+
+Private Function Npos_Read() As Integer
+
+Return sSong.idsong  
+
+End
+
+Private Sub Npos_Write(Value As Integer)
+
+  sSong.idsong = Value
+
+End
