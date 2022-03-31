@@ -1,0 +1,86 @@
+' Gambas class file
+
+' SKm Jukebox 2
+'
+' Autores:
+'  J. Francisco Facundo <sos.sempai@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; version 3.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+' details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc.,
+' 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+
+Private DataControl As New CData
+
+Private Sub PlaylistView()
+  
+  Dim hResult As Result, a, b As Integer, sCol As String
+  
+  hResult = DataControl.getPlaylist()
+  
+  With PlView
+    .Header = 3
+    .Rows.Count = hResult.Count
+    .Columns.Count = 3
+    .Columns[0].Title = "id"
+    .Columns[0].W = 20
+    .Columns[1].Title = "Nombre"
+    .Columns[1].W = 150
+    .Columns[2].Title = "Tipo"
+  End With
+  
+  If Object.IsValid(hResult) Then
+  
+    For a = 0 To PlView.Rows.count - 1
+      For b = 0 To PlView.Columns.count - 1
+        Select b
+          Case 0
+            sCol = "id"
+          Case 1
+            sCol = "Nombre"
+          Case 2
+            sCol = "Tipo"
+        End Select
+        PlView[a, b].text = hResult[sCol]
+      Next
+      hResult.MoveNext
+    Next
+  
+  Endif 
+  
+End
+
+Public Sub Refresh_Timer()
+
+  PlaylistView
+
+End
+
+Public Sub Form_Open()
+
+  Refresh.Start
+
+End
+
+Public Sub Form_Close()
+
+  Refresh.Stop
+
+End
+
+Public Sub Form_Resize()
+
+  With PlView
+    .W = Me.W - 20
+    .H = Me.H - 50
+  End With  
+
+End

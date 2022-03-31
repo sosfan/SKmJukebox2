@@ -1,7 +1,26 @@
 ' Gambas class file
 
+' SKm Jukebox 2
+'
+' Autores:
+'  J. Francisco Facundo <sos.sempai@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; version 3.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+' details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc.,
+' 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+
 Private DataControl As New CData
 Private sSettings As Settings
+Private sSkinRes As String
 
 Public Sub _new()
   
@@ -13,8 +32,19 @@ Public Sub Form_Open()
   
   AjustWindowCheckBox.Value = DataControl.FullScreen
   HiddenPointerCheckBox.Value = DataControl.HideCursor
+  CancelBttnCheckBox.Value = DataControl.EnableCancelBttn
+  VolumenBttnCheckBox.Value = DataControl.EnableVolumenBttn
+  MusicaCreditosValor.Text = DataControl.SongCost
+  VideosCreditosValor.Text = DataControl.VideoCost
+  KaraokeCreditosValor.Text = DataControl.KaraokeCost
+  DlCreditosValor.Text = DataControl.DlCost
   
   LoadListSkin
+  
+  insertTableDl
+  Gridrefresh.Start
+  
+  ScrollStrBox.Text = DataControl.ScrollString
   
   tvOutCheck.Value = DataControl.VideoOut
   ftpSendCheck.Value = DataControl.FtpEnable
@@ -27,12 +57,24 @@ Public Sub Form_Open()
   VideoDirBox.Value = DataControl.VideoDir
   KaraokeDirBox.Value = DataControl.KaraokeDir
   
+  VideoResBox.Text = DataControl.VideoResolution
+  VideoFormatBox.Text = DataControl.VideoFormat
+  CacheDirBox.Value = DataControl.CacheVideoDir
+  
   LoadKeysText
   
   LoadTotalCoins
   LoadCreditsNow
   VCoin.Text = DataControl.MoneyValue
   CreditCoin.Text = DataControl.CreditValue
+  
+  VCoin2.Text = DataControl.MoneyValue2
+  CreditCoin2.Text = DataControl.CreditValue2
+  CreditCoin3.Text = DataControl.CreditValue2_2
+  CreditCoin4.Text = DataControl.CreditValue2_3
+  CreditCoin5.Text = DataControl.CreditValue2_4
+  CreditCoin6.Text = DataControl.CreditValue2_5
+  PirSensorBox.Value = DataControl.SensorServices
   
   PNameLabel.Text = Application.Name
   VerLabel.Text = "Versión " & Application.Version
@@ -41,6 +83,43 @@ Public Sub Form_Open()
 
 End
 
+Private Sub insertTableDl()
+  
+  Dim hResult As Result, a, b As Integer, sCol As String
+  
+  hResult = DataControl.GetCacheDownload()
+  
+  With CacheGridView
+    .Header = 3
+    .Rows.Count = hResult.Count
+    .Columns.Count = 3
+    .Columns[0].Title = "id"
+    .Columns[1].Title = "VideoID"
+    .Columns[2].Title = "Nombre"
+  End With
+  
+  If Object.IsValid(hResult) Then
+  
+    For a = 0 To CacheGridView.Rows.count - 1
+      For b = 0 To CacheGridView.Columns.count - 1
+        Select b
+          Case 0
+            sCol = "id"
+          Case 1
+            sCol = "ytID"
+          Case 2
+            sCol = "StrName"
+        End Select
+        CacheGridView[a, b].text = hResult[sCol]
+      Next
+      hResult.MoveNext
+    Next
+  
+  Endif 
+  
+End
+
+
 Private Sub LoadListSkin()
   
   Dim sName As String
@@ -48,6 +127,8 @@ Private Sub LoadListSkin()
   For Each sName In Dir(DataControl.SkinPath, "*", gb.Directory).Sort()
     SkinMenu.Add(sName)
   Next
+  sSkinRes = DataControl.SkinTheme
+  SkinMenu.Text = sSkinRes
   
 End
 
@@ -66,6 +147,7 @@ Public Sub LoadKeysText()
   
   CancelKey.Text = DataControl.CancelKey
   MaxCreditKey.Text = DataControl.MaxCreditKey
+  MaxCreditKey2.Text = DataControl.MaxCreditKey2
   MinCreditKey.Text = DataControl.MinCreditKey
   MaxVolKey.Text = DataControl.MaxVolKey
   MinVolKey.Text = DataControl.MinVolKey
@@ -75,7 +157,11 @@ End
 
 Private Sub LoadTotalCoins()
   
-  TotalCoin.Text = "$ " & (DataControl.Total_credito * DataControl.MoneyValue)
+  Dim tCoins As Integer
+  
+  tCoins = (DataControl.Total_credito * DataControl.MoneyValue) + (DataControl.Total_credito2 * DataControl.MoneyValue2)
+  
+  TotalCoin.Text = "$ " & tCoins
   
 End
 
@@ -89,6 +175,7 @@ Public Sub BtnUpMusic_Click()
 
   SaveDirBoxValues
   DataControl.UpMusicTb
+  DataControl.MakeSearchVirtualTables(1)
 
 End
 
@@ -96,6 +183,7 @@ Public Sub BtnUpVideo_Click()
 
   SaveDirBoxValues
   DataControl.UpVideoTb
+  DataControl.MakeSearchVirtualTables(2)
 
 End
 
@@ -103,22 +191,34 @@ Public Sub BtnUpKaraoke_Click()
   
   SaveDirBoxValues
   DataControl.UpKaraokeTb
+  DataControl.MakeSearchVirtualTables(3)
 
 End
 
 Public Sub Form_Close()
 
+  SaveConfigs
   FMain.Show
-  BtnClose_Click
 
+End
+
+Private Sub SaveConfigs()
+  
+  'Guarda las configuraciones
+  If sSkinRes <> SkinMenu.Text Then
+    Message.info("Es necesario reiniciar para que los cambios sean aplicados.")
+  Endif
+  SaveDirBoxValues
+  Gridrefresh.Stop
+  FMain.fullscreen_ajust
+  FMain.hidecursor
+  
+  Debug
+  
 End
 
 Public Sub BtnClose_Click()
 
-  'Guarda las configuraciones
-  SaveDirBoxValues
-  FMain.fullscreen_ajust
-  FMain.hidecursor
   Me.Close
 
 End
@@ -131,6 +231,10 @@ Public Sub tvOutCheck_Click()
 End
 
 Private Sub SaveDirBoxValues()
+  
+  Dim itmp, Sb As String
+  Dim splitstr As String[]
+  Dim i As Integer
   
   If MusicDirBox.Value <> DataControl.MusicDir Then
     If MusicDirBox.Value = "" Then
@@ -156,6 +260,47 @@ Private Sub SaveDirBoxValues()
     Endif
   Endif
   
+  If CacheDirBox.Value <> DataControl.CacheVideoDir Then 
+    If CacheDirBox.Value = "" Then 
+      DataControl.CacheVideoDir = User.Home & "/tmpvideos"
+    Else 
+      DataControl.CacheVideoDir = CacheDirBox.Value
+    Endif
+  Endif
+  
+  If FtpBox.Visible = True Then 
+    itmp = Replace(FtpBox.text, " ", "")
+    If itmp <> Null Then
+      splitstr = Split(itmp, ".")
+      itmp = ""
+      i = 1
+      For Each Sb In splitstr
+        If Sb <> Null Then 
+          If i <= 3 Then 
+            itmp = itmp & Sb & "."
+          Else 
+            itmp = itmp & Sb
+          Endif 
+          Inc i
+        Else 
+          itmp = "192.168.1.104"
+          Break 
+        Endif
+      Next
+    Else 
+      itmp = "192.168.1.104"
+    Endif 
+    FtpUrl.Text = itmp
+    FtpBox.Hide
+    FtpUrl.Show
+  Endif
+  
+  DataControl.FTPHost = FtpUrl.Text
+  DataControl.FTPUser = FtpUser.Text
+  DataControl.FTPPassword = FtpPass.Text 
+  
+  DataControl.ScrollString = ScrollStrBox.Text
+  
   
 End
 
@@ -173,9 +318,46 @@ Public Sub VCoin_Change()
 
 End
 
+Public Sub VCoin2_Change()
+
+  DataControl.MoneyValue2 = Last.Text
+  LoadTotalCoins
+
+End
+
 Public Sub CreditCoin_Change()
 
   DataControl.CreditValue = Last.Text
+
+End
+
+Public Sub CreditCoin2_Change()
+
+  DataControl.CreditValue2 = Last.Text
+
+End
+
+Public Sub CreditCoin3_Change()
+
+  DataControl.CreditValue2_2 = Last.Text
+
+End
+
+Public Sub CreditCoin4_Change()
+
+  DataControl.CreditValue2_3 = Last.Text
+
+End
+
+Public Sub CreditCoin5_Change()
+
+  DataControl.CreditValue2_4 = Last.Text
+
+End
+
+Public Sub CreditCoin6_Change()
+
+  DataControl.CreditValue2_5 = Last.Text
 
 End
 
@@ -187,7 +369,7 @@ Public Sub ResetCoins_Click()
     For i = 1 To 9
       Report.Add(sSettings["SYSTG/R" & i, ""])
     Next
-    sSettings["SYSTG/Val"] = sSettings["SYSTG/Val", 0] + DataControl.Total_credito
+    sSettings["SYSTG/Val"] = sSettings["SYSTG/Val", 0] + DataControl.Total_credito + DataControl.Total_credito2
     
     For i = 1 To 10
       If i = 1 Then 
@@ -208,6 +390,7 @@ Public Sub ResetCoins_Click()
     Next
     
     DataControl.Total_credito = 0
+    DataControl.Total_credito2 = 0
     LoadTotalCoins
     sSettings.Save
     
@@ -227,7 +410,7 @@ End
 Public Sub AddCredits_Click()
 
   If DataControl.Credito < 20 Then
-    FMain.$addCredito()
+    FMain.$addCredito(1)
     LoadCreditsNow
   Endif
 
@@ -263,7 +446,7 @@ Public Sub PAPref_Click()
   Shell "paprefs"
   If Not Exist(User.Home &/ ".config") Then Mkdir User.Home &/ ".config"
   If Not Exist(User.Home &/ ".config/pulse") Then Mkdir User.Home &/ ".config/pulse"
-  If Not Exist(User.Home &/ ".config/pulse/default.pa") Then Copy "/usr/share/skmjukebox/default.pa" To User.Home &/ ".config/pulse/"
+  If Not Exist(User.Home &/ ".config/pulse/default.pa") Then Copy "/usr/share/skmjukebox/default.pa" To User.Home &/ ".config/pulse/default.pa"
 
 End
 
@@ -282,5 +465,82 @@ End
 Public Sub SkinMenu_Change()
 
   DataControl.SkinTheme = SkinMenu.Text
+
+End
+
+Public Sub Gridrefresh_Timer()
+
+  insertTableDl
+
+End
+
+
+Public Sub MusicaCreditosValor_Change()
+
+  DataControl.SongCost = Last.Text
+
+End
+
+Public Sub VideosCreditosValor_Change()
+
+  DataControl.VideoCost = Last.Text
+
+End
+
+Public Sub KaraokeCreditosValor_Change()
+
+  DataControl.KaraokeCost = Last.Text
+
+End
+
+Public Sub DlCreditosValor_Change()
+
+  DataControl.DlCost = Last.Text
+
+End
+
+Public Sub PirSensorBox_Click()
+
+  DataControl.SensorServices = Last.Value
+
+End
+
+Public Sub Button1_Click()
+
+  If Message.Question("¿Desea eliminar TODA la caché de descargas?", "Si", "Cancelar") = 1 Then 
+    DataControl.ClearAllCache
+  Endif
+
+End
+
+Public Sub VideoResBox_Change()
+
+  DataControl.VideoResolution = VideoResBox.Text
+
+End
+
+Public Sub VideoFormatBox_Change()
+
+  DataControl.VideoFormat = VideoFormatBox.Text
+
+End
+
+Public Sub FtpUrl_MouseDown()
+
+  FtpUrl.Hide
+  FtpBox.Show
+  FtpBox.SetFocus
+
+End
+
+Public Sub CancelBttnCheckBox_Click()
+
+  DataControl.EnableCancelBttn = Last.Value
+
+End
+
+Public Sub VolumenBttnCheckBox_Click()
+
+  DataControl.EnableVolumenBttn = Last.Value
 
 End

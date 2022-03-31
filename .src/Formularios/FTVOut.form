@@ -1,0 +1,11 @@
+# Gambas Form File 3.0
+
+{ Form Form
+  MoveScaled(0,0,64,64)
+  Background = &H000000&
+  SkipTaskbar = True
+  { !MovieBoxTV DrawingArea
+    MoveScaled(16,12,24,25)
+    #Public = True
+  }
+}

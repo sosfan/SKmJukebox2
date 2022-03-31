@@ -1,14 +1,15 @@
 # Gambas Form File 3.0
 
 { Form Form
-  MoveScaled(0,0,42,8)
+  MoveScaled(0,0,57,8)
   { Timer1 #Timer
     Enabled = True
   }
   { InfoLabel Label
-    MoveScaled(4,2,55,4)
+    MoveScaled(1,2,55,4)
     Font = Font["Bold,14"]
     Foreground = &HFF0000&
+    Alignment = Align.Center
     Text = ("Presiona la tecla para asignar.")
   }
 }

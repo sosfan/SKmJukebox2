@@ -1,0 +1,15 @@
+' Gambas class file
+
+
+Public Sub Form_Open()
+
+  With PictureSplash
+    .X = 0
+    .Y = 0
+    .H = Me.H
+    .W = Me.W
+  End With
+  
+  VersionLabel.Text = "Versión " & Application.Version
+
+End

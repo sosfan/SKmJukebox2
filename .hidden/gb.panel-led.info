@@ -1,0 +1,30 @@
+#PanelLed
+Frame
+C
+Text
+p
+s
+
+'Asigna o retorna la cadena de texto que muestra el control.
+LedSpeed
+p
+i
+
+'Asigna o retorna la velocidad de desplazamiento del control.
+H
+p
+i
+
+'Establece o retorna la altura del control.
+hScrollText_timer
+m
+
+
+Stop
+m
+
+
+Start
+m
+
+

@@ -17,6 +17,31 @@
 ' this program; if not, write to the Free Software Foundation, Inc.,
 ' 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
+Public Sub CounterStartCreateDatabaseTables(hConn As Connection)
+  
+  Dim hTable As Table, hResult As Result
+  
+  hTable = hConn.Tables.Add("counter_start")
+  
+  With hTable
+    
+    .Fields.Add("id", db.Integer)
+    .Fields.Add("count", db.Integer)
+    .PrimaryKey = ["id"]
+    
+    .Update
+    
+  End With
+  
+  hResult = hConn.Create("counter_start")
+  hResult["id"] = 1
+  hResult["count"] = 0
+  hResult.Update
+  hConn.Commit
+  
+End
+
+
 Public Sub ConfigCreateDatabaseTables(hConn As Connection)
   
   Dim hTable As Table, hResult As Result
@@ -26,9 +51,20 @@ Public Sub ConfigCreateDatabaseTables(hConn As Connection)
   With hTable
     
     .Fields.Add("id", db.Integer)
+    .Fields.Add("SongCost", db.Integer, 1)
+    .Fields.Add("VideoCost", db.Integer, 1)
+    .Fields.Add("KaraokeCost", db.Integer, 1)
+    .Fields.Add("DlCost", db.Integer, 1)
     .Fields.Add("MoneyValue", db.Integer, 2)
+    .Fields.Add("MoneyValue2", db.Integer, 2)
     .Fields.Add("CreditValue", db.Integer, 1)
+    .Fields.Add("CreditValue2", db.Integer, 1)
+    .Fields.Add("CreditValue2_2", db.Integer, 1)
+    .Fields.Add("CreditValue2_3", db.Integer, 1)
+    .Fields.Add("CreditValue2_4", db.Integer, 1)
+    .Fields.Add("CreditValue2_5", db.Integer, 1)
     .Fields.Add("MasterVol", db.Integer, 3)
+    .Fields.Add("ScrollString", db.String)
     .Fields.Add("FullScreen", db.Boolean)
     .Fields.Add("HideCursor", db.Boolean)
     .Fields.Add("ScreenSaver", db.Boolean)
@@ -37,6 +73,7 @@ Public Sub ConfigCreateDatabaseTables(hConn As Connection)
     .Fields.Add("AutoPlay", db.Boolean)
     .Fields.Add("AutoScroll", db.Boolean)
     .Fields.Add("MaxCreditKey", db.String, 1)
+    .Fields.Add("MaxCreditKey2", db.String, 1)
     .Fields.Add("MinCreditKey", db.String, 1)
     .Fields.Add("ConfigKey", db.String, 1)
     .Fields.Add("CancelKey", db.String, 1)
@@ -50,6 +87,12 @@ Public Sub ConfigCreateDatabaseTables(hConn As Connection)
     .Fields.Add("MusicDir", db.String)
     .Fields.Add("VideoDir", db.String)
     .Fields.Add("KaraokeDir", db.String)
+    .Fields.Add("CacheVideoDir", db.String)
+    .Fields.Add("VideoResolution", db.String)
+    .Fields.Add("VideoFormat", db.String)
+    .Fields.Add("EnablePirSensor", db.Boolean)
+    .Fields.Add("EnableCancelBttn", db.Boolean)
+    .Fields.Add("EnableVolumenBttn", db.Boolean)
     
     .PrimaryKey = ["id"]
     
@@ -59,9 +102,20 @@ Public Sub ConfigCreateDatabaseTables(hConn As Connection)
   
   hResult = hConn.Create("config_data")
   hResult["id"] = 1
+  hResult["SongCost"] = 1
+  hResult["VideoCost"] = 1
+  hResult["KaraokeCost"] = 1
+  hResult["DlCost"] = 1
   hResult["MoneyValue"] = 10
+  hResult["MoneyValue2"] = 5
   hResult["CreditValue"] = 3
+  hResult["CreditValue2"] = 1
+  hResult["CreditValue2_2"] = 2
+  hResult["CreditValue2_3"] = 0
+  hResult["CreditValue2_4"] = 0
+  hResult["CreditValue2_5"] = 0
   hResult["MasterVol"] = 100
+  hResult["ScrollString"] = "** Bienvenido a su lugar preferido ** Inserte una moneda para agregar creditos **"
   hResult["FullScreen"] = True
   hResult["HideCursor"] = True
   hResult["ScreenSaver"] = True
@@ -70,12 +124,13 @@ Public Sub ConfigCreateDatabaseTables(hConn As Connection)
   hResult["AutoPlay"] = True
   hResult["AutoScroll"] = True
   hResult["MaxCreditKey"] = "z"
+  hResult["MaxCreditKey2"] = "x"
   hResult["MinCreditKey"] = "<"
   hResult["ConfigKey"] = "o"
   hResult["CancelKey"] = "c"
   hResult["MaxVolKey"] = "*"
   hResult["MinVolKey"] = "/"
-  hResult["Theme"] = "default"
+  hResult["Theme"] = "Morado1024x768"
   hResult["FtpEnable"] = False
   hResult["FtpHost"] = "192.168.1.104"
   hResult["FtpUser"] = "pi"
@@ -83,30 +138,55 @@ Public Sub ConfigCreateDatabaseTables(hConn As Connection)
   hResult["MusicDir"] = User.Home &/ "Música"
   hResult["VideoDir"] = User.Home &/ "Vídeos"
   hResult["KaraokeDir"] = User.Home &/ "Karaokes"
+  hResult["CacheVideoDir"] = User.Home &/ "tmpvideos"
+  hResult["VideoResolution"] = "720"
+  hResult["VideoFormat"] = "mp4"
+  hResult["EnablePirSensor"] = True
+  hResult["EnableCancelBttn"] = True
+  hResult["EnableVolumenBttn"] = True
   hResult.Update
   hConn.Commit
   
 End
 
-Public Sub EQCreateDatabaseTables(hConn As Connection)
+' Public Sub EQCreateDatabaseTables(hConn As Connection)
+'   
+'   Dim hTable As Table, i As Short
+'   
+'   hTable = hConn.Tables.Add("EQ_data")
+'   
+'   With hTable
+'     
+'     .Fields.Add("id", db.Integer)
+'     For i = 1 To 10
+'       .Fields.Add(i & "ch", db.Integer, 2)
+'     Next
+'     .PrimaryKey = ["id"]
+'     
+'     .Update
+'     
+'   End With
+'   
+'   hConn.Exec("insert into EQ_data values (&1,&2,&3,&4,&5,&6,&7,&8,&9,&{10},&{11})", 1, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50)
+'   
+' End
+
+Public Sub dlCreateDatabaseTables(hConn As Connection)
   
-  Dim hTable As Table, i As Short
+  Dim hTable As Table
   
-  hTable = hConn.Tables.Add("EQ_data")
+  hTable = hConn.Tables.Add("ytdl_data")
   
   With hTable
     
     .Fields.Add("id", db.Integer)
-    For i = 1 To 10
-      .Fields.Add(i & "ch", db.Integer, 2)
-    Next
+    .Fields.Add("ytID", db.String)
+    .Fields.Add("StrName", db.String)
     .PrimaryKey = ["id"]
     
     .Update
     
   End With
-  
-  hConn.Exec("insert into EQ_data values (&1,&2,&3,&4,&5,&6,&7,&8,&9,&{10},&{11})", 1, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50)
   
 End
 
@@ -135,7 +215,9 @@ Public Sub MusicaCreateDatabaseTables(hConn As Connection)
     .Fields.Add("Cover_name", db.String, 50)
     .Fields.Add("Total_songs", db.Integer)
     .Fields.Add("Genero", db.String, 50)
-    .Fields.Add("Fecha", db.String, 10)
+    .Fields.Add("Day", db.Integer)
+    .Fields.Add("Month", db.Integer)
+    .Fields.Add("Year", db.Integer)
     .Fields.Add("Tipo", db.String, 10)
     For i = 1 To 4
       .Fields.Add("Songsid" & i, db.Integer)
@@ -165,6 +247,9 @@ Public Sub MusicaCreateDatabaseTables(hConn As Connection)
   With hTable
     
       .Fields.Add("id", db.Integer)
+      .Fields.Add("idalbum", db.Integer)
+      .Fields.Add("idsong", db.Integer)
+      .Fields.Add("type", db.String)
       .Fields.Add("N", db.Integer)
       .Fields.Add("Contador", db.Integer)
       .PrimaryKey = ["id"]
@@ -209,7 +294,9 @@ Public Sub VideoCreateDatabaseTables(hConn As Connection)
     .Fields.Add("Cover_name", db.String, 100)
     .Fields.Add("Total_songs", db.Integer)
     .Fields.Add("Genero", db.String, 50)
-    .Fields.Add("Fecha", db.String, 10)
+    .Fields.Add("Day", db.Integer)
+    .Fields.Add("Month", db.Integer)
+    .Fields.Add("Year", db.Integer)
     .Fields.Add("Tipo", db.String, 10)
     For i = 1 To 4
       .Fields.Add("Songsid" & i, db.Integer)
@@ -237,6 +324,9 @@ Public Sub VideoCreateDatabaseTables(hConn As Connection)
   With hTable
     
       .Fields.Add("id", db.Integer)
+      .Fields.Add("idalbum", db.Integer)
+      .Fields.Add("idsong", db.Integer)
+      .Fields.Add("type", db.String)
       .Fields.Add("N", db.Integer)
       .Fields.Add("Contador", db.Integer)
       .PrimaryKey = ["id"]
@@ -281,7 +371,9 @@ Public Sub KaraokeCreateDatabaseTables(hConn As Connection)
     .Fields.Add("Cover_name", db.String, 100)
     .Fields.Add("Total_songs", db.Integer)
     .Fields.Add("Genero", db.String, 50)
-    .Fields.Add("Fecha", db.String, 10)
+    .Fields.Add("Day", db.Integer)
+    .Fields.Add("Month", db.Integer)
+    .Fields.Add("Year", db.Integer)
     .Fields.Add("Tipo", db.String, 10)
     For i = 1 To 4
       .Fields.Add("Songsid" & i, db.Integer)
@@ -310,6 +402,9 @@ Public Sub KaraokeCreateDatabaseTables(hConn As Connection)
   With hTable
     
       .Fields.Add("id", db.Integer)
+      .Fields.Add("idalbum", db.Integer)
+      .Fields.Add("idsong", db.Integer)
+      .Fields.Add("type", db.String)
       .Fields.Add("N", db.Integer)
       .Fields.Add("Contador", db.Integer)
       .PrimaryKey = ["id"]
@@ -364,16 +459,17 @@ Public Sub MonederoCreateDatabaseTables(hConn As Connection)
   
     .Fields.Add("id", db.Integer)
     .Fields.Add("Total_credito", db.Integer)
+    .Fields.Add("Total_credito2", db.Integer)
     .Fields.Add("Credito", db.Integer)
     .PrimaryKey = ["id"]
     .Update
     
   End With
-  hConn.Exec("insert into monedero values (&1,&2,&3)", "1", "0", "0")
+  hConn.Exec("insert into monedero values (&1,&2,&3,&4)", "1", "0", "0", "0")
   
 End
 
-Public Sub CreateDatabase() As Boolean
+Public Sub CreateDatabase(dbhost As String) As Boolean
 
   Dim hcon As New Connection
   Dim dbName As String
@@ -381,7 +477,7 @@ Public Sub CreateDatabase() As Boolean
   DBName = "music_db.sqlite"
   With hcon
     .Type = "sqlite3"
-    .Host = User.Home
+    .Host = dbhost
     .Name = ""
     .Login = ""
     .Password = ""
@@ -395,7 +491,7 @@ Public Sub CreateDatabase() As Boolean
     End If
     
     .Close()
-    .Host = User.Home
+    .Host = dbhost
     .Name = DBName
     
     Try .Open()

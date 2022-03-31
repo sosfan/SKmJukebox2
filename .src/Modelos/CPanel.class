@@ -1,5 +1,23 @@
 ' Gambas class file
 
+' SKm Jukebox 2
+'
+' Autores:
+'  J. Francisco Facundo <sos.sempai@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; version 3.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+' details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc.,
+' 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+
 Inherits Panel
 
 Event CloseBox ''Close signal
@@ -10,18 +28,24 @@ Event SelectGenre(sData As String)
 
 
 Private bgImage As PictureBox
+Private CoverPic As PictureBox
+Private NameLbl As TextLabel
+Private InfoLbl As TextLabel
 Private playBttn As PictureBox
 Private cancelBttn As PictureBox
 Private hSkinPath As String
 Private hSkinTheme As Settings
 Private DataControl As New CData
 Private timerClose As Timer
+Private timerShadow As Timer
 Private segCont As Short
 Private sList As ScrollView
 Private QType As Boolean
+Private NoCredit As Boolean
 Private GenreItem As CKey
 Private KeyList As Object[]
-
+Public hDownloadClient As New HttpClient As "hDownloadClient"
+' Private $imagebuffer As String
 
 
 Public Sub _new()
@@ -36,7 +60,40 @@ Public Sub _new()
     .Y = 0
     .H = hSkinTheme["InfoBox/H"]
     .W = hSkinTheme["InfoBox/W"]
+    .Stretch = True
     .Visible = True
+  End With
+  
+  CoverPic = New PictureBox(Me)
+  With CoverPic
+    .X = hSkinTheme["InfoBoxCover/X"]
+    .Y = hSkinTheme["InfoBoxCover/Y"]
+    .H = hSkinTheme["InfoBoxCover/H"]
+    .W = hSkinTheme["InfoBoxCover/W"]
+    .Stretch = True
+    .Visible = False
+  End With
+  
+  NameLbl = New TextLabel(Me)
+  With NameLbl
+    .X = hSkinTheme["InfoBoxNameLbl/X"]
+    .Y = hSkinTheme["InfoBoxNameLbl/Y"]
+    .H = hSkinTheme["InfoBoxNameLbl/H"]
+    .W = hSkinTheme["InfoBoxNameLbl/W"]
+    .Foreground = Color.White
+    .Font.Size = 15
+    .Visible = False
+  End With
+  
+  InfoLbl = New TextLabel(Me)
+  With InfoLbl
+    .X = hSkinTheme["InfoBoxCreditInfo/X"]
+    .Y = hSkinTheme["InfoBoxCreditInfo/Y"]
+    .H = hSkinTheme["InfoBoxCreditInfo/H"]
+    .W = hSkinTheme["InfoBoxCreditInfo/W"]
+    .Foreground = Color.White
+    .Font.Size = 15
+    .Visible = False
   End With
   
   playBttn = New PictureBox(Me) As "playBttn"
@@ -46,6 +103,7 @@ Public Sub _new()
     .H = hSkinTheme["InfoBoxPlayBttn/H"]
     .W = hSkinTheme["InfoBoxPlayBttn/W"]
     .Picture = Picture[hSkinPath &/ hSkinTheme["Images/PlayBttn"]]
+    .Stretch = True
     .Visible = True
   End With
   
@@ -56,6 +114,7 @@ Public Sub _new()
     .H = hSkinTheme["InfoBoxCancelBttn/H"]
     .W = hSkinTheme["InfoBoxCancelBttn/W"]
     .Picture = Picture[hSkinPath &/ hSkinTheme["Images/CancelBttn"]]
+    .Stretch = True
     .Visible = True
   End With
   
@@ -65,6 +124,9 @@ Public Sub _new()
   
   timerClose = New Timer As "timerClose"
   timerClose.Delay = 1000
+  
+  timerShadow = New Timer As "timerShadow"
+  timerShadow.Delay = 20
   
   
 End
@@ -84,6 +146,13 @@ End
 
 Public Sub MessageType(value As String)
   
+  ' If Application.Args[1] <> "-pimode" Then 
+  '   With Me
+  '     .X = FMain.X + hSkinTheme["InfoBox/X"]
+  '     .Y = FMain.Y + hSkinTheme["InfoBox/Y"]
+  '   End With
+  ' Endif 
+  
   Select value
     Case 1
       'Pregunta normal de reproducción
@@ -91,29 +160,173 @@ Public Sub MessageType(value As String)
       playBttn.Show
       cancelBttn.Show
       sList.Hide
+      CoverPic.Show
+      NameLbl.Show
+      InfoLbl.Show
       QType = False
+      NoCredit = False
     Case 2
       bgImage.Picture = Picture[hSkinPath &/ hSkinTheme["Images/QuestionBox2"]]
       playBttn.Show
       cancelBttn.Show
       sList.Hide
+      CoverPic.Hide
+      NameLbl.Hide
+      InfoLbl.Show
       QType = True
+      NoCredit = False
     Case 3
       bgImage.Picture = Picture[hSkinPath &/ hSkinTheme["Images/NoCredit"]]
       playBttn.Hide
       cancelBttn.Hide
       sList.Hide
+      CoverPic.Hide
+      NameLbl.Hide
+      InfoLbl.Hide
+      NoCredit = True
     Case 4
       bgImage.Picture = Picture[hSkinPath &/ hSkinTheme["Images/QuestionBox3"]]
       playBttn.Hide
       cancelBttn.Hide
       sList.Show
+      CoverPic.Hide
+      NameLbl.Hide
+      InfoLbl.Hide
       QType = False
+      NoCredit = False
   End Select
-  
+  ' Me.Opacity = 100
   TimerOn
   
 End
+
+Public Sub TotalSongs(Value As Integer, sModo As String)
+  
+  Dim sMes As String, scost As Short
+  
+  Select sModo
+    Case "Musica"
+      scost = DataControl.SongCost
+    Case "Video"
+      scost = DataControl.VideoCost
+    Case "Karaoke"
+      scost = DataControl.KaraokeCost
+  End Select
+  
+  scost = scost * Value
+  
+  If scost = 1 Then 
+    sMes = " Crédito"
+  Else 
+    sMes = " Créditos"
+  Endif
+  
+  InfoLbl.Text = scost & sMes
+  
+End
+
+Public Sub loadMusicInfo(data As Song)
+
+  Dim filepath, sMes As String, scost As Short
+  
+  If data.cover = "0" Then
+    CoverPic.Picture = Picture[hSkinPath &/ hSkinTheme["Images/CoverDefault"]]
+  Else
+    DataControl.Skm_Modo = data.type
+    CoverPic.Picture = Picture[DataControl.getWorkDir() &/ data.genre &/ data.album &/ data.cover]
+  Endif
+  
+  If data.URL_image <> "" Then
+    ' DownloadPicture(data.URL_image)
+    filepath = DataControl.CacheVideoDir &/ "covers" &/ data.ID_video & ".jpg"
+    CoverPic.Picture = Picture.Load(filepath)
+  Endif
+  
+  Select Right(data.name, 3)
+    Case Like "{mp3, MP3, wma, WMA, mp4, MP4, ogg, OGG, m4a, M4A}"
+      NameLbl.Text = Left(data.name, -4)
+    Case Else
+      NameLbl.Text = data.name
+  End Select
+  
+  Select data.type
+    Case "musica"
+      scost = DataControl.SongCost
+    Case "video"
+      scost = DataControl.VideoCost
+    Case "karaoke"
+      scost = DataControl.KaraokeCost
+    Case "vonline"
+      scost = DataControl.DlCost
+  End Select
+  
+  If scost = 1 Then 
+    sMes = " Crédito"
+  Else 
+    sMes = " Créditos"
+  Endif
+  
+  InfoLbl.Text = scost & sMes
+  
+  Catch 
+    Debug Error.Text
+  
+End
+
+' Public Sub DownloadPicture($url As String)
+'   
+'   ' hDownloadClient.URL = Replace($url, "\r", "")
+'   If Right($url, 3) = "web" Then $url = $url & "p"
+'   hDownloadClient.URL = $url
+'   hDownloadClient.TimeOut = 20
+'   hDownloadClient.Async = True
+'   hDownloadClient.Get()
+'   
+'   Catch
+'     Debug Error.Text
+'   
+' End
+' 
+' Public Sub hDownloadClient_Read()
+'   
+'   Dim sBuffer As String
+'   
+'   sBuffer = Read #Last, Lof(Last)
+'   $imagebuffer &= sBuffer
+'   
+' End
+' 
+' Public Sub hDownloadClient_Finished()
+'   
+'   ' Dim webp As String
+'   
+'   CoverPic.Picture = Null
+'   ' Debug
+'   CoverPic.Picture = Picture.FromString($imagebuffer)
+'   webp = $imagebuffer
+'   $imagebuffer = Null
+'   
+'   Catch 
+'     ' Debug "$imagebuffer webp no compatible " & Error.Text
+'     ' Shell "echo " & webp & " | dwebp -o - -- -" For Read As "webpConv"
+'   
+' End
+
+' Public Sub webpConv_Read()
+'   
+'   Dim sBuffer As String
+'   
+'   sBuffer = Read #Last, Lof(Last)
+'   $imagebuffer &= sBuffer
+'   
+' End
+' 
+' Public Sub webpConv_Kill()
+'   
+'   CoverPic.Picture = Picture.FromString($imagebuffer)
+'   $imagebuffer = Null
+'   
+' End
 
 Public Sub loadList(Skm_Modo As String)
   
@@ -140,6 +353,8 @@ Public Sub loadList(Skm_Modo As String)
       .imgResPath = hSkinPath &/ hSkinTheme["Images/GenreList"]
       If i = 0 Then
         .LetterKey = "Todos"
+      Else If i = 1 Then 
+        .LetterKey = " Nuevos "
       Else
         .LetterKey = hResult["Genero"]
         hResult.MoveNext
@@ -159,6 +374,16 @@ End
 
 Public Sub playBttn_MouseDown()
   
+  playBttn.Hide
+  cancelBttn.Hide
+  sList.Hide
+  CoverPic.Hide
+  NameLbl.Hide
+  InfoLbl.Hide
+  segCont = 13
+  bgImage.Picture = Picture[hSkinPath &/ hSkinTheme["Images/AddList"]]
+  Wait 0.3
+  
   Select QType
     Case True
       Raise PlayAllClick
@@ -166,7 +391,14 @@ Public Sub playBttn_MouseDown()
       Raise PlayClick
   End Select
   
-  TimerOff
+  timerShadow.Start
+  ' TimerOff
+  
+End
+
+Public Sub bgImage_MouseDown()
+  
+  If NameLbl.Visible = False Then Raise CloseBox
   
 End
 
@@ -193,8 +425,15 @@ End
 
 Public Sub timerClose_Timer()
   
+  Dim segclose As Short
+  
+  If NoCredit = True Then 
+    segclose = 5
+  Else 
+    segclose = 15
+  Endif
   'auto Close
-  If segCont < 15 Then
+  If segCont < segclose Then
     Inc segCont
   Else
     Raise CloseBox
@@ -202,3 +441,10 @@ Public Sub timerClose_Timer()
   Endif
   
 End
+
+' Public Sub timerShadow_Timer()
+'   
+'   Me.Opacity = Me.Opacity - 10
+'   If Me.Opacity = 0 Then timerShadow.Stop
+'   
+' End

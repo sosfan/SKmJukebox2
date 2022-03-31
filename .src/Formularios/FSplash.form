@@ -1,0 +1,17 @@
+# Gambas Form File 3.0
+
+{ Form Form
+  MoveScaled(0,0,75,56.25)
+  NoTabFocus = True
+  Resizable = False
+  Border = False
+  SkipTaskbar = True
+  { PictureSplash PictureBox
+    MoveScaled(13,5,10,7)
+    Picture = Picture["resource/splash.png"]
+    Stretch = True
+  }
+  { VersionLabel Label
+    MoveScaled(1,51,73,4)
+  }
+}

@@ -1,5 +1,5 @@
 #---- Gambas files to ignore (v5)
-*.gambas
+SKmJukebox2.gambas
 .lock
 *~
 core
