@@ -23,6 +23,8 @@ Requiere:
   
   *mplayer
   
+  *libvlc5
+  
   *Skmdbmgr
   
   *SkmVideoServer(orangepi opcional)
