@@ -131,6 +131,15 @@ Public Sub UpdateScrollMatrizLed()
   
 End
 
+Public Sub UpdateScrollMatrizLed()
+  
+  Dim MessageText As String
+  
+  MessageText = DataControl.ScrollString
+  addMatrizLed(MessageText)
+  
+End
+
 Private Sub StopMatrizLed()
   
   If DataControl.FtpEnable = True Then MatrizLed.Stop
@@ -364,6 +373,14 @@ Public Sub hProcess_Kill()
   Debug
   CheckVelocity.stop
   DlProcState = False
+  
+End
+
+Public Sub fProcess_kill()
+  
+  procStatus = False
+  DownBar.Hide
+  DownBar.Value = 0
   
 End
 

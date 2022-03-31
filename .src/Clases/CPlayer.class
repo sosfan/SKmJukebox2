@@ -245,6 +245,7 @@ End
 Private Sub PlayVideo(sFilePath As String)
   
   WaitFTP = False
+  $PlayProcess = True
   If DataControl.VideoOut = True Then
     HideMovieBox
     $mpv = True

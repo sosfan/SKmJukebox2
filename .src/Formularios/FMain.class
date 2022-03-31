@@ -57,10 +57,13 @@ Public Sub Form_KeyPress()
   
   If Key.Code = Key.AltKey Then 
     'Pir module
+<<<<<<< HEAD
     If DataControl.SensorServices = True Then 
       Debug "SensorServices"
       Functions.CMHideMovieBox
     Endif 
+=======
+>>>>>>> 19a91c1c3bbad8a7ef44beea471bfaf5563596f8
     Return 
   Endif
   
@@ -223,6 +226,7 @@ Public Sub Form_Deactivate()
   Endif
   
 End
+<<<<<<< HEAD
 
 Public Sub Form_Move()
 
@@ -231,3 +235,5 @@ Public Sub Form_Move()
   End With
 
 End
+=======
+>>>>>>> 19a91c1c3bbad8a7ef44beea471bfaf5563596f8

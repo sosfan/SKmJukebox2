@@ -54,7 +54,10 @@ Public Sub Form_Open()
   CreditCoin5.Text = DataControl.CreditValue2_4
   CreditCoin6.Text = DataControl.CreditValue2_5
   
+<<<<<<< HEAD
   PirSensorBox.Value = DataControl.SensorServices
+=======
+>>>>>>> 19a91c1c3bbad8a7ef44beea471bfaf5563596f8
   
   PNameLabel.Text = Application.Name
   VerLabel.Text = "Versión " & Application.Version
@@ -235,7 +238,11 @@ Private Sub SaveDirBoxValues()
   
   If CacheDirBox.Value <> DataControl.CacheVideoDir Then 
     If CacheDirBox.Value = "" Then 
+<<<<<<< HEAD
       DataControl.CacheVideoDir = User.Home & "/tmpvideos"
+=======
+      DataControl.CacheVideoDir = User.Home & "/.tmpvideos"
+>>>>>>> 19a91c1c3bbad8a7ef44beea471bfaf5563596f8
     Else 
       DataControl.CacheVideoDir = CacheDirBox.Value
     Endif
@@ -419,6 +426,7 @@ Public Sub Gridrefresh_Timer()
   insertTableDl
 
 End
+<<<<<<< HEAD
 
 Public Sub MusicaCreditosValor_Change()
 
@@ -457,3 +465,5 @@ Public Sub Button1_Click()
   Endif
 
 End
+=======
+>>>>>>> 19a91c1c3bbad8a7ef44beea471bfaf5563596f8
