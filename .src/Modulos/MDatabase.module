@@ -17,6 +17,31 @@
 ' this program; if not, write to the Free Software Foundation, Inc.,
 ' 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
+Public Sub CounterStartCreateDatabaseTables(hConn As Connection)
+  
+  Dim hTable As Table, hResult As Result
+  
+  hTable = hConn.Tables.Add("counter_start")
+  
+  With hTable
+    
+    .Fields.Add("id", db.Integer)
+    .Fields.Add("count", db.Integer)
+    .PrimaryKey = ["id"]
+    
+    .Update
+    
+  End With
+  
+  hResult = hConn.Create("counter_start")
+  hResult["id"] = 1
+  hResult["count"] = 0
+  hResult.Update
+  hConn.Commit
+  
+End
+
+
 Public Sub ConfigCreateDatabaseTables(hConn As Connection)
   
   Dim hTable As Table, hResult As Result
@@ -63,7 +88,11 @@ Public Sub ConfigCreateDatabaseTables(hConn As Connection)
     .Fields.Add("VideoDir", db.String)
     .Fields.Add("KaraokeDir", db.String)
     .Fields.Add("CacheVideoDir", db.String)
+    .Fields.Add("VideoResolution", db.String)
+    .Fields.Add("VideoFormat", db.String)
     .Fields.Add("EnablePirSensor", db.Boolean)
+    .Fields.Add("EnableCancelBttn", db.Boolean)
+    .Fields.Add("EnableVolumenBttn", db.Boolean)
     
     .PrimaryKey = ["id"]
     
@@ -101,7 +130,7 @@ Public Sub ConfigCreateDatabaseTables(hConn As Connection)
   hResult["CancelKey"] = "c"
   hResult["MaxVolKey"] = "*"
   hResult["MinVolKey"] = "/"
-  hResult["Theme"] = "Rojo1024x768"
+  hResult["Theme"] = "Morado1024x768"
   hResult["FtpEnable"] = False
   hResult["FtpHost"] = "192.168.1.104"
   hResult["FtpUser"] = "pi"
@@ -110,7 +139,11 @@ Public Sub ConfigCreateDatabaseTables(hConn As Connection)
   hResult["VideoDir"] = User.Home &/ "Vídeos"
   hResult["KaraokeDir"] = User.Home &/ "Karaokes"
   hResult["CacheVideoDir"] = User.Home &/ "tmpvideos"
+  hResult["VideoResolution"] = "720"
+  hResult["VideoFormat"] = "mp4"
   hResult["EnablePirSensor"] = True
+  hResult["EnableCancelBttn"] = True
+  hResult["EnableVolumenBttn"] = True
   hResult.Update
   hConn.Commit
   
@@ -182,7 +215,9 @@ Public Sub MusicaCreateDatabaseTables(hConn As Connection)
     .Fields.Add("Cover_name", db.String, 50)
     .Fields.Add("Total_songs", db.Integer)
     .Fields.Add("Genero", db.String, 50)
-    .Fields.Add("Fecha", db.String, 10)
+    .Fields.Add("Day", db.Integer)
+    .Fields.Add("Month", db.Integer)
+    .Fields.Add("Year", db.Integer)
     .Fields.Add("Tipo", db.String, 10)
     For i = 1 To 4
       .Fields.Add("Songsid" & i, db.Integer)
@@ -259,7 +294,9 @@ Public Sub VideoCreateDatabaseTables(hConn As Connection)
     .Fields.Add("Cover_name", db.String, 100)
     .Fields.Add("Total_songs", db.Integer)
     .Fields.Add("Genero", db.String, 50)
-    .Fields.Add("Fecha", db.String, 10)
+    .Fields.Add("Day", db.Integer)
+    .Fields.Add("Month", db.Integer)
+    .Fields.Add("Year", db.Integer)
     .Fields.Add("Tipo", db.String, 10)
     For i = 1 To 4
       .Fields.Add("Songsid" & i, db.Integer)
@@ -334,7 +371,9 @@ Public Sub KaraokeCreateDatabaseTables(hConn As Connection)
     .Fields.Add("Cover_name", db.String, 100)
     .Fields.Add("Total_songs", db.Integer)
     .Fields.Add("Genero", db.String, 50)
-    .Fields.Add("Fecha", db.String, 10)
+    .Fields.Add("Day", db.Integer)
+    .Fields.Add("Month", db.Integer)
+    .Fields.Add("Year", db.Integer)
     .Fields.Add("Tipo", db.String, 10)
     For i = 1 To 4
       .Fields.Add("Songsid" & i, db.Integer)

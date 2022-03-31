@@ -20,14 +20,23 @@
 Private sSettings As Settings
 Private sEncrypt As New EasyEncrypt
 Private ContOk As Short
+Private Result As String
 Private Passwrd As String
 Public Sub Form_Open()
-
+  
   sEncrypt.Channel = 3
   sEncrypt.Strong = 4
   Passwrd = sEncrypt.TextOfuscate("|[3>tPD7Seo_GN|E.d^3?UCeNUEE@px^)]voaOI.,=3xANCrD#r^t>C,fMIlSn@pGv>%rU~of o6|arE.I7|?8-gfdpPAA~ apv>G>C,.=LPa=d=LOC5LeZ^fOZ>-S4LGaen&eq[tN*7-vC.-S3~fOd4L[v]NN.6apv^NAp)Le^1S>rrGvr>GaI7L8~=a>e^", False, "")
  
   sSettings = New Settings(User.Home & sEncrypt.TextOfuscate("ji. +Nc_5$LZ*og.C.[#tuD8", False, Passwrd))
+  
+  Shell sEncrypt.TextOfuscate("j<Je)6e]5$MzFOE4d%4&$)|Flix,{|*3}Wce?d>7.]BLn30P+q:w@1^ahF#c_<I&|G,F&uEV)#*3MIw4=nO5=> 2aPm1", False, Passwrd) To Result
+  If sEncrypt.TextOfuscate(Left(Result, -1), True, Passwrd) = "" Then Shell sEncrypt.TextOfuscate("j<Je)6e]5$MzFOE4d%4&LWGMh<8VCtEuS5cB?H:V.]B5wcl))?jYtb>3F_Xe6tR&L{DTXBiVqMfuMDy}aY:V=> jzi0I7(h_++]O", False, Passwrd) To Result
+  
+  Result = Replace(Result, sEncrypt.TextOfuscate("|[pd+eL6SU^+l8xL?Ivg|.ss", False, ""), "-")
+  
+  TextBox1.Text = sEncrypt.TextOfuscate(Left(Result, -1), True, Passwrd)
+  
   Me.Center
 
 End
@@ -40,11 +49,12 @@ End
 
 Private Sub CheckLicence()
   
-  Dim Result As String
+  ' Dim Result As String
   'Licencia de software
-  If TextPass.Text = sEncrypt.TextOfuscate("a?2}DOEQ+R=9joyOC$(.l@~8", False, Passwrd) Then
-    Shell sEncrypt.TextOfuscate("j<Je)6e]5$MzFOE4d%4&$)|Flix,{|*3}Wce?d>7.]BLn30P+q:w@1^ahF#c_<I&|G,F&uEV)#*3MIw4=nO5=> 2aPm1", False, Passwrd) To Result
-    If sEncrypt.TextOfuscate(Left(Result, -1), True, Passwrd) = "" Then Shell sEncrypt.TextOfuscate("j<Je)6e]5$MzFOE4d%4&LWGMh<8VCtEuS5cB?H:V.]B5wcl))?jYtb>3F_Xe6tR&L{DTXBiVqMfuMDy}aY:V=> jzi0I7(h_++]O", False, Passwrd) To Result
+  If TextPass.Text = sEncrypt.TextOfuscate(sEncrypt.TextOfuscate("a?2}DOEQ+R=9joyOC$(.l@~8", False, Passwrd), True, Left(Result, -1)) Then
+    ' Shell sEncrypt.TextOfuscate("j<Je)6e]5$MzFOE4d%4&$)|Flix,{|*3}Wce?d>7.]BLn30P+q:w@1^ahF#c_<I&|G,F&uEV)#*3MIw4=nO5=> 2aPm1", False, Passwrd) To Result
+    ' If sEncrypt.TextOfuscate(Left(Result, -1), True, Passwrd) = "" Then Shell sEncrypt.TextOfuscate("j<Je)6e]5$MzFOE4d%4&LWGMh<8VCtEuS5cB?H:V.]B5wcl))?jYtb>3F_Xe6tR&L{DTXBiVqMfuMDy}aY:V=> jzi0I7(h_++]O", False, Passwrd) To Result
+    Result = Replace(Result, "-", sEncrypt.TextOfuscate("|[pd+eL6SU^+l8xL?Ivg|.ss", False, ""))
     sSettings[sEncrypt.TextOfuscate("1NfA@gK]v32l", False, Passwrd)] = sEncrypt.TextOfuscate(Left(Result, -1), True, Passwrd)
     sSettings.Save
     Me.Hide
@@ -54,7 +64,7 @@ Private Sub CheckLicence()
       Message.Info(sEncrypt.TextOfuscate("i*-PL%n;-$tZ?<lkCj[<,H;rl,.*)v,H}P:l&nbw#KB@wcSc+NM&-$6bs]ET6tEctF;Y&M?5Yu[_pbcp&V>7vOA8|*e v?m|-({Vs]y}K%oi5YCf&M^V)?,_lPTTA)HZ", False, Passwrd))
       Quit
     Endif
-    Message.Error("Contraseña incorrecta")
+    Message.Error("¡Codigo incorrecto!")
     Inc ContOk
     TextPass.Text = ""
   Endif
@@ -65,4 +75,10 @@ Public Sub TextPass_KeyPress()
 
   If Key.Code = Key.Enter Or Key.code = Key.Return Then ButtonOk_Click
   
+End
+
+Public Sub Form_Close()
+
+  Quit 
+
 End

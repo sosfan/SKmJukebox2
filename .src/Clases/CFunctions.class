@@ -47,7 +47,6 @@ Public Sub _new()
   
   ReloadList
   
-  
 End
 
 Private Sub SetVolMaster(PercentVol As Integer)
@@ -106,6 +105,7 @@ Public Sub ReloadList()
   
   $CMain.NumberPos = $NumberPos
   $CMain.PageNum = PageView
+  $CMain.ShowControls
   
 End
 
@@ -355,10 +355,10 @@ Public Sub IncMaxCredito2()
   
 End
 
-Public Sub IncCredito()
+Public Sub IncCredito(Value As Integer)
 
   Dim i As Integer
-  i = DataControl.Credito + 1
+  i = DataControl.Credito + Value
   DataControl.Credito = i
   $CMain.SetLblCredito(i)
   

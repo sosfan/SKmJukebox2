@@ -1,1 +1,392 @@
 ' Gambas class file
+
+' SKm Jukebox 2
+'
+' Autores:
+'  J. Francisco Facundo <sos.sempai@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; version 3.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+' details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc.,
+' 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+
+Event SelectSong(sSong As Song)
+Event Volumenplus
+Event Volumenminus
+Event CancelSong
+
+Private ServSocket As ServerSocket
+Private $iId As Integer
+'Private sResServ As String
+Private DataControl As New CData
+Private SearchModo As Integer
+Private imgcache As String
+Private lastcover As String
+
+Public Sub _new()
+  
+  ServSocket = New ServerSocket As "ServSocket"
+  
+  With ServSocket
+    .Type = Net.Internet
+    .Port = 5011
+    .Listen(0)
+  End With
+  
+  'sResServ = "<?xml version=”1.1” encoding=”UTF-8” ?><responseserv>OK!</responseserv>\n"
+  
+End
+
+Public Sub ServSocket_Connection(sHost As String)
+
+  Dim Obj As Socket', wellString As String
+  If ServSocket.Status <= Net.Inactive Then Return
+  Print "Conexion solicitada : " & sHost & Chr(13) & Chr(10)
+  Obj = ServSocket.Accept()
+  Obj.Blocking = False
+  Inc $iId
+  Obj.Tag = [$iId, 0, ""]
+  
+  If Obj.Status = Net.Connected Then
+    Print "Conexion de " & Obj.RemoteHost & ":" & Obj.RemotePort & " aceptada (local port " & Obj.LocalPort & ")" & Chr(13) & Chr(10) 
+    ' Obj.Begin
+    'Wellcome
+    ' wellString = "<Bienvenido>\n"
+    ' Write #Obj, wellString, Len(wellString)
+    'ToDo
+    'Enviar lista de mas tocados
+  End If
+  ' Obj.Tag = [$iId, 0, ""]
+  
+End
+
+Public Sub Socket_Read()
+
+  Dim sBuf, sSearch As String
+  Dim hResult As Result
+  
+  If Last.Status <> Net.Connected Then Return
+  Read #Last, sBuf, Lof(Last)
+  Print "Socket #" & Last.Tag[0] & " --> " & sBuf & "\n"
+    
+  Last.Tag[1] = 0
+  Last.Tag[2] = sBuf
+  If sBuf <> Null Then 
+    
+  Endif
+  ' Select sBuf
+  '   
+  '   Case ""
+  '   
+  ' End Select
+  
+  sSearch = ReadXMLData(sBuf)
+  
+  If sSearch <> Null Then 
+    hResult = DataControl.getDataSearch(SearchModo, 1, sSearch)
+    
+    If hResult.Count > 0 Then 
+      
+      writeXMLData(hResult, False)
+      
+    Endif
+    
+  Endif
+  
+  ' ConSendSocket(sResServ)
+  Socket_Write
+  Catch
+    Debug Error.Text
+    
+End
+
+Public Sub Socket_Write()
+  
+  Dim hSocket As Socket = Last
+  Dim iInd As Integer
+  
+  'Debug hSocket;; hSocket.Tag
+  iInd = hSocket.Tag[1]
+  If iInd < 0 Then Return
+  
+  Do
+    Inc iInd
+    If iInd > 1 Then
+      hSocket.Tag[1] = -1
+      Return
+    Endif
+    
+    'Debug iInd
+    'ConSendSocket(sResServ)
+    If Error Then 
+      Debug Error.Text
+      Break
+    Endif
+  Loop
+  
+  hSocket.Tag[1] = iInd
+  
+Catch
+  Debug Error.Text
+  
+End
+
+Public Sub Socket_Closed()
+  
+  Debug "Conexion cerrada por anfitrion remoto."
+  
+End
+
+Private Sub ConSendSocket(sCommand As String)
+  
+  Dim hSocket As Socket = Last
+  
+  If ServSocket.Status = Net.Active Then 
+    Write #hSocket, sCommand, Len(sCommand)
+    ' Print "send " & sCommand
+  End If
+  
+  Catch 
+    Debug Error.Text
+  
+End
+
+Private Sub writeXMLData(hResult As Result, topSearch As Boolean)
+  
+  Dim i, c, j, n As Integer, writer As XmlWriter
+  Dim sTab, sAlb As String
+  Dim idResult As Result
+
+  writer = New XmlWriter
+  writer.Open(Null)
+  
+  If topSearch = True Then 
+      idResult = DataControl.getIdPlayHistory()
+      c = idResult["N"]
+      Select hResult["Tipo"]
+        Case "musica"
+          sTab = "mp3."
+          sAlb = "album_id."
+        Case "video"
+          sTab = "video."
+          sAlb = "video_album_id."
+        Case "karaoke"
+          sTab = "karaoke."
+          sAlb = "karaoke_album_id."
+      End Select
+  Endif 
+  
+  writer.StartElement("result")
+    For i = 0 To hResult.Max
+    If topSearch = False
+      DataControl.Skm_Modo = hResult["Tipo"]
+      idResult = DataControl.getDataSongs(hResult["cid"])
+      c = 1
+      For j = 1 To 25
+        If idResult["N" & j] = hResult["Nombre"] Then 
+          c = j
+          Debug c
+          Break 
+        Endif
+      Next
+    Endif 
+    writer.StartElement("search")
+    If topSearch Then 
+      n = idResult["N"]
+      writer.Attribute("tipo", Base64(hResult["Tipo"]))
+      writer.Attribute("album", Base64(hResult[sAlb & "Album"]))
+      writer.Attribute("cover", Base64(hResult[sAlb & "Cover_name"]))
+      writer.Attribute("genero", Base64(hResult[sAlb & "Genero"]))
+      writer.Attribute("idsong", Base64(idResult["idsong"]))
+      writer.Attribute("idalbum", Base64(idResult["idalbum"]))
+      writer.Attribute("npos", Base64(n))
+      writer.Attribute("pista", Base64(Left(hResult[sTab & "N" & c], -4)))
+      writer.Attribute("filename", Base64(hResult[sTab & "N" & c]))
+      idResult.MoveNext
+    Else 
+      writer.Attribute("tipo", Base64(hResult["Tipo"]))
+      writer.Attribute("album", Base64(hResult["Album"]))
+      writer.Attribute("cover", Base64(hResult["Cover"]))
+      writer.Attribute("genero", Base64(hResult["Genero"]))
+      writer.Attribute("idsong", Base64(hResult["cid"]))
+      writer.Attribute("idalbum", Base64(hResult["id"]))
+      writer.Attribute("npos", Base64(c))
+      writer.Attribute("pista", Base64(Left(hResult["Nombre"], -4)))
+      writer.Attribute("filename", Base64(hResult["Nombre"]))
+    Endif
+    
+    writer.EndElement
+    hResult.MoveNext
+  Next 
+  writer.EndElement
+  
+  ConSendSocket(writer.EndDocument() & "\n")
+  
+  Wait 0.5
+  hResult.MoveFirst
+  '/// envio de DataImg
+  For i = 0 To hResult.Max
+    If topSearch Then 
+      SendDataSectionXML(i, hResult["Tipo"], hResult[sAlb & "Genero"], hResult[sAlb & "Album"], hResult[sAlb & "Cover_name"])
+    Else 
+      SendDataSectionXML(i, hResult["Tipo"], hResult["Genero"], hResult["Album"], hResult["Cover"])
+    Endif
+    hResult.MoveNext
+  Next
+  
+  Catch 
+    Debug Error.Text
+  
+End
+
+Private Sub SendDataSectionXML(i As Integer, tipo As String, genero As String, album As String, cover As String)
+
+  Dim writer As XmlWriter
+  Dim itmp, workdir As String
+  writer = New XmlWriter
+  
+  Select tipo
+    Case "musica"
+      workdir = DataControl.MusicDir
+    Case "video"
+      workdir = DataControl.VideoDir
+    Case "karaoke"
+      workdir = DataControl.KaraokeDir
+  End Select
+  
+  If lastcover = workdir &/ genero &/ album &/ cover Then 
+    itmp = imgcache
+  Else 
+    Exec ["convert", "-resize", "72x72", workdir &/ genero &/ album &/ cover, "-"] To itmp
+    itmp = Base64(itmp)
+    imgcache = itmp
+    lastcover = workdir &/ genero &/ album &/ cover
+  Endif
+  
+  ' Wait 0.2
+  writer.Open(Null)
+  writer.StartElement("data")
+    writer.StartElement("DataSection")
+      writer.Attribute("id", i)
+      If cover <> "0" Then
+        writer.Attribute("dataimg", itmp)
+      Else 
+        writer.Attribute("dataimg", 0)
+      Endif 
+    writer.EndElement
+  writer.EndElement
+    
+  ConSendSocket(writer.EndDocument() & "\n")
+  
+End
+
+
+Private Sub readXMLData(sData As String) As String
+  
+  Dim reader As XmlReader
+  Dim NodeValue As String, sSong As New Song
+  Dim hResult As Result
+  reader = New XmlReader
+  
+  reader.FromString(sData)
+  
+  Do While True
+      Try reader.Read()
+      If reader.Eof Then Break
+ 
+      Select Case reader.Node.Name
+         Case "updateinfo"
+           For Each reader.Node.Attributes
+             Select reader.Node.Name
+                Case "credit"
+                  SendInfoCredit
+                Case "volumenplus"
+                  Raise Volumenplus
+                Case "volumenminus"
+                  Raise volumenminus
+                Case "cancel"
+                  Raise CancelSong
+                Case "top"
+                  hResult = DataControl.getPlayHistory()
+                  If hResult.Count > 0 Then 
+                    writeXMLData(hResult, True)
+                  Endif
+             End Select
+           Next
+        
+         Case "search"
+            For Each reader.Node.Attributes
+               Select reader.Node.Name
+                 Case "musica"
+                   SearchModo = 1
+                 Case "videos"
+                   SearchModo = 2
+               End Select
+                 NodeValue = reader.Node.Value
+            Next
+            
+         Case "select"
+            For Each reader.Node.Attributes
+              With sSong
+                Select reader.Node.Name
+                   Case "tipo"
+                     .type = UnBase64(reader.Node.Value)
+                   Case "album"
+                     .album = UnBase64(reader.Node.Value)
+                   Case "cover"
+                     .cover = UnBase64(reader.Node.Value)
+                   Case "genero"
+                     .genre = UnBase64(reader.Node.Value)
+                   Case "idsong"
+                     .id = UnBase64(reader.Node.Value)
+                   Case "idalbum"
+                     .idalbum = UnBase64(reader.Node.Value)
+                   Case "npos"
+                     .idsong = UnBase64(reader.Node.Value)
+                   Case "pista"
+                     .name = UnBase64(reader.Node.Value)
+                   Case "filename"
+                     .name = UnBase64(reader.Node.Value)
+                 End Select
+                 ' Endif
+              End With
+              
+            Next
+            Raise SelectSong(sSong)
+      End Select
+ 
+   Loop
+   reader.Close()
+  
+  Return NodeValue
+  
+  Catch
+    Debug Error.Text
+  
+End
+
+Public Sub SendInfoCredit()
+
+  Dim writer As XmlWriter
+  
+  If ServSocket.Status = Net.Inactive Then Return 
+  
+  writer = New XmlWriter
+  
+  writer.Open(Null)
+  writer.StartElement("update")
+    writer.StartElement("Credit")
+      writer.Attribute("now", DataControl.Credito)
+    writer.EndElement
+  writer.EndElement
+  ConSendSocket(writer.EndDocument() & "\n")
+  
+End 

@@ -44,6 +44,7 @@ Private Sub CheckStart()
   If Exist("/tmp/skmjukebox.0") Then Quit
   
   If Not Exist(FilePath) Then
+    ' FSplash.Show
     FPassMain.show
   Else
     sSettings = New Settings(FilePath)
@@ -54,6 +55,7 @@ Private Sub CheckStart()
         Message.Error(sEncrypt.TextOfuscate(MessageError, False, Passwrd), "Aceptar")
         FPassMain.Show
       Else
+        FSplash.Show
         FMain.Show
       Endif
     Else

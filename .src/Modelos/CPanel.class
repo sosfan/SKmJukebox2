@@ -1,6 +1,24 @@
 ' Gambas class file
 
-Inherits Form
+' SKm Jukebox 2
+'
+' Autores:
+'  J. Francisco Facundo <sos.sempai@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; version 3.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+' details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc.,
+' 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+
+Inherits Panel
 
 Event CloseBox ''Close signal
 Event PlayClick
@@ -128,12 +146,12 @@ End
 
 Public Sub MessageType(value As String)
   
-  If Application.Args[1] <> "-pimode" Then 
-    With Me
-      .X = FMain.X + hSkinTheme["InfoBox/X"]
-      .Y = FMain.Y + hSkinTheme["InfoBox/Y"]
-    End With
-  Endif 
+  ' If Application.Args[1] <> "-pimode" Then 
+  '   With Me
+  '     .X = FMain.X + hSkinTheme["InfoBox/X"]
+  '     .Y = FMain.Y + hSkinTheme["InfoBox/Y"]
+  '   End With
+  ' Endif 
   
   Select value
     Case 1
@@ -177,7 +195,7 @@ Public Sub MessageType(value As String)
       QType = False
       NoCredit = False
   End Select
-  Me.Opacity = 100
+  ' Me.Opacity = 100
   TimerOn
   
 End
@@ -335,6 +353,8 @@ Public Sub loadList(Skm_Modo As String)
       .imgResPath = hSkinPath &/ hSkinTheme["Images/GenreList"]
       If i = 0 Then
         .LetterKey = "Todos"
+      Else If i = 1 Then 
+        .LetterKey = " Nuevos "
       Else
         .LetterKey = hResult["Genero"]
         hResult.MoveNext
@@ -422,9 +442,9 @@ Public Sub timerClose_Timer()
   
 End
 
-Public Sub timerShadow_Timer()
-  
-  Me.Opacity = Me.Opacity - 10
-  If Me.Opacity = 0 Then timerShadow.Stop
-  
-End
+' Public Sub timerShadow_Timer()
+'   
+'   Me.Opacity = Me.Opacity - 10
+'   If Me.Opacity = 0 Then timerShadow.Stop
+'   
+' End

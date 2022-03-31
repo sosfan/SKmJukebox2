@@ -1,2 +1,66 @@
 ' Gambas class file
 
+' SKm Jukebox 2
+'
+' Autores:
+'  J. Francisco Facundo <sos.sempai@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; version 3.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+' details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc.,
+' 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+
+Public ShowTimer As Timer
+
+Public Sub _new()
+  
+  ShowTimer = New Timer As "ShowTimer"
+  
+  ShowTimer.Delay = 5000
+  
+  With Me
+    .Border = False
+    .FullScreen = True
+  End With
+  
+End
+
+Public Sub MovieBoxTV_MouseDown()
+
+  Me.Hide
+  ShowTimer.Start
+
+End
+
+Public Sub ShowTimer_Timer()
+  
+  Me.Show
+  
+  ShowTimer.Stop
+  
+End
+
+Public Sub Form_Resize()
+
+  With MovieBoxTV
+    .X = 0
+    .Y = 0
+    .H = Me.H
+    .W = Me.W
+  End With
+
+End
+
+Public Sub Form_Open()
+
+  Me.Move(Screens[1].X + 5, Screens[1].Y + 5)
+
+End

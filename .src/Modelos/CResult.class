@@ -1,5 +1,23 @@
 ' Gambas class file
 
+' SKm Jukebox 2
+'
+' Autores:
+'  J. Francisco Facundo <sos.sempai@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; version 3.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+' details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc.,
+' 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+
 Inherits Panel
 
 Event Click(rSong As Song)
@@ -98,6 +116,14 @@ Public Sub _new()
   
 End
 
+' Public Sub _free()
+'   
+'   CoverPicture.Picture.Clear
+'   CoverPicture.Picture.Flush
+'   Debug
+'   
+' End
+
 Private Function Nombre_Read() As String
 
   Return NombreInfoLbl.Text
@@ -122,6 +148,8 @@ Private Sub ID_Video_Write(Value As String)
   IDVideo = Value
   If DataControl.SearchCacheID(IDVideo) = True Then 
     NombreInfoLbl.Foreground = Color.Green
+  Else 
+    NombreInfoLbl.Foreground = Color.White
   Endif
   sSong.ID_video = Value
 
@@ -137,6 +165,7 @@ Private Sub URL_Image_Write(Value As String)
 
   URLImage = Value
   sSong.URL_image = Value
+  If Value = "" Then Return 
   DownloadPicture(URLImage)
 
 End
@@ -246,17 +275,23 @@ End
 
 Public Sub CleanMiniCover()
   
+  CoverPicture.Picture.Clear
   CoverPicture.Picture.Flush
-  CoverPicture.Picture = Null
+  ' CoverPicture.Picture = Null
+  Catch 
+    Debug Error.Text
   
 End
 
 Public Sub CoverLoad(Value As String)
   
+  Dim pic As Picture
   If Value = "0" Then
     CoverPicture.Picture = Picture.Load(hSkinPath &/ hSkinTheme["Images/CoverDefault"])
   Else
-   Try CoverPicture.Picture = Picture.Load(Value)
+   pic = Picture.FromString(File.Load(Value))
+   CoverPicture.Picture = pic
+   pic = Null
   Endif
   
   'sSong.cover = Value
@@ -310,8 +345,8 @@ End
 Private Sub sType_Write(Value As String)
 
   Dim sIcon As String
-  If Value = "" Then Return
   sSong.type = Value
+  If Value = "" Then Return
   
   Select Value
     Case "musica"

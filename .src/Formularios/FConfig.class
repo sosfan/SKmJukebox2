@@ -1,5 +1,23 @@
 ' Gambas class file
 
+' SKm Jukebox 2
+'
+' Autores:
+'  J. Francisco Facundo <sos.sempai@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; version 3.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+' details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc.,
+' 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+
 Private DataControl As New CData
 Private sSettings As Settings
 Private sSkinRes As String
@@ -14,7 +32,8 @@ Public Sub Form_Open()
   
   AjustWindowCheckBox.Value = DataControl.FullScreen
   HiddenPointerCheckBox.Value = DataControl.HideCursor
-  
+  CancelBttnCheckBox.Value = DataControl.EnableCancelBttn
+  VolumenBttnCheckBox.Value = DataControl.EnableVolumenBttn
   MusicaCreditosValor.Text = DataControl.SongCost
   VideosCreditosValor.Text = DataControl.VideoCost
   KaraokeCreditosValor.Text = DataControl.KaraokeCost
@@ -38,6 +57,8 @@ Public Sub Form_Open()
   VideoDirBox.Value = DataControl.VideoDir
   KaraokeDirBox.Value = DataControl.KaraokeDir
   
+  VideoResBox.Text = DataControl.VideoResolution
+  VideoFormatBox.Text = DataControl.VideoFormat
   CacheDirBox.Value = DataControl.CacheVideoDir
   
   LoadKeysText
@@ -53,11 +74,7 @@ Public Sub Form_Open()
   CreditCoin4.Text = DataControl.CreditValue2_3
   CreditCoin5.Text = DataControl.CreditValue2_4
   CreditCoin6.Text = DataControl.CreditValue2_5
-  
-<<<<<<< HEAD
   PirSensorBox.Value = DataControl.SensorServices
-=======
->>>>>>> 19a91c1c3bbad8a7ef44beea471bfaf5563596f8
   
   PNameLabel.Text = Application.Name
   VerLabel.Text = "Versión " & Application.Version
@@ -158,6 +175,7 @@ Public Sub BtnUpMusic_Click()
 
   SaveDirBoxValues
   DataControl.UpMusicTb
+  DataControl.MakeSearchVirtualTables(1)
 
 End
 
@@ -165,6 +183,7 @@ Public Sub BtnUpVideo_Click()
 
   SaveDirBoxValues
   DataControl.UpVideoTb
+  DataControl.MakeSearchVirtualTables(2)
 
 End
 
@@ -172,6 +191,7 @@ Public Sub BtnUpKaraoke_Click()
   
   SaveDirBoxValues
   DataControl.UpKaraokeTb
+  DataControl.MakeSearchVirtualTables(3)
 
 End
 
@@ -212,6 +232,10 @@ End
 
 Private Sub SaveDirBoxValues()
   
+  Dim itmp, Sb As String
+  Dim splitstr As String[]
+  Dim i As Integer
+  
   If MusicDirBox.Value <> DataControl.MusicDir Then
     If MusicDirBox.Value = "" Then
       DataControl.MusicDir = User.Home & "/Música"
@@ -238,14 +262,37 @@ Private Sub SaveDirBoxValues()
   
   If CacheDirBox.Value <> DataControl.CacheVideoDir Then 
     If CacheDirBox.Value = "" Then 
-<<<<<<< HEAD
       DataControl.CacheVideoDir = User.Home & "/tmpvideos"
-=======
-      DataControl.CacheVideoDir = User.Home & "/.tmpvideos"
->>>>>>> 19a91c1c3bbad8a7ef44beea471bfaf5563596f8
     Else 
       DataControl.CacheVideoDir = CacheDirBox.Value
     Endif
+  Endif
+  
+  If FtpBox.Visible = True Then 
+    itmp = Replace(FtpBox.text, " ", "")
+    If itmp <> Null Then
+      splitstr = Split(itmp, ".")
+      itmp = ""
+      i = 1
+      For Each Sb In splitstr
+        If Sb <> Null Then 
+          If i <= 3 Then 
+            itmp = itmp & Sb & "."
+          Else 
+            itmp = itmp & Sb
+          Endif 
+          Inc i
+        Else 
+          itmp = "192.168.1.104"
+          Break 
+        Endif
+      Next
+    Else 
+      itmp = "192.168.1.104"
+    Endif 
+    FtpUrl.Text = itmp
+    FtpBox.Hide
+    FtpUrl.Show
   Endif
   
   DataControl.FTPHost = FtpUrl.Text
@@ -363,7 +410,7 @@ End
 Public Sub AddCredits_Click()
 
   If DataControl.Credito < 20 Then
-    FMain.$addCredito()
+    FMain.$addCredito(1)
     LoadCreditsNow
   Endif
 
@@ -426,7 +473,7 @@ Public Sub Gridrefresh_Timer()
   insertTableDl
 
 End
-<<<<<<< HEAD
+
 
 Public Sub MusicaCreditosValor_Change()
 
@@ -465,5 +512,35 @@ Public Sub Button1_Click()
   Endif
 
 End
-=======
->>>>>>> 19a91c1c3bbad8a7ef44beea471bfaf5563596f8
+
+Public Sub VideoResBox_Change()
+
+  DataControl.VideoResolution = VideoResBox.Text
+
+End
+
+Public Sub VideoFormatBox_Change()
+
+  DataControl.VideoFormat = VideoFormatBox.Text
+
+End
+
+Public Sub FtpUrl_MouseDown()
+
+  FtpUrl.Hide
+  FtpBox.Show
+  FtpBox.SetFocus
+
+End
+
+Public Sub CancelBttnCheckBox_Click()
+
+  DataControl.EnableCancelBttn = Last.Value
+
+End
+
+Public Sub VolumenBttnCheckBox_Click()
+
+  DataControl.EnableVolumenBttn = Last.Value
+
+End

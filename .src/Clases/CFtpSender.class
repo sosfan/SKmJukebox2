@@ -34,6 +34,7 @@ Public FtpIcon As PictureBox
 
 Event Send_Finish
 Event Send_Error
+Event SockConn(Conn As Boolean)
 
 Property ConStatus As Boolean
 
@@ -75,7 +76,7 @@ End
 Public Function SendFTPFile(sFileName As String, sDataFileName As String) As Boolean
   
   FTPCon = New FtpClient As "FTPCon"
-  FTPCon.Timeout = 60
+  FTPCon.Timeout = 10
   ' FTPCon.Debug = True
   ' If FTPCon.Status > Net.Active Then
    ' Try Close FTPCon 'Se cierra la conexión FTP para modificar el URL
@@ -155,6 +156,7 @@ Public Sub FTPCon_Error()
   FTPCon.Close
   Debug "Error al enviar el archivo"
   WaitUpload = False
+  Raise SockConn(False)
   Raise Send_Error
   
 End
@@ -163,6 +165,7 @@ Public Sub MySocket_Ready()
   
   timTimeout.Enabled = False
   FtpIcon.Visible = False
+  Raise SockConn(True)
   
 End
 
@@ -170,6 +173,7 @@ Public Sub MySocket_Closed()
   
   Debug "Conexion cerrada por anfitrion remoto."
   FtpIcon.Visible = False
+  Raise SockConn(False)
   
 End
 
@@ -177,6 +181,7 @@ Public Sub MySocket_Found()
   
   Debug "Host encontrado, conectando..."
   ' FtpIcon.Visible = False
+  
   
 End
 
@@ -206,6 +211,7 @@ Public Sub MySocket_Error()
     Case Net.CannotWrite
       Debug "Error escribiendo datos"
   End Select
+  Raise SockConn(False)
   
 End
 
@@ -234,6 +240,7 @@ Public Sub timTimeout_Timer()
   If MySocket.Status <> Net.Connected Then
     Try Close MySocket
     Debug "Tiempo excedido al conectar"
+    Raise SockConn(False)
   End If
 
 End
@@ -242,6 +249,7 @@ Public Sub CloseConConect()
   
   Close MySocket
   Debug "Conexión cerrada por usuario"
+  Raise SockConn(False)
   
 End
 

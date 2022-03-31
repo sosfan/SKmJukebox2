@@ -50,6 +50,8 @@ Public Sub _new()
       FPlaylistDbg.Show
     Endif 
   Next 
+  DataControl.increaseCountCounter
+  FSplash.Hide
 
 End
 
@@ -57,13 +59,10 @@ Public Sub Form_KeyPress()
   
   If Key.Code = Key.AltKey Then 
     'Pir module
-<<<<<<< HEAD
     If DataControl.SensorServices = True Then 
       Debug "SensorServices"
       Functions.CMHideMovieBox
     Endif 
-=======
->>>>>>> 19a91c1c3bbad8a7ef44beea471bfaf5563596f8
     Return 
   Endif
   
@@ -123,9 +122,9 @@ Public Sub $decCredito(Value As Integer)
   
 End
 
-Public Sub $addCredito()
+Public Sub $addCredito(Value As Integer)
   
-  Functions.IncCredito
+  Functions.IncCredito(Value)
   
 End
 
@@ -161,7 +160,7 @@ Private Sub KeyDetect()
     Case DataControl.MaxCreditKey2
       Functions.IncMaxCredito2
     Case DataControl.MinCreditKey
-      $addCredito
+      $addCredito(1)
     ' Case "+"
     '   Functions.FwList
     ' Case "-"
@@ -226,7 +225,6 @@ Public Sub Form_Deactivate()
   Endif
   
 End
-<<<<<<< HEAD
 
 Public Sub Form_Move()
 
@@ -235,5 +233,17 @@ Public Sub Form_Move()
   End With
 
 End
-=======
->>>>>>> 19a91c1c3bbad8a7ef44beea471bfaf5563596f8
+
+Public Sub Form_MouseDown()
+
+  Functions.CMHideMovieBox
+
+End
+
+Public Sub Form_Open()
+
+  With Me
+    .Move(Screens[0].X - FMain.W, Screens[0].Y - FMain.H)
+  End With
+
+End

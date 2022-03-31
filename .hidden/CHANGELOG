@@ -1,3 +1,35 @@
+* Sun Mar 20 2022 José Francisco Facundo <sos.sempai@gmail.com> 2.0.62
+- Agregada funcionalidad para album nuevos
+- Correcion de errores
+
+* Tue Mar 15 2022 José Francisco Facundo <sos.sempai@gmail.com> 2.0.61
+- Agregada funcionalidad con SKm Jukebox Controler
+
+* Wed Mar 02 2022 José Francisco Facundo <sos.sempai@gmail.com> 2.0.60
+- Varias correciones en busquedas
+- Integrado control remoto
+
+* Wed Dec 08 2021 José Francisco Facundo <sos.sempai@gmail.com> 2.0.59
+
+* Sun Oct 10 2021 José Francisco Facundo <sos.sempai@gmail.com> 2.0.59
+- Cambio al proyecto yt-dlp en remplazo a youtube-dl(version obsoleta)
+- Salida a TV mediante libvlc5
+- Varias correciones
+
+* Sun Sep 19 2021 José Francisco Facundo <sos.sempai@gmail.com> 2.0.58
+
+* Sun Sep 19 2021 José Francisco Facundo <sos.sempai@gmail.com> 2.0.58
+
+* Sun Sep 19 2021 José Francisco Facundo <sos.sempai@gmail.com> 2.0.58
+
+* Sat Sep 18 2021 José Francisco Facundo <sos.sempai@gmail.com> 2.0.58
+
+* Sat Sep 18 2021 José Francisco Facundo <sos.sempai@gmail.com> 2.0.58
+- Nueva compilación
+-Agregado Playlist top100
+-Nuevo Skin Morado
+-Soporte para libvlc5
+
 * Fri Jul 16 2021 José Francisco Facundo <sos.sempai@gmail.com> 2.0.51
 - Agregado varias opciones en el Monedero2
 - Agregado Tala de vistas de descargas

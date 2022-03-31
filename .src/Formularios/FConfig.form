@@ -7,7 +7,7 @@
   Resizable = False
   { TopBanner PictureBox
     Move(0,0,602,28)
-    Picture = Picture["resource/topbanner.png"]
+    Picture = Picture.Load("resource/topbanner.png")
     Stretch = True
   }
   { IconPanel1 IconPanel
@@ -19,7 +19,7 @@
     Text = ("Opciones")
     Picture = Picture["icon:/32/options"]
     { OptionWinInfoLabel Label
-      Move(14,29,276,18)
+      Move(25,30,276,18)
       Text = ("Opciones de la ventana principal.")
     }
     { AjustWindowCheckBox CheckBox
@@ -31,19 +31,27 @@
       Text = ("Ocultar la posición del cursor. (Por defecto activo)")
     }
     { SkinMenu ComboBox
-      Move(168,119,144,32)
+      Move(168,195,144,32)
     }
     { Label25 Label
-      Move(24,120,112,28)
+      Move(24,196,112,28)
       Text = ("Skin seleccionada")
     }
     { Label29 Label
-      Move(24,156,208,24)
+      Move(24,232,208,24)
       Text = ("Mensaje en el Scroll de texto.")
     }
     { ScrollStrBox TextArea
-      Move(24,188,376,48)
+      Move(24,264,376,48)
       Wrap = True
+    }
+    { CancelBttnCheckBox CheckBox
+      Move(32,120,400,24)
+      Text = ("Mostrar botón de cancelar.")
+    }
+    { VolumenBttnCheckBox CheckBox
+      Move(32,152,408,24)
+      Text = ("Mostrar botones de control de volumen.")
     }
     Index = 1
     Text = ("Rutas y BD")
@@ -219,6 +227,11 @@
         Move(0,0,344,24)
         Text = ("Configuración de conexión FTP remoto.")
       }
+      { FtpBox MaskBox
+        Move(24,32,176,32)
+        Visible = False
+        Mask = "##0<.##0<.##0<.##0<"
+      }
       { FtpUrl TextBox
         Move(24,32,176,32)
       }
@@ -249,10 +262,10 @@
     Text = ("Descargas")
     Picture = Picture["icon:/32/download"]
     { CacheDirBox DirBox
-      Move(24,88,336,32)
+      Move(24,48,336,32)
     }
     { Label34 Label
-      Move(24,64,240,24)
+      Move(24,24,240,24)
       Text = ("Ruta a caché de descargas")
     }
     { Button1 Button
@@ -260,11 +273,27 @@
       Text = ("Vaciar caché")
     }
     { CacheGridView GridView
-      Move(24,144,368,240)
+      Move(24,176,368,208)
     }
     { Gridrefresh #Timer
       #Move(0,120)
       Delay = 10000
+    }
+    { VideoResBox ComboBox
+      Move(280,88,112,32)
+      List = [("1080"), ("720"), ("480"), ("360"), ("240"), ("144")]
+    }
+    { Label40 Label
+      Move(24,88,248,24)
+      Text = ("Calidad del video menor o igual a:")
+    }
+    { Label41 Label
+      Move(24,136,248,24)
+      Text = ("Formato de video:")
+    }
+    { VideoFormatBox ComboBox
+      Move(280,136,112,32)
+      List = [("mp4"), ("webm")]
     }
     Index = 6
     Text = ("Monedero")
@@ -458,7 +487,7 @@
     }
     { PictureBox1 PictureBox
       Move(0,49,126,126)
-      Picture = Picture["resource/icon.png"]
+      Picture = Picture.Load("resource/icon.png")
       Stretch = True
     }
     Index = 0
